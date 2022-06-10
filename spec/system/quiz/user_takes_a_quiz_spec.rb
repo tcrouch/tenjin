@@ -133,7 +133,7 @@ RSpec.describe 'User takes a quiz', :default_creates, :js do
 
   context 'when dealing with images' do
     before do
-      image = create_file_blob(filename: 'computer-science.jpg', content_type: 'image/jpg')
+      image = create_file_blob(filename: 'computer-science.jpg', content_type: 'image/jpeg')
       html = %(<action-text-attachment sgid="#{image.attachable_sgid}"></action-text-attachment><p>Test message</p>)
       create(:question, topic: topic, question_text: html)
 
