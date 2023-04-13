@@ -1,4 +1,4 @@
-import updateQuizStatistics from 'packs/questions/questions_shared'
+import updateQuizStatistics from 'app/questions/questions_shared'
 
 function processMultipleChoiceResponse (serverResponse, guess) {
   const guessDiv = '#' + guess

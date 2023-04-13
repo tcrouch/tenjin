@@ -3,9 +3,6 @@
 // a relevant structure within app/javascript and only use these pack files to reference
 // that code so it'll be compiled.
 
-import 'core-js/stable'
-import 'regenerator-runtime/runtime'
-
 import '../styles/application.scss'
 
 import Rails from '@rails/ujs'
@@ -21,23 +18,7 @@ import 'flatpickr/dist/flatpickr.min.css'
 import Shepherd from 'shepherd.js'
 import Cookies from 'js-cookie/src/js.cookie'
 
-
-import './classroom'
-import './homework'
-import './pages'
-import './schools'
-import './student_dashboard'
-import './teacher_dashboard'
-import './users'
-import './questions/multiple_choice_question'
-import './questions/question_bottom'
-import './questions/question_top'
-import './questions/short_response_question'
-import './questions/import_topic_questions'
-import './lessons'
-import './questions'
-import './controller_info'
-import './google_analytics'
+import 'app'
 
 Rails.start()
 Turbolinks.start()
@@ -73,7 +54,7 @@ ReactRailsUJS.useContext(componentRequireContext)
 
 // Stimulus
 const application = Application.start()
-const context = require.context('./controllers', true, /\.js$/)
+const context = require.context('controllers', true, /\.js$/)
 application.load(definitionsFromContext(context))
 
 window.Shepherd = Shepherd
