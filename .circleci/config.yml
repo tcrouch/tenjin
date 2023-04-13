@@ -69,6 +69,8 @@ jobs:
           name: precompile assets
           command: |
             bin/rails webpacker:compile
+          environment:
+            NODE_OPTIONS: --openssl-legacy-provider
 
       # Wait for DB
       - run: dockerize -wait tcp://localhost:5432 -timeout 1m
