@@ -401,6 +401,7 @@ GEM
       activesupport (>= 4.0)
       sprockets (>= 3.0.0)
     statsd-ruby (1.4.0)
+    stringio (3.0.6)
     temple (0.8.2)
     thor (1.0.1)
     thread_safe (0.3.6)
@@ -505,6 +506,7 @@ DEPENDENCIES
   slim
   spring
   spring-watcher-listen (~> 2.0.0)
+  stringio
   turbolinks (~> 5.2.0)
   turbolinks_render
   tzinfo-data
