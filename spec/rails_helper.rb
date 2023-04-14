@@ -8,8 +8,8 @@ require File.expand_path('../config/environment', __dir__)
 abort('The Rails environment is running in production mode!') if Rails.env.production?
 require 'rspec/rails'
 # Add additional requires below this line. Rails is not loaded until this point!
-require 'webdrivers'
 
+require "capybara/rails"
 require 'webmock/rspec'
 require 'vcr'
 
@@ -48,6 +48,18 @@ rescue ActiveRecord::PendingMigrationError => e
   puts e.to_s.strip
   exit 1
 end
+
+Capybara.register_driver :selenium_chrome_headless_download do |app|
+  browser_options = ::Selenium::WebDriver::Chrome::Options.new.tap do |opts|
+    opts.args << '--headless'
+    opts.args << '--disable-site-isolation-trials'
+  end
+  browser_options.add_preference(:download, prompt_for_download: false, default_directory: DownloadHelpers::PATH.to_s)
+
+  browser_options.add_preference(:browser, set_download_behavior: { behavior: 'allow' })
+  Capybara::Selenium::Driver.new(app, browser: :chrome, options: browser_options)
+end
+
 RSpec.configure do |config|
   # Remove this line if you're not using ActiveRecord or ActiveRecord fixtures
   config.fixture_path = "#{::Rails.root}/spec/fixtures"
@@ -90,7 +102,7 @@ RSpec.configure do |config|
   # Required to use database cleaner with action cable
   # or feature testing will not work
 
-  config.after :each, :js do
+  config.after(:each, js: true) do
     errors = page.driver.browser.manage.logs.get(:browser)
     if errors.present?
       aggregate_failures 'javascript errors' do
@@ -105,19 +117,8 @@ RSpec.configure do |config|
     end
   end
 
-  Capybara.register_driver :selenium_chrome_headless_download do |app|
-    browser_options = ::Selenium::WebDriver::Chrome::Options.new.tap do |opts|
-      opts.args << '--headless'
-      opts.args << '--disable-site-isolation-trials'
-    end
-    browser_options.add_preference(:download, prompt_for_download: false, default_directory: DownloadHelpers::PATH.to_s)
-
-    browser_options.add_preference(:browser, set_download_behavior: { behavior: 'allow' })
-    Capybara::Selenium::Driver.new(app, browser: :chrome, options: browser_options)
-  end
-
   config.before(:each, type: :system) do
-    driven_by :selenium_chrome_headless
+    driven_by :selenium_chrome_headless_download
     page.driver.browser.manage.window.resize_to(1024, 768)
   end
 
