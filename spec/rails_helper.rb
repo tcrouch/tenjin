@@ -87,9 +87,6 @@ RSpec.configure do |config|
 
   config.include_context 'with default_creates', default_creates: true
 
-  # Allow wait for ajax command
-  config.include WaitForAjax, type: :system
-
   # Required to use database cleaner with action cable
   # or feature testing will not work
 
