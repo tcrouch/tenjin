@@ -68,7 +68,7 @@ Rails.application.routes.draw do
   get 'quizzes/new/:subject', to: 'quizzes#new'
   get 'dashboard/', to: 'dashboard#show'
 
-  get "/pages/*id" => 'pages#show', as: :page, format: false
+  get "/pages/*id", to: 'pages#show', as: :page, format: false
 
   authenticated :user do
     root to: 'dashboard#show', as: :authenticated_root

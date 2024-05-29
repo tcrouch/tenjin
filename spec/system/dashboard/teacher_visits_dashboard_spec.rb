@@ -23,7 +23,7 @@ RSpec.describe 'Teacher visits the dashboard', type: :system, js: true, default_
 
     it 'allows you to go to a selected classroom' do
       visit(dashboard_path)
-      find("tr[data-classroom='#{classroom.id.to_s}']").click
+      find("tr[data-classroom='#{classroom.id}']").click
       expect(page).to have_current_path(classroom_path(classroom))
     end
 
