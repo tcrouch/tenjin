@@ -41,7 +41,7 @@ group :development, :test do
 
   # Use the following gems for rspec testing
   gem 'rspec-rails'
-  
+
   # Fast creation of test objects
   gem 'factory_bot_rails'
   # Lets us mock web calls
@@ -50,11 +50,6 @@ group :development, :test do
   gem 'vcr'
 
   gem 'ffaker'
-
-  # Allow console debugging
-  gem 'ruby-debug-ide'
-  gem 'debase'
-
 end
 
 group :development do
@@ -65,11 +60,11 @@ group :development do
   gem 'spring-watcher-listen', '~> 2.0.0'
   gem 'stringio'
   gem 'web-console', '>= 3.3.0'
-  
+
   # better errors for debugging
   gem 'better_errors'
   gem 'binding_of_caller'
-  
+
   #httplog to get all messages sent to/from server
   gem 'httplog'
 
