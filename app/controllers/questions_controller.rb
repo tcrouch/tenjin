@@ -73,7 +73,7 @@ class QuestionsController < ApplicationController
     @question.assign_attributes(question_params) if params[:question].present?
     authorize @question
     check_answers
-    #build_answers
+    # build_answers
   end
 
   def update

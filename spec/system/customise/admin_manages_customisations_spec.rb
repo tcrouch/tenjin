@@ -113,7 +113,6 @@ RSpec.describe 'Admin manages customisations', type: :system, js: true, default_
   end
 
   context 'when creating a dashboard style' do
-
     before do
       visit new_customisation_path
     end

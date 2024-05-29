@@ -3,7 +3,6 @@
 require 'rails_helper'
 
 RSpec.describe 'School group admin manages school group', type: :system, js: true, default_creates: true do
-
   before do
     school
     sign_in school_group_admin
@@ -67,5 +66,4 @@ RSpec.describe 'School group admin manages school group', type: :system, js: tru
     visit schools_path
     expect(page).to have_no_css('.nav-link', text: 'Roles')
   end
-
 end
