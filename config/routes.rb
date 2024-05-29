@@ -3,8 +3,7 @@
 Rails.application.routes.draw do
   devise_for :admins, controllers: { invitations: 'admins/invitations' }
   devise_for :users, controllers: { omniauth_callbacks: 'users/omniauth_callbacks' }
-  
-  
+
   resources :quizzes
   resources :schools do
     collection do
@@ -19,12 +18,12 @@ Rails.application.routes.draw do
   resources :classrooms, only: [:show, :index, :update]
   resources :questions do
     collection do
-      get 'topic' 
-      get 'lesson' 
+      get 'topic'
+      get 'lesson'
       get 'download_topic'
       get 'import_topic'
-      get 'flagged_questions' 
-      post 'import'    
+      get 'flagged_questions'
+      post 'import'
     end
     member do
       patch 'reset_flags'

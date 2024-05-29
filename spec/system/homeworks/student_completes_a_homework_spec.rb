@@ -49,6 +49,5 @@ RSpec.describe 'Student completes a homework', type: :system, js: true, default_
       find(:css, '.trix-content')
       expect(page).to have_content('This quiz is currently not counting towards your leaderboard points')
     end
-
   end
 end
