@@ -1,58 +1,64 @@
 # frozen_string_literal: true
 
 class Lesson < ApplicationRecord
+  LINK_REGEX = [
+    [:no_content, %r{\A[[:blank:]]*\z}],
+    [:vimeo, %r{(?:(?:https?:)?\/\/)?(?:www.)?(?:player.)?vimeo.com\/(?:[a-z]*\/)*(\d+)(?:\S*)}],
+    [:youtube, %r{(?:(?:https?:)?\/\/)?(?:(?:www|m)\.)?(?:youtube.com|youtu.be)(?:\/(?:[\w\-]+\?v=|embed\/|v\/)?)([\w\-]+)(?:\S*)}]
+  ]
+  CATEGORY_VIDEOS = {
+    vimeo: 'https://www.youtube.com/embed/%s',
+    youtube: 'https://player.vimeo.com/video/%s'
+  }
+  CATEGORY_THUMBNAILS = {
+    youtube: 'https://img.youtube.com/vi/%s/hqdefault.jpg'
+  }
+
   enum category: %i[youtube vimeo no_content]
   has_many :questions
   has_many :default_lessons
   belongs_to :topic
-
   has_one :subject, through: :topic
 
-  before_save :save_video_id
+  attribute :video_link, :string
+
   before_destroy { |record| Question.where(lesson: record).update_all(lesson_id: nil) }
 
   validates :title, length: { minimum: 3 }
-  validate :check_video_id
+  validate :check_video_link
 
-  def generate_video_src
-    return "https://www.youtube.com/embed/#{video_id}" if youtube?
-    return "https://player.vimeo.com/video/#{video_id}" if vimeo?
+  def video_link=(value)
+    self.category, self.video_id = extract_id(value)
+    super(value)
   end
 
-  def generate_thumbnail_src
-    return "https://img.youtube.com/vi/#{video_id}/hqdefault.jpg" if youtube?
+  def video_link
+    super || video_url
+  end
+
+  def video_url
+    format = CATEGORY_VIDEOS[category]
+    format && (format % video_id)
+  end
+
+  def thumbnail_url
+    format = CATEGORY_THUMBNAILS[category]
+    format && (format % video_id)
   end
 
   private
 
-  def check_video_id
-    result = find_video_id
-
-    errors.add :video_id, 'Must be a YouTube or Vimeo link e.g https://youtu.be/z1aIdcb43RE' if result.blank?
-  end
-
-  def save_video_id
-    result = find_video_id
-
-    self.category = result[:category]
-    self.video_id = result[:video_id]
-  end
-
-  def find_video_id
-    return { category: 'no_content' } if video_id.blank?
-
-    vimeo_rexp = %r{(?:http|https)?://(?:www\.)?vimeo.com/(?:channels/(?:\w+/)?|groups/(?:[^/]*)/videos/|)(\d+)(?:|/\?)}
-    youtube_rexp = %r{http(?:s?)://(?:www\.)?youtu(?:be\.com/watch\?v=|\.be/)([\w\-_]*)(&(amp;)?‌​[\w?‌​=]*)?}
-
-    regexes = [{ category: 'youtube',
-                 regex: youtube_rexp },
-               { category: 'vimeo',
-                 regex: vimeo_rexp }]
-
-    regexes.each do |r|
-      return { category: r[:category], video_id: video_id.match(r[:regex]).captures[0] } if video_id.match(r[:regex])
+  def extract_id(url)
+    kind = LINK_REGEX.lazy.filter_map do |c, r|
+      (vid = r.match(url)) && [c, vid&.captures&.first]
     end
 
-    nil
+    kind.first || [:no_content, nil]
+  end
+
+  def check_video_link
+    return unless video_link.present? && video_id.nil?
+
+    errors.add :video_link, 'Must be a YouTube or Vimeo link e.g https://youtu.be/z1aIdcb43RE'
   end
 end

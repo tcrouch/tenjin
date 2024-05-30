@@ -29,7 +29,6 @@ class LessonsController < ApplicationController
   def edit
     @lesson = find_lesson
     @topics = Topic.where(active: true, subject: @lesson.subject).order(:name)
-    @lesson.video_id = @lesson.generate_video_src
     authorize @lesson
   end
 
