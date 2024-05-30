@@ -2,7 +2,6 @@
 
 class LessonsController < ApplicationController
   before_action :authenticate_user!
-  before_action :set_lesson, only: %i[edit update destroy]
 
   def index
     @author = current_user.has_role? :lesson_author, :any
@@ -28,12 +27,14 @@ class LessonsController < ApplicationController
   end
 
   def edit
+    @lesson = find_lesson
     @topics = Topic.where(active: true, subject: @lesson.subject).order(:name)
     @lesson.video_id = @lesson.generate_video_src
     authorize @lesson
   end
 
   def update
+    @lesson = find_lesson
     authorize @lesson
     @lesson.assign_attributes(lesson_params)
 
@@ -41,6 +42,7 @@ class LessonsController < ApplicationController
   end
 
   def destroy
+    @lesson = find_lesson
     authorize @lesson
     @lesson.destroy
     redirect_to lessons_path
@@ -48,8 +50,8 @@ class LessonsController < ApplicationController
 
   private
 
-  def set_lesson
-    @lesson = Lesson.find(params[:id])
+  def find_lesson
+    Lesson.find(params[:id])
   end
 
   def save_lesson
@@ -58,9 +60,9 @@ class LessonsController < ApplicationController
     unless @lesson.valid?
       @topics = policy_scope(Topic).where(subject: @lesson.topic.subject)
 
-      return render 'edit' if @lesson.persisted?
+      return render :edit if @lesson.persisted?
 
-      return render 'new'
+      return render :new
     end
 
     @lesson.save!

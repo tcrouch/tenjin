@@ -9,7 +9,7 @@ class DashboardController < ApplicationController
 
     if current_user.student?
       @dashboard_style = find_dashboard_style
-      student_homework_progress
+      @homework_progress = student_homework_progress
       student_challenges
       render 'student_dashboard'
     else
@@ -21,11 +21,10 @@ class DashboardController < ApplicationController
   private
 
   def student_homework_progress
-    @homework_progress = HomeworkProgress.includes(:homework, homework: [{ topic: :subject }])
-                                         .where('user_id = ? AND ( completed = false OR ( completed = true AND
-                                          homeworks.due_date > ? )) ', current_user, 1.week.ago)
-                                         .order('homeworks.due_date')
-                                         .limit(15)
+    HomeworkProgress.includes(:homework, homework: [{ topic: :subject }])
+                    .where('user_id = ? AND ( completed = false OR ( completed = true AND homeworks.due_date > ? )) ', current_user, 1.week.ago)
+                    .order('homeworks.due_date')
+                    .limit(15)
   end
 
   def student_challenges

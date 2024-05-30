@@ -2,7 +2,6 @@
 
 class AnswersController < ApplicationController
   before_action :authenticate_user!
-  before_action :set_answer, only: %i[show update destroy]
 
   def new
     @question = Question.find(new_answer_params[:question_id])
@@ -16,23 +15,24 @@ class AnswersController < ApplicationController
   end
 
   def update
-    authorize @answer.question.topic
-    @answer.update(answer_params)
-
-    @answer.save
+    answer = find_answer
+    authorize answer.question.topic
+    answer.update(answer_params)
+    answer.save
   end
 
   def destroy
-    authorize @answer.question.topic
-    @answer.destroy
+    answer = find_answer
+    authorize answer.question.topic
+    answer.destroy
 
-    redirect_to @answer.question
+    redirect_to answer.question
   end
 
   private
 
-  def set_answer
-    @answer = Answer.find(params[:id])
+  def find_answer
+    Answer.find(params[:id])
   end
 
   def new_answer_params

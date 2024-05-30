@@ -3,8 +3,6 @@
 class UsersController < ApplicationController
   before_action :authenticate_user!, except: %i[set_role manage_roles remove_role update_email send_welcome_email]
   before_action :authenticate_admin!, only: %i[set_role manage_roles remove_role update_email send_welcome_email]
-  before_action :set_user, only: %i[show update reset_password set_role remove_role
-                                    update_email unlink_oauth_account send_welcome_email]
 
   def index
     authorize current_user
@@ -18,28 +16,28 @@ class UsersController < ApplicationController
   end
 
   def show
+    @user = authorize find_user
     @dashboard_style = find_dashboard_style
-    authorize @user
     @homeworks = policy_scope(Homework)
     @homework_progress = HomeworkProgress.includes(:homework, homework: [{ topic: :subject }])
                                          .where(homework: @homeworks, user: @user)
   end
 
   def set_role
+    @user = authorize find_user
     return unless set_user_role_params[:role].present?
 
     role = set_user_role_params[:role]
-    authorize @user
 
     User::ChangeUserRole.call(@user, role, :add, set_user_role_params[:subject])
     redirect_to manage_roles_users_path(school: @user.school)
   end
 
   def remove_role
+    @user = authorize find_user
     return unless set_user_role_params[:role].present?
 
     role = set_user_role_params[:role]
-    authorize @user
 
     User::ChangeUserRole.call(@user, role, :remove, set_user_role_params[:subject])
 
@@ -47,14 +45,14 @@ class UsersController < ApplicationController
   end
 
   def update
-    authorize @user
+    @user = authorize find_user
     @user.password = update_password_params[:password]
     @user.save
     redirect_to @user, notice: 'Password successfully updated'
   end
 
   def reset_password
-    authorize @user
+    @user = authorize find_user
     new_password = Devise.friendly_token(6)
     @user.reset_password(new_password, new_password)
     @user.save
@@ -74,7 +72,7 @@ class UsersController < ApplicationController
   end
 
   def unlink_oauth_account
-    authorize @user
+    @user = authorize find_user
     @user.oauth_uid = ''
     @user.oauth_email = ''
     @user.oauth_provider = ''
@@ -84,7 +82,7 @@ class UsersController < ApplicationController
   end
 
   def update_email
-    authorize @user
+    @user = authorize find_user
     @user.email = update_email_params[:email]
     @user.save
 
@@ -94,7 +92,7 @@ class UsersController < ApplicationController
   end
 
   def send_welcome_email
-    authorize @user
+    @user = authorize find_user
     flash.now[:notice] = "Setup email sent to #{@user.forename} #{@user.surname} (#{@user.email})"
 
     UserMailer.with(user: @user).setup_email.deliver_later
@@ -121,8 +119,8 @@ class UsersController < ApplicationController
     params.permit(:school)
   end
 
-  def set_user
-    @user = User.find(params[:id])
+  def find_user
+    User.find(params[:id])
   end
 
   def set_manage_roles_variables

@@ -2,7 +2,6 @@
 
 class QuestionsController < ApplicationController
   before_action :authenticate_user!
-  before_action :set_question, only: %i[show update destroy reset_flags]
 
   def index
     @subjects = policy_scope(Question)
@@ -12,8 +11,7 @@ class QuestionsController < ApplicationController
   def topic
     redirect questions_path unless topic_params.present?
 
-    @topic = Topic.find(topic_params)
-    authorize @topic, :show?
+    @topic = authorize Topic.find(topic_params), :show?
     @topic_lessons = Lesson.where(topic: @topic)
     @questions = Question.with_rich_text_question_text_and_embeds
                          .includes(:question_statistic, :lesson)
@@ -25,8 +23,7 @@ class QuestionsController < ApplicationController
   def lesson
     redirect lessons_path unless lesson_params.present?
 
-    @lesson = Lesson.find(lesson_params)
-    authorize @lesson, :view_questions?
+    @lesson = authorize Lesson.find(lesson_params), :view_questions?
     @questions = Question.with_rich_text_question_text_and_embeds
                          .includes(:answers)
                          .where(lesson: @lesson, active: true)
@@ -36,6 +33,7 @@ class QuestionsController < ApplicationController
 
   def reset_flags
     authorize current_user, :update?
+    @question = find_question
     FlaggedQuestion.where(question: @question).delete_all
     Question.reset_counters @question.id, :flagged_questions_count
     redirect_to @question
@@ -58,8 +56,7 @@ class QuestionsController < ApplicationController
   end
 
   def create
-    @question = Question.new(question_params)
-    authorize @question
+    @question = authorize Question.new(question_params)
     check_answers
 
     if @question.save
@@ -70,6 +67,7 @@ class QuestionsController < ApplicationController
   end
 
   def show
+    @question = find_question
     @question.assign_attributes(question_params) if params[:question].present?
     authorize @question
     check_answers
@@ -77,6 +75,7 @@ class QuestionsController < ApplicationController
   end
 
   def update
+    @question = find_question
     @question.assign_attributes(question_params)
     authorize @question
     check_answers
@@ -89,7 +88,7 @@ class QuestionsController < ApplicationController
   end
 
   def destroy
-    authorize @question
+    @question = authorize find_question
     redirect_to topic_questions_path(topic_id: @question.topic)
 
     @question.update_attribute(:active, false)
@@ -111,8 +110,7 @@ class QuestionsController < ApplicationController
   end
 
   def import
-    @topic = Topic.find(topic_params)
-    authorize @topic, :update?
+    @topic = authorize Topic.find(topic_params), :update?
 
     if params[:file].nil?
       flash[:alert] = 'Please attach a file'
@@ -144,13 +142,13 @@ class QuestionsController < ApplicationController
                                      :topic_id, answers_attributes: %i[correct id text _destroy])
   end
 
-  def set_question
-    @question = Question.find(params[:id])
+  def find_question
+    Question.find(params[:id])
   end
 
   def setup_boolean_question
     @question.answers.build until @question.answers.length >= 2
-    @question.answers = @question.answers.slice(0..1) if @question.answers.length > 2
+    @question.answers = @question.answers.take(2) if @question.answers.length > 2
     return if @question.valid?
 
     @question.answers.second.text = 'True'

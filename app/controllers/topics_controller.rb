@@ -2,7 +2,6 @@
 
 class TopicsController < ApplicationController
   before_action :authenticate_user!
-  before_action :set_topic, only: %i[update destroy]
 
   def new
     @subject = Subject.find(new_topic_params[:subject_id])
@@ -15,12 +14,12 @@ class TopicsController < ApplicationController
   end
 
   def update
-    authorize @topic
+    @topic = authorize find_topic
     @topic.update(topic_params)
   end
 
   def destroy
-    authorize @topic
+    @topic = authorize find_topic
 
     @topic.destroy
     redirect_to questions_path
@@ -28,8 +27,8 @@ class TopicsController < ApplicationController
 
   private
 
-  def set_topic
-    @topic = Topic.find(params[:id])
+  def find_topic
+    Topic.find(params[:id])
   end
 
   def topic_params

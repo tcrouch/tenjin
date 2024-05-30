@@ -3,7 +3,6 @@
 class CustomisationsController < ApplicationController
   before_action :authenticate_user!, only: %i[show_available buy]
   before_action :authenticate_admin!, only: %i[index show update new destroy]
-  before_action :set_customisation, only: %i[edit update delete]
 
   def index
     authorize current_admin, policy_class: CustomisationPolicy
@@ -12,30 +11,28 @@ class CustomisationsController < ApplicationController
   end
 
   def edit
-    authorize @customisation
+    @customisation = authorize find_customisation
   end
 
   def create
-    @customisation = Customisation.new(customisation_params)
-    authorize @customisation
+    customisation = authorize Customisation.new(customisation_params)
 
-    if @customisation.save
-      redirect_to customisations_path, notice: "Created new customisation #{@customisation.name}"
+    if customisation.save
+      redirect_to customisations_path, notice: "Created new customisation #{customisation.name}"
     else
       render :edit
     end
   end
 
   def new
-    @customisation = Customisation.new(purchasable: false, retired: false)
-    authorize @customisation
-    render 'edit'
+    @customisation = authorize Customisation.new(purchasable: false, retired: false)
+    render :edit
   end
 
   def update
-    authorize @customisation
-    @customisation.update(customisation_params)
-    @customisation.save
+    customisation = authorize find_customisation
+    customisation.update(customisation_params)
+    customisation.save
     redirect_to customisations_path
   end
 
@@ -52,25 +49,20 @@ class CustomisationsController < ApplicationController
 
   def buy
     authorize current_user, :show?
-    @customisation = Customisation.find_by(id: buy_params)
-    result = buy_customisation
-    flash_notice(result)
+    customisation = Customisation.find_by(id: buy_params)
+    result = Customisation::BuyCustomisation.call(current_user, customisation)
+    flash[:notice] = result_message(customisation, result)
     redirect_to dashboard_path
   end
 
   private
 
-  def set_customisation
-    @customisation = Customisation.find(params[:id])
+  def find_customisation
+    Customisation.find(params[:id])
   end
 
-  def buy_customisation
-    Customisation::BuyCustomisation.call(current_user, @customisation)
-  end
-
-  def flash_notice(result)
-    flash[:notice] = result.errors unless result.success?
-    flash[:notice] = "Congratulations!  You have bought #{@customisation.name}" if result.success?
+  def result_message(customisation, result)
+    result.success? ? "Congratulations! You have bought #{customisation.name}" : result.errors
   end
 
   def buy_params

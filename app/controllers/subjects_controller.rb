@@ -2,7 +2,6 @@
 
 class SubjectsController < ApplicationController
   before_action :authenticate_admin!
-  before_action :set_subject, only: %i[show update destroy]
 
   def index
     @subjects = policy_scope(Subject).order(:name).where(active: true)
@@ -10,33 +9,31 @@ class SubjectsController < ApplicationController
   end
 
   def new
-    @subject = Subject.new
-    authorize @subject
+    @subject = authorize Subject.new
   end
 
   def create
-    @subject = Subject.new(subject_params)
-    authorize @subject
+    @subject = authorize Subject.new(subject_params)
 
     if @subject.save
       redirect_to @subject
     else
-      render 'new'
+      render :new
     end
   end
 
   def show
-    authorize @subject
+    @subject = authorize find_subject
   end
 
   def update
-    authorize @subject
+    @subject = authorize find_subject
     @subject.update(subject_params)
     redirect_to @subject
   end
 
   def destroy
-    authorize @subject
+    @subject = authorize find_subject
     @subject.update_attribute(:active, false)
 
     Enrollment.joins(:classroom).where(classrooms: { subject_id: @subject }).destroy_all
@@ -46,8 +43,8 @@ class SubjectsController < ApplicationController
 
   private
 
-  def set_subject
-    @subject = Subject.find(params[:id])
+  def find_subject
+    Subject.find(params[:id])
   end
 
   def subject_params

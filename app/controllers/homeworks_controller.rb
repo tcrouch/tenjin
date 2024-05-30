@@ -2,57 +2,54 @@
 
 class HomeworksController < ApplicationController
   before_action :authenticate_user!
-  before_action :set_classroom, only: %i[new]
-  before_action :set_homework, only: %i[show destroy]
   rescue_from ActionController::ParameterMissing, with: :no_classroom_id
 
   def new
-    @homework = Homework.new(due_date: 1.week.from_now, classroom: @classroom, required: 70)
-    authorize @homework
+    @classroom = find_classroom
+    @homework = authorize Homework.new(due_date: 1.week.from_now, classroom: @classroom, required: 70)
     @lessons = Lesson.where(topic: @classroom.subject.topics).where('questions_count >= ?', 10)
   end
 
   def create
-    @homework = Homework.new(homework_params)
-    authorize @homework
-    if @homework.save
-      set_homework_notice
-      redirect_to @homework
+    homework = authorize Homework.new(homework_params)
+    if homework.save
+      flash[:notice] = homework_notice(homework)
+      redirect_to homework
     else
-      @classroom = @homework.classroom
-      @classroom.present? ? render('new') : redirect_to(dashboard_path)
+      classroom = homework.classroom
+      classroom.present? ? render('new') : redirect_to(dashboard_path)
     end
   end
 
   def show
-    authorize @homework
+    @homework = authorize find_homework
     @homework_progress = HomeworkProgress.includes(:user).where(homework: @homework).order('users.surname')
     @homework_counts = @homework.classroom.homework_counts.find_by(id: @homework)
   end
 
   def destroy
-    authorize @homework
-    redirect_to classroom_path(@homework.classroom)
+    homework = authorize find_homework
+    redirect_to classroom_path(homework.classroom)
 
-    @homework.destroy
+    homework.destroy
   end
 
   private
 
-  def set_classroom
-    @classroom = Classroom.find(new_homework_params[:classroom_id])
+  def find_classroom
+    Classroom.find(new_homework_params[:classroom_id])
   end
 
-  def set_homework
-    @homework = Homework.find(params[:id])
+  def find_homework
+    Homework.find(params[:id])
   end
 
-  def set_homework_notice
-    flash[:notice] = if @homework.lesson.blank?
-                       "#{@homework.topic.name} homework set"
-                     else
-                       "#{@homework.lesson.title} homework set"
-                     end
+  def homework_notice(homework)
+    if homework.lesson.blank?
+      "#{homework.topic.name} homework set"
+    else
+      "#{homework.lesson.title} homework set"
+    end
   end
 
   def new_homework_params

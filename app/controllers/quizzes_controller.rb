@@ -3,11 +3,6 @@
 # rubocop:disable Metrics/ClassLength
 class QuizzesController < ApplicationController
   before_action :authenticate_user!
-  before_action :set_quiz, only: %i[show update]
-  before_action :set_question, only: %i[show update]
-  before_action :set_dashboard_style, only: %i[new]
-  before_action :set_subject, only: %i[new]
-  before_action :set_create_params, only: %i[create]
 
   rescue_from Pundit::NotAuthorizedError, with: :quiz_not_authorized
 
@@ -17,10 +12,13 @@ class QuizzesController < ApplicationController
   end
 
   def show
-    authorize @quiz
-    set_quiz_status_variables
-    find_lesson
-    return render 'show' if @quiz.active?
+    @quiz = authorize find_quiz
+    @question = find_question
+    @multiplier = Multiplier.where('score <= ?', @quiz.streak).last
+    @percent_complete = (@quiz.num_questions_asked / @quiz.questions.length.to_f) * 100.to_f
+    @flagged_question = FlaggedQuestion.where(user: current_user, question: @question).first
+    @lesson = lesson_for(@question)
+    return render :show if @quiz.active?
 
     percent_correct = calculate_percent_correct
 
@@ -36,9 +34,12 @@ class QuizzesController < ApplicationController
   def new
     authorize Quiz.new(subject: @subject)
 
+    @subject = find_subject
+    @dashboard_style = find_dashboard_style
+
     if @subject.blank?
       @subjects = current_user.subjects
-      render 'new'
+      render :new
     else
       @topics = @subject.topics.where(active: true)
                         .order(:name)
@@ -52,29 +53,28 @@ class QuizzesController < ApplicationController
     return select_quiz_topic if @topic.blank?
 
     result = Quiz::CreateQuiz.call(user: current_user,
-                                   topic: @topic,
-                                   subject: @subject,
-                                   lesson: @lesson)
+                                   topic: quiz_params[:topic_id],
+                                   subject: Subject.find(quiz_params[:subject]),
+                                   lesson: quiz_params[:lesson_id])
     result.success? ? authorize(result.quiz) : authorize(current_user, :show?, policy_class: UserPolicy)
     return fail_quiz_creation(result) unless result.success?
 
-    @quiz = result.quiz
-
-    redirect_to @quiz
+    redirect_to result.quiz
   end
 
   def update
-    authorize @quiz
+    @quiz = authorize find_quiz
+    @question = find_question
     render(json: Quiz::CheckAnswer.call(quiz: @quiz, question: @question, answer_given: answer_params))
   end
 
   private
 
-  def find_lesson
-    if @question.lesson.present?
-      @lesson = @question.lesson
+  def lesson_for(question)
+    if question.lesson.present?
+      @question.lesson
     elsif @question.topic.default_lesson.present?
-      @lesson = @question.topic.default_lesson
+      @question.topic.default_lesson
     end
   end
 
@@ -89,26 +89,16 @@ class QuizzesController < ApplicationController
     redirect_to new_quiz_path(subject: @subject)
   end
 
-  def set_quiz
-    @quiz = Quiz.find(params[:id])
+  def find_quiz
+    Quiz.find(params[:id])
   end
 
-  def set_subject
-    @subject = Subject.where('name = ?', params.permit(:subject)[:subject]).first
+  def find_subject
+    Subject.where('name = ?', params.permit(:subject)[:subject]).first
   end
 
-  def set_question
-    @question = Question.find(@quiz.question_order[@quiz.num_questions_asked - 1])
-  end
-
-  def set_create_params
-    @topic = quiz_params[:topic_id]
-    @subject = Subject.find(quiz_params[:subject])
-    @lesson = quiz_params[:lesson_id] unless quiz_params[:lesson_id].blank?
-  end
-
-  def set_dashboard_style
-    @dashboard_style = find_dashboard_style
+  def find_question
+    Question.find(@quiz.question_order[@quiz.num_questions_asked - 1])
   end
 
   def answer_params
@@ -137,12 +127,6 @@ class QuizzesController < ApplicationController
     return 0 if @quiz.answered_correct.blank? || @quiz.questions.blank?
 
     ((@quiz.answered_correct / @quiz.questions.length.to_f) * 100.to_f).round
-  end
-
-  def set_quiz_status_variables
-    @multiplier = Multiplier.where('score <= ?', @quiz.streak).last
-    @percent_complete = (@quiz.num_questions_asked / @quiz.questions.length.to_f) * 100.to_f
-    @flagged_question = FlaggedQuestion.where(user: current_user, question: @question).first
   end
 end
 # rubocop:enable Metrics/ClassLength

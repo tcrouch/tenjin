@@ -4,8 +4,7 @@ class AdminsController < ApplicationController
   before_action :authenticate_admin!
 
   def become
-    user = User.find(become_admin_params)
-    authorize user
+    user = authorize User.find(become_admin_params)
 
     sign_in(:user, user)
     sign_out current_admin
