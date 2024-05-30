@@ -1,8 +1,6 @@
 # frozen_string_literal: true
 
 class Customisation::RefreshCustomisationsInStore < ApplicationService
-  def initialize; end
-
   def call
     disable_all_customisations
     make_six_purchasable('dashboard_style')
