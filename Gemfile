@@ -10,7 +10,7 @@ gem 'dotenv-rails', groups: [:development, :test]
 gem 'recipient_interceptor'
 
 # Bundle edge Rails instead: gem 'rails', github: 'rails/rails'
-gem 'rails', '~> 6.0.0'
+gem 'rails', '~> 6.1.7'
 
 gem 'pg', '>= 0.18', '< 2.0'
 gem 'puma', '~> 4.3'
