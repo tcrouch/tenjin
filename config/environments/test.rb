@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require "active_support/core_ext/integer/time"
+require 'active_support/core_ext/integer/time'
 
 # The test environment is used exclusively to run your application's
 # test suite. You never need to work with it otherwise. Remember that
@@ -48,7 +48,7 @@ Rails.application.configure do
   # Print deprecation notices to the stderr.
   config.active_support.deprecation = :stderr
 
-  config.action_mailer.asset_host = "http://example.com"
+  config.action_mailer.asset_host = 'http://example.com'
   config.action_mailer.default_url_options = { host: 'example.com' }
 
   # Raise exceptions for disallowed deprecations.

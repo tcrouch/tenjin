@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require "active_support/core_ext/integer/time"
+require 'active_support/core_ext/integer/time'
 
 Rails.application.configure do
   # Settings specified here will take precedence over those in config/application.rb.
@@ -58,7 +58,6 @@ Rails.application.configure do
   # Highlight code that triggered database queries in logs.
   config.active_record.verbose_query_logs = true
 
-
   # Raises error for missing translations.
   # config.i18n.raise_on_missing_translations = true
 
@@ -95,10 +94,10 @@ Rails.application.configure do
     Bullet.add_footer = true
     Bullet.skip_html_injection = false
 
-    Bullet.add_whitelist :type => :unused_eager_loading, class_name: "Lesson", association: :topic
-    Bullet.add_whitelist :type => :unused_eager_loading, class_name: "Classroom", association: :subject
-    Bullet.add_whitelist :type => :unused_eager_loading, class_name: "ActionText::RichText", :association => :embeds_attachments
-    Bullet.add_whitelist :type => :unused_eager_loading, class_name: "Customisation", :association => :image_attachment
+    Bullet.add_whitelist type: :unused_eager_loading, class_name: 'Lesson', association: :topic
+    Bullet.add_whitelist type: :unused_eager_loading, class_name: 'Classroom', association: :subject
+    Bullet.add_whitelist type: :unused_eager_loading, class_name: 'ActionText::RichText', association: :embeds_attachments
+    Bullet.add_whitelist type: :unused_eager_loading, class_name: 'Customisation', association: :image_attachment
   end
 
   # Uncomment if you wish to allow Action Cable access from any origin.
