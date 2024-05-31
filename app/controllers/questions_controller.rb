@@ -2,7 +2,6 @@
 
 class QuestionsController < ApplicationController
   before_action :authenticate_user!
-  before_action :set_question, only: %i[show update destroy reset_flags]
 
   def index
     @subjects = policy_scope(Question)
@@ -36,9 +35,10 @@ class QuestionsController < ApplicationController
 
   def reset_flags
     authorize current_user, :update?
-    FlaggedQuestion.where(question: @question).delete_all
-    Question.reset_counters @question.id, :flagged_questions_count
-    redirect_to @question
+    question = find_question
+    FlaggedQuestion.where(question: question).delete_all
+    Question.reset_counters question.id, :flagged_questions_count
+    redirect_to question
   end
 
   def flagged_questions
@@ -54,13 +54,13 @@ class QuestionsController < ApplicationController
 
     return unless @question.topic.present?
 
-    check_answers
+    check_answers(@question)
   end
 
   def create
     @question = Question.new(question_params)
     authorize @question
-    check_answers
+    check_answers(@question)
 
     if @question.save
       redirect_to topic_questions_path(topic_id: @question.topic), notice: 'Question successfully created'
@@ -70,16 +70,17 @@ class QuestionsController < ApplicationController
   end
 
   def show
+    @question = find_question
     @question.assign_attributes(question_params) if params[:question].present?
     authorize @question
-    check_answers
-    # build_answers
+    check_answers(@question)
   end
 
   def update
+    @question = find_question
     @question.assign_attributes(question_params)
     authorize @question
-    check_answers
+    check_answers(@question)
 
     if @question.save
       redirect_to @question, notice: 'Question successfully updated'
@@ -89,20 +90,20 @@ class QuestionsController < ApplicationController
   end
 
   def destroy
-    authorize @question
-    redirect_to topic_questions_path(topic_id: @question.topic)
+    question = authorize find_question
+    redirect_to topic_questions_path(topic_id: question.topic)
 
-    @question.update_attribute(:active, false)
+    question.update_attribute(:active, false)
   end
 
   def download_topic
-    @topic = Topic.find(topic_params)
-    authorize @topic, :show?
-    @questions = Question.where(topic: @topic).to_json(include: :answers)
+    topic = Topic.find(topic_params)
+    authorize topic, :show?
+    questions = Question.where(topic: topic).to_json(include: :answers)
 
-    send_data @questions,
+    send_data questions,
               type: 'application/json; header=present',
-              disposition: "attachment; filename=#{@topic.name}.json"
+              disposition: "attachment; filename=#{topic.name}.json"
   end
 
   def import_topic
@@ -144,29 +145,21 @@ class QuestionsController < ApplicationController
                                      :topic_id, answers_attributes: %i[correct id text _destroy])
   end
 
-  def set_question
-    @question = Question.find(params[:id])
+  def find_question
+    Question.find(params[:id])
   end
 
-  def setup_boolean_question
-    @question.answers.build until @question.answers.length >= 2
-    @question.answers = @question.answers.slice(0..1) if @question.answers.length > 2
-    return if @question.valid?
+  def setup_boolean_question(question)
+    question.answers.build until question.answers.length >= 2
+    question.answers = question.answers.slice(0..1) if question.answers.length > 2
+    return if question.valid?
 
-    @question.answers.second.text = 'True'
-    @question.answers.first.text = 'False'
+    question.answers.second.text = 'True'
+    question.answers.first.text = 'False'
   end
 
-  def check_answers
-    setup_boolean_question if @question.boolean?
-    @question.answers.each { |a| a.correct = true } if @question.short_answer? || @question.question_type.nil?
-  end
-
-  def build_answers
-    unless @question.answers.present?
-      @question.answers.build if @question.short_answer? || @question.question_type.nil?
-    end
-
-    @question.answers.build until @question.answers.length >= 4 || !@question.multiple?
+  def check_answers(question)
+    setup_boolean_question(question) if question.boolean?
+    question.answers.each { |a| a.correct = true } if question.short_answer? || question.question_type.nil?
   end
 end
