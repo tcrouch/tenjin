@@ -2,7 +2,6 @@
 
 class LeaderboardController < ApplicationController
   before_action :authenticate_user!
-  before_action :set_subject_and_topic, only: :show
 
   def index
     @subjects = policy_scope(Subject)
@@ -13,6 +12,8 @@ class LeaderboardController < ApplicationController
 
   def show
     authorize current_user
+    @subject = find_subject
+    @topic = find_topic
     @school_group = current_user.school.school_group
     if request.xhr?
       set_leaderboard_ajax_response_variables
@@ -21,7 +22,7 @@ class LeaderboardController < ApplicationController
       return render 'subject_select' if @subject.blank?
     end
 
-    render 'show'
+    render :show
   end
 
   private
@@ -53,9 +54,14 @@ class LeaderboardController < ApplicationController
     @classroom_winners.map! { |w| [w[0], "#{w[1]} #{w[2][0]}", w[3]] }
   end
 
-  def set_subject_and_topic
-    @subject = Subject.find_by(name: leaderboard_params[:id])
-    @topic = Topic.find(leaderboard_params[:topic]) if leaderboard_params[:topic].present?
+  def find_subject
+    Subject.find_by(name: leaderboard_params[:id])
+  end
+
+  def find_topic
+    return nil unless leaderboard_params[:topic].present?
+
+    Topic.find(leaderboard_params[:topic])
   end
 
   def set_leaderboard_variables

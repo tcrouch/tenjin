@@ -2,34 +2,31 @@
 
 class TopicsController < ApplicationController
   before_action :authenticate_user!
-  before_action :set_topic, only: %i[update destroy]
 
   def new
-    @subject = Subject.find(new_topic_params[:subject_id])
-    return unless @subject.present?
+    subject = Subject.find(new_topic_params[:subject_id])
+    topic = Topic.create(subject: subject, active: true, name: 'New topic. Click here to change name')
+    authorize topic
 
-    @topic = Topic.create(subject: @subject, active: true, name: 'New topic.  Click here to change name')
-    authorize @topic
-
-    redirect_to topic_questions_path(topic_id: @topic)
+    redirect_to topic_questions_path(topic_id: topic)
   end
 
   def update
-    authorize @topic
-    @topic.update(topic_params)
+    topic = authorize find_topic
+    topic.update(topic_params)
   end
 
   def destroy
-    authorize @topic
+    topic = authorize find_topic
 
-    @topic.destroy
+    topic.destroy
     redirect_to questions_path
   end
 
   private
 
-  def set_topic
-    @topic = Topic.find(params[:id])
+  def find_topic
+    Topic.find(params[:id])
   end
 
   def topic_params
