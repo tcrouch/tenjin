@@ -9,7 +9,7 @@ Devise.setup do |config|
   # Devise will use the `secret_key_base` as its `secret_key`
   # by default. You can change it below and use your own secret key.
   config.secret_key = ENV['DEVISE_SECRET_KEY']
-  
+
   # ==> Controller configuration
   # Configure the parent class to the devise controllers.
   # config.parent_controller = 'DeviseController'
@@ -258,11 +258,11 @@ Devise.setup do |config|
   # up on your models and hooks.
   # config.omniauth :github, 'APP_ID', 'APP_SECRET', scope: 'user,public_repo'
 
-  config.omniauth :wonde, 
-    ENV['WONDE_CLIENT_ID'], 
-    ENV['WONDE_SECRET'], 
-    :provider_ignores_state => true,
-    :redirect_uri => ENV['WONDE_CALLBACK_URL'],
+  config.omniauth :wonde,
+    ENV['WONDE_CLIENT_ID'],
+    ENV['WONDE_SECRET'],
+    provider_ignores_state: true,
+    redirect_uri: ENV['WONDE_CALLBACK_URL'],
     setup: (lambda do |env|
       request = Rack::Request.new(env)
       env['omniauth.strategy'].options['token_params'] = {:redirect_uri => ENV['WONDE_CALLBACK_URL']}
@@ -272,7 +272,7 @@ Devise.setup do |config|
     ENV['GOOGLE_CLIENT_ID'],
     ENV['GOOGLE_SECRET'],
     {}
-  
+
   # ==> Warden configuration
   # If you want to use other strategies, that are not supported by Devise, or
   # change the failure app, you can configure them inside the config.warden block.

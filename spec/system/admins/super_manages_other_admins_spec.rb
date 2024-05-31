@@ -3,7 +3,6 @@
 require 'rails_helper'
 
 RSpec.describe 'Super manages other admins', type: :system, js: true, default_creates: true do
-
   before do
     sign_in super_admin
   end

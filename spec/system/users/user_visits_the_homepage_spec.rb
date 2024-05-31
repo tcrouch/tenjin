@@ -18,7 +18,6 @@ RSpec.describe 'User visits the homepage', :vcr, type: :system, js: true, defaul
   end
 
   context 'when logging in' do
-
     before do
       visit root_path
       student
@@ -114,6 +113,6 @@ RSpec.describe 'User visits the homepage', :vcr, type: :system, js: true, defaul
       expect(page).to have_content("Let's get your account linked")
     end
 
-    it 'only displays the message when the MAT is Google enabled' 
+    it 'only displays the message when the MAT is Google enabled'
   end
 end

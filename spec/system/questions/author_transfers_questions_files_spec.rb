@@ -49,5 +49,4 @@ RSpec.describe 'Author transfers question files', type: :system, js: true, defau
   end
 
   it 'allows you to delete multiple questions'
-  
 end

@@ -62,7 +62,7 @@ RSpec.describe 'Author edits a question', type: :system, js: true, default_creat
   end
 
   context 'when checking most flagged questions' do
-    let(:flagged_question) { create(:question, topic: topic, flagged_questions_count: 5)}
+    let(:flagged_question) { create(:question, topic: topic, flagged_questions_count: 5) }
 
     it 'displays flagged questions' do
       flagged_question
