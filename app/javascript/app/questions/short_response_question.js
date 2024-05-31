@@ -1,4 +1,4 @@
-import updateQuizStatistics from 'packs/questions/questions_shared'
+import updateQuizStatistics from 'app/questions/questions_shared'
 
 function processShortResponse (serverResponse, guess) {
   const results = serverResponse.answer
