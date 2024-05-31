@@ -2,7 +2,6 @@
 
 class SchoolGroupsController < ApplicationController
   before_action :authenticate_admin!
-  before_action :set_school_group, only: %i[show update destroy]
 
   def index
     @school_groups = policy_scope(SchoolGroup)
@@ -15,35 +14,35 @@ class SchoolGroupsController < ApplicationController
   end
 
   def show
-    authorize @school_group
+    @school_group = authorize find_school_group
   end
 
   def update
-    authorize @school_group
-    @school_group.update_attributes(school_group_params)
-    @school_group.save
+    school_group = authorize find_school_group
+    school_group.update_attributes(school_group_params)
+    school_group.save
 
     redirect_to school_groups_path
   end
 
   def create
-    @school_group = SchoolGroup.new(school_group_params)
-    authorize @school_group
-    @school_group.save
+    school_group = SchoolGroup.new(school_group_params)
+    authorize school_group
+    school_group.save
 
     redirect_to school_groups_path
   end
 
   def destroy
-    authorize @school_group
-    @school_group.destroy
+    school_group = authorize find_school_group
+    school_group.destroy
     redirect_to school_groups_path
   end
 
   private
 
-  def set_school_group
-    @school_group = SchoolGroup.find(params[:id])
+  def find_school_group
+    SchoolGroup.find(params[:id])
   end
 
   def school_group_params
