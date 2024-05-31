@@ -2,9 +2,9 @@
 
 class ClassroomsController < ApplicationController
   before_action :authenticate_user!
-  before_action :set_classroom, only: %i[show update]
 
   def show
+    @classroom = find_classroom
     authorize @classroom
     @students = User.joins(enrollments: :classroom).where(role: 'student', enrollments: { classroom: @classroom })
     @homeworks = @classroom.homework_counts
@@ -22,15 +22,15 @@ class ClassroomsController < ApplicationController
   end
 
   def update
-    authorize @classroom
-    @classroom.update(subject_id: update_classroom_params[:subject])
-    @classroom.school.update(sync_status: 'needed')
+    classroom = authorize find_classroom
+    classroom.update(subject_id: update_classroom_params[:subject])
+    classroom.school.update(sync_status: 'needed')
   end
 
   private
 
-  def set_classroom
-    @classroom = Classroom.find(params[:id])
+  def find_classroom
+    Classroom.find(params[:id])
   end
 
   def update_classroom_params
