@@ -3,13 +3,13 @@
 require 'rails_helper'
 require 'support/api_data'
 
-RSpec.describe Enrollment, type: :model do
+RSpec.describe Enrollment do
   let(:school) { create(:school, client_id: '1234') }
 
   it { is_expected.to belong_to(:user) }
   it { is_expected.to belong_to(:classroom) }
 
-  context 'with classroom and user data ' do
+  context 'with classroom and user data' do
     let(:classrooms) { create_list(:classroom, 2, school: school) }
     let(:student) { create(:student, school: school) }
 

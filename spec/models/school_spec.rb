@@ -3,7 +3,7 @@
 require 'rails_helper'
 require 'support/api_data'
 
-RSpec.describe School, type: :model do
+RSpec.describe School do
   subject { create(:school) }
 
   include_context 'with api_data'

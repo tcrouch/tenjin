@@ -2,7 +2,7 @@
 
 require 'rails_helper'
 
-RSpec.describe 'Student completes a homework', type: :system, js: true, default_creates: true do
+RSpec.describe 'Student completes a homework', :default_creates, :js do
   before do
     setup_subject_database
     sign_in student

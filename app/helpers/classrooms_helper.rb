@@ -12,7 +12,7 @@ module ClassroomsHelper
       sync_button
     when 'failed', 'needed'
       sync_needed_button
-    when @school.sync_status == 'syncing' && (Time.now - School.first.updated_at) < 240
+    when @school.sync_status == 'syncing' && (Time.current - School.first.updated_at) < 240
       sync_timeout_button
     else
       'Refresh the page to see the current sync status'

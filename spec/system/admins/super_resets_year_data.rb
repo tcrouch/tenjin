@@ -2,7 +2,7 @@
 
 require 'rails_helper'
 
-RSpec.describe 'Super resets year data', type: :system, js: true, default_creates: true do
+RSpec.describe 'Super resets year data', :default_creates, :js do
   it 'resets year data' do
     sign_in super_admin
     visit admin_path(super_admin)

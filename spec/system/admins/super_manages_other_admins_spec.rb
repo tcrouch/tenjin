@@ -2,7 +2,7 @@
 
 require 'rails_helper'
 
-RSpec.describe 'Super manages other admins', type: :system, js: true, default_creates: true do
+RSpec.describe 'Super manages other admins', :default_creates, :js do
   before do
     sign_in super_admin
   end

@@ -2,7 +2,7 @@
 
 require 'rails_helper'
 
-RSpec.describe 'User customises the site', type: :system, js: true, default_creates: true do
+RSpec.describe 'User customises the site', :default_creates, :js do
   before do
     setup_subject_database
     sign_in student
@@ -24,7 +24,7 @@ RSpec.describe 'User customises the site', type: :system, js: true, default_crea
 
     it 'visits from the number of points' do
       visit(dashboard_path)
-      find('#challenge-points').click
+      find_by_id('challenge-points').click
       expect(page).to have_current_path(show_available_customisations_path)
     end
   end
@@ -108,7 +108,7 @@ RSpec.describe 'User customises the site', type: :system, js: true, default_crea
       it 'allows you to buy a previously bought customisation at no cost' do
         visit(show_available_customisations_path)
         find("form[action='#{buy_customisation_path(dashboard_customisation)}'] input.btn").click
-        expect { student.reload }.to change(student, :challenge_points).by(0)
+        expect { student.reload }.not_to change(student, :challenge_points)
       end
     end
   end

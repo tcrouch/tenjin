@@ -3,7 +3,7 @@
 require 'rails_helper'
 require 'support/api_data'
 
-RSpec.describe 'User visits the homepage', :vcr, type: :system, js: true, default_creates: true do
+RSpec.describe 'User visits the homepage', :vcr, :default_creates, :js do
   include_context 'with api_data'
   include_context 'with wonde_test_data'
 
@@ -42,7 +42,7 @@ RSpec.describe 'User visits the homepage', :vcr, type: :system, js: true, defaul
       student = create(:student, oauth_uid: '123456123456')
       stub_google_omniauth
       click_button 'Login'
-      find(:css, '#loginGoogle').click
+      find_by_id('loginGoogle').click
       expect(page).to have_content(student.forename).and have_content(student.surname)
     end
 
@@ -62,7 +62,7 @@ RSpec.describe 'User visits the homepage', :vcr, type: :system, js: true, defaul
     visit root_path
     stub_google_omniauth
     click_button 'Login'
-    find(:css, '#loginGoogle').click
+    find_by_id('loginGoogle').click
     expect(page).to have_text('Your account has not been found')
   end
 

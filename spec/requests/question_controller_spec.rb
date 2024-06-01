@@ -2,7 +2,7 @@
 
 require 'rails_helper'
 
-RSpec.describe 'using question editing', type: :request do
+RSpec.describe 'using question editing' do
   let(:subject) { create(:subject) }
   let(:school) { create(:school) }
   let(:student) { create(:student) }

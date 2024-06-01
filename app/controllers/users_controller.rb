@@ -25,7 +25,7 @@ class UsersController < ApplicationController
 
   def set_role
     role = set_user_role_params[:role]
-    return unless role.present?
+    return if role.blank?
 
     user = authorize find_user
 
@@ -35,7 +35,7 @@ class UsersController < ApplicationController
 
   def remove_role
     role = set_user_role_params[:role]
-    return unless role.present?
+    return if role.blank?
 
     user = authorize find_user
 

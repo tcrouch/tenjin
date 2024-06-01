@@ -13,7 +13,7 @@ class Quiz::CreateQuiz < ApplicationService
   end
 
   def call
-    return OpenStruct.new(success?: false, user: @user, errors: 'User not found') unless @user.present?
+    return OpenStruct.new(success?: false, user: @user, errors: 'User not found') if @user.blank?
 
     initialise_quiz
 

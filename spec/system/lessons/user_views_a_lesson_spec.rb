@@ -2,7 +2,7 @@
 
 require 'rails_helper'
 
-RSpec.describe 'User views lessons', type: :system, js: true, default_creates: true do
+RSpec.describe 'User views lessons', :default_creates, :js do
   let(:lesson) { create(:lesson, topic: topic) }
 
   context 'when a student' do
@@ -28,7 +28,7 @@ RSpec.describe 'User views lessons', type: :system, js: true, default_creates: t
       expect(page).to have_no_css('.subject-title', text: not_enrolled_lesson.subject.name)
     end
 
-    it 'ignores lessons with no video link ' do
+    it 'ignores lessons with no video link' do
       lesson_no_content
       visit(lessons_path)
       expect(page).to have_no_content(lesson_no_content.title)

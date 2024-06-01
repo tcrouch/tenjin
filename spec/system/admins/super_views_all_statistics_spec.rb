@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 require 'rails_helper'
-RSpec.describe 'Super views all statistics', type: :system, js: true, default_creates: true do
+RSpec.describe 'Super views all statistics', :default_creates, :js do
   before do
     sign_in super_admin
   end

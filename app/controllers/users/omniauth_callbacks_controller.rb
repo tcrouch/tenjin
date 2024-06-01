@@ -14,13 +14,13 @@ class Users::OmniauthCallbacksController < Devise::OmniauthCallbacksController
 
     body = run_graphql_query(query, bearer_token)
 
-    return fail_sign_in unless body.present?
+    return fail_sign_in if body.blank?
 
     # Now we have a response with useful user information, send this to
     # our user object.  Standard boiler plate code below
     query_data = extract_query_data(body)
 
-    return fail_sign_in unless query_data.present?
+    return fail_sign_in if query_data.blank?
 
     # You need to implement the method below in your model (e.g. app/models/user.rb)
     user = User.from_omniauth(query_data)

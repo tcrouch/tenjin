@@ -2,7 +2,7 @@
 
 require 'rails_helper'
 
-RSpec.describe 'Author edits a question', type: :system, js: true, default_creates: true do
+RSpec.describe 'Author edits a question', :default_creates, :js do
   let(:author) { create(:question_author, subject: subject) }
   let(:question) { create(:question, topic: topic) }
   let(:lesson) { create(:lesson, topic: topic) }
@@ -10,15 +10,15 @@ RSpec.describe 'Author edits a question', type: :system, js: true, default_creat
 
   def add_answer
     click_link('Add Answer')
-    find('#answer-text-1')
+    find_by_id('answer-text-1')
     all('.text-answer').last.set("#{answer_text}\n")
     click_button('Save Question')
-    find('#flash-notice', text: 'Question successfully updated')
+    find_by_id('flash-notice', text: 'Question successfully updated')
   end
 
   def save_question
     click_button('Save Question')
-    find('#flash-notice', text: 'Question successfully updated')
+    find_by_id('flash-notice', text: 'Question successfully updated')
   end
 
   def switch_to_student_account
@@ -240,7 +240,7 @@ RSpec.describe 'Author edits a question', type: :system, js: true, default_creat
         click_link('Add Answer')
         all('.text-answer').last.set("#{answer_text}\n")
         click_button('Save Question')
-        find('#flash-notice', text: 'Question successfully updated')
+        find_by_id('flash-notice', text: 'Question successfully updated')
       end
 
       it 'does not let you modify if the answer is correct' do
@@ -273,7 +273,7 @@ RSpec.describe 'Author edits a question', type: :system, js: true, default_creat
       end
 
       it 'creates two answers, true and false' do
-        expect(page).to have_selector('input[value="True"]').and have_selector('input[value="False"]')
+        expect(page).to have_css('input[value="True"]').and have_css('input[value="False"]')
       end
 
       it 'allows you to set an answer as correct' do

@@ -2,10 +2,10 @@
 
 require 'rails_helper'
 
-RSpec.describe 'Teacher sets homework', type: :system, js: true, default_creates: true do
+RSpec.describe 'Teacher sets homework', :default_creates, :js do
   let(:classroom) { create(:classroom, subject: subject, school: teacher.school) }
   let(:flatpickr_one_week_from_now) do
-    "span.flatpickr-day[aria-label=\"#{(Time.now + 1.week).strftime('%B %-e, %Y')}\"]"
+    "span.flatpickr-day[aria-label=\"#{(1.week.from_now).strftime('%B %-e, %Y')}\"]"
   end
   let(:lesson) { create(:lesson, topic: topic) }
   let(:ten_questions) { create_list(:question, 10, lesson: lesson, topic: lesson.topic) }
@@ -112,7 +112,7 @@ RSpec.describe 'Teacher sets homework', type: :system, js: true, default_creates
       visit(new_homework_path(classroom: { classroom_id: classroom.id }))
       create_homework_for_lesson
       click_button 'Set Homework'
-      find('#flash-notice') # homework view page
+      find_by_id('flash-notice') # homework view page
     end
 
     it 'shows the lesson the homework was created for if available' do

@@ -2,7 +2,7 @@
 
 require 'rails_helper'
 
-RSpec.describe 'Super manages user roles', type: :system, js: true, default_creates: true do
+RSpec.describe 'Super manages user roles', :default_creates, :js do
   before do
     sign_in super_admin
     school

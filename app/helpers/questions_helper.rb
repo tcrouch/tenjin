@@ -11,7 +11,7 @@ module QuestionsHelper
 
   def percentage_correct(question)
     qs = question.question_statistic
-    return '0%' unless qs.present?
+    return '0%' if qs.blank?
 
     number_to_percentage((qs.number_correct.to_f / qs.number_asked) * 100, precision: 0)
   end

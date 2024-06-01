@@ -2,7 +2,7 @@
 
 require 'rails_helper'
 
-RSpec.describe Question::ImportQuestions, default_creates: true do
+RSpec.describe Question::ImportQuestions, :default_creates do
   describe '#call' do
     context 'when importing questions' do
       let(:lesson_name) { FFaker::Lorem.words.join }

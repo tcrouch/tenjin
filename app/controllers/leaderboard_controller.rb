@@ -59,7 +59,7 @@ class LeaderboardController < ApplicationController
   end
 
   def find_topic
-    return nil unless leaderboard_params[:topic].present?
+    return nil if leaderboard_params[:topic].blank?
 
     Topic.find(leaderboard_params[:topic])
   end

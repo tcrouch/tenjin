@@ -2,11 +2,11 @@
 
 require 'rails_helper'
 
-RSpec.describe Challenge::ProcessExpiredChallenges, default_creates: true do
+RSpec.describe Challenge::ProcessExpiredChallenges, :default_creates do
   context 'when finding expired challenges' do
-    let(:current) { create(:challenge, end_date: Time.now + 1.hour) }
-    let(:expired) { create(:challenge, end_date: Time.now - 1.hour) }
-    let(:not_completed_expired) { create(:challenge, end_date: Time.now - 1.hour) }
+    let(:current) { create(:challenge, end_date: 1.hour.from_now) }
+    let(:expired) { create(:challenge, end_date: 1.hour.ago) }
+    let(:not_completed_expired) { create(:challenge, end_date: 1.hour.ago) }
 
     let(:completed) { create(:challenge_progress, challenge: expired, user: student, completed: true) }
     let(:not_completed) do

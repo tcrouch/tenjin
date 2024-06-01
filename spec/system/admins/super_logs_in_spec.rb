@@ -2,7 +2,7 @@
 
 require 'rails_helper'
 
-RSpec.describe 'Super logs in', type: :system, js: true, default_creates: true do
+RSpec.describe 'Super logs in', :default_creates, :js do
   context 'when logging in' do
     before do
       super_admin

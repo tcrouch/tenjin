@@ -2,7 +2,7 @@
 
 require 'rails_helper'
 
-RSpec.describe Customisation, type: :model do
+RSpec.describe Customisation do
   it 'sets a retired customisation to be unpurchasable' do
     invalid_customisation = build(:customisation, retired: true,
                                                   purchasable: true, customisation_type: 'leaderboard_icon')

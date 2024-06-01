@@ -9,9 +9,9 @@ FactoryBot.define do
     role { 'student' }
     provider { 'Wonde' }
     upi { SecureRandom.hex }
-    association :school, factory: :school
+    association :school
     challenge_points { rand(0..30) * 10 }
-    time_of_last_quiz { rand((Time.now - 1.day)..(Time.now - 1.hour)) }
+    time_of_last_quiz { rand((1.day.ago)..(1.hour.ago)) }
     username { forename[0].downcase + surname.downcase + upi[0..3] }
     password { FFaker::Internet.password }
     disabled { false }

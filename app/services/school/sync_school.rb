@@ -12,7 +12,7 @@ class School::SyncSchool < ApplicationService
 
   def call
     # Assume timed out if more than two minutes syncing.  Adjust or put as env var?
-    return if @school.sync_status == 'syncing' && (Time.now - School.first.updated_at) < 240
+    return if @school.sync_status == 'syncing' && (Time.current - School.first.updated_at) < 240
 
     School.from_wonde_sync_start(@school)
     fetch_class_data
@@ -38,7 +38,7 @@ class School::SyncSchool < ApplicationService
 
     User.from_wonde(@school, @sync_data, classroom)
 
-    return unless classroom.subject.present?
+    return if classroom.subject.blank?
 
     Enrollment.from_wonde(@sync_data)
   end

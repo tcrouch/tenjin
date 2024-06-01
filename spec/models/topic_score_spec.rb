@@ -2,7 +2,7 @@
 
 require 'rails_helper'
 
-RSpec.describe TopicScore, type: :model do
+RSpec.describe TopicScore do
   it { is_expected.to belong_to(:topic) }
   it { is_expected.to belong_to(:user) }
   it { is_expected.to have_one(:subject).through(:topic) }

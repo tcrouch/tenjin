@@ -19,7 +19,7 @@ class Question < ApplicationRecord
 
   accepts_nested_attributes_for :answers, allow_destroy: true
 
-  validates_presence_of :question_text
+  validates :question_text, presence: true
   validates_associated :answers
 
   validate :at_least_one_correct_answer

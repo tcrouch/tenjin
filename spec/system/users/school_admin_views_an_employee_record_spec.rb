@@ -2,7 +2,7 @@
 
 require 'rails_helper'
 
-RSpec.describe 'School admin views a teacher record', type: :system, js: true, default_creates: true do
+RSpec.describe 'School admin views a teacher record', :default_creates, :js do
   let(:new_password) { FFaker::Internet.password }
 
   before do

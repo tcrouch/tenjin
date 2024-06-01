@@ -11,7 +11,7 @@ class Enrollment < ApplicationRecord
   def self.from_wonde(classroom_api_data)
     classroom = Classroom.find_by(client_id: classroom_api_data.id)
 
-    return unless classroom.subject_id.present?
+    return if classroom.subject_id.blank?
 
     enroll_users_to_classroom(classroom_api_data, classroom)
   end
@@ -27,7 +27,7 @@ class Enrollment < ApplicationRecord
     end
 
     def create_classroom_enrollments(students_data, classroom)
-      return unless students_data.data.present?
+      return if students_data.data.blank?
 
       students = students_data.data
       students.each do |s|

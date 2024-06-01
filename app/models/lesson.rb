@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 class Lesson < ApplicationRecord
-  validates_length_of :title, minimum: 3
+  validates :title, length: { minimum: 3 }
   validate :check_video_id
 
   enum category: %i[youtube vimeo no_content]

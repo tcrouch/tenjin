@@ -2,7 +2,7 @@
 
 require 'rails_helper'
 
-RSpec.describe 'User attempts a challenge', type: :system, js: true, default_creates: true do
+RSpec.describe 'User attempts a challenge', :default_creates, :js do
   before do
     setup_subject_database
     sign_in student
@@ -18,22 +18,22 @@ RSpec.describe 'User attempts a challenge', type: :system, js: true, default_cre
   context 'when looking at the challenges' do
     let(:challenge_single_question) do
       create(:challenge, topic: topic, challenge_type: 'number_correct',
-                         number_required: 1, end_date: Time.now + 1.hour)
+                         number_required: 1, end_date: 1.hour.from_now)
     end
 
     let(:challenge_single_point) do
       create(:challenge, topic: topic, challenge_type: 'number_of_points',
-                         number_required: 1, end_date: Time.now + 1.hour)
+                         number_required: 1, end_date: 1.hour.from_now)
     end
 
     let(:challenge_single_streak) do
       create(:challenge, topic: topic, challenge_type: 'streak',
-                         number_required: 1, end_date: Time.now + 1.hour)
+                         number_required: 1, end_date: 1.hour.from_now)
     end
 
     let(:challenge_daily) do
       create(:challenge, challenge_type: 'number_of_points', daily: true, topic: topic,
-                         number_required: 1, end_date: Time.now + 1.hour)
+                         number_required: 1, end_date: 1.hour.from_now)
     end
     let(:second_subject) { create(:subject) }
     let(:second_topic) { create(:topic, subject: second_subject) }

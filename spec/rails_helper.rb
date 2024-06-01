@@ -50,7 +50,7 @@ rescue ActiveRecord::PendingMigrationError => e
 end
 
 Capybara.register_driver :selenium_chrome_headless_download do |app|
-  browser_options = ::Selenium::WebDriver::Chrome::Options.new.tap do |opts|
+  browser_options = Selenium::WebDriver::Chrome::Options.new.tap do |opts|
     opts.args << '--headless'
     opts.args << '--disable-site-isolation-trials'
   end
@@ -62,7 +62,7 @@ end
 
 RSpec.configure do |config|
   # Remove this line if you're not using ActiveRecord or ActiveRecord fixtures
-  config.fixture_path = "#{::Rails.root}/spec/fixtures"
+  config.fixture_path = "#{Rails.root}/spec/fixtures"
 
   # If you're not using ActiveRecord, or you'd prefer not to run each of your
   # examples within a transaction, remove the following line or assign false
@@ -102,7 +102,7 @@ RSpec.configure do |config|
   # Required to use database cleaner with action cable
   # or feature testing will not work
 
-  config.after(:each, js: true) do
+  config.after(:each, :js) do
     errors = page.driver.browser.manage.logs.get(:browser)
     if errors.present?
       aggregate_failures 'javascript errors' do
