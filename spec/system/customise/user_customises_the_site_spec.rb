@@ -24,7 +24,7 @@ RSpec.describe 'User customises the site', type: :system, js: true, default_crea
 
     it 'visits from the number of points' do
       visit(dashboard_path)
-      find('#challenge-points').click
+      find_by_id('challenge-points').click
       expect(page).to have_current_path(show_available_customisations_path)
     end
   end

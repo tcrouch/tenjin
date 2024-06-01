@@ -91,7 +91,7 @@ RSpec.describe 'User visits a classroom', type: :system, js: true, default_creat
 
       it 'allows me to reset a password' do
         visit(classroom_path(classroom))
-        find(:css, '#resetPasswordCheck').set(true)
+        find_by_id('resetPasswordCheck').set(true)
         click_link('Reset Password')
         expect(page).to have_no_link('Reset Password').and have_css('.new-password')
       end
@@ -103,7 +103,7 @@ RSpec.describe 'User visits a classroom', type: :system, js: true, default_creat
 
       it 'has a working reset password toggle' do
         visit(classroom_path(classroom))
-        find(:css, '#resetPasswordCheck').set(true)
+        find_by_id('resetPasswordCheck').set(true)
         within '#students-table' do
           expect(page).to have_link('Reset Password')
         end

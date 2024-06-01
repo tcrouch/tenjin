@@ -25,7 +25,7 @@ RSpec.describe 'School admin views a student record', type: :system, js: true, d
     end
 
     it 'tells the user the password has been updated' do
-      find('#user_password').set(new_password)
+      find_by_id('user_password').set(new_password)
       click_button('Update Password')
       expect(page).to have_text('Password successfully updated')
     end
