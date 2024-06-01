@@ -7,11 +7,11 @@ nav#navbar-main.navbar.navbar-expand-md.navbar-dark.justify-content-between.bg-b
   button.navbar-toggler type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation"
       span.navbar-toggler-icon
 
-  #navbarSupportedContent.collapse.navbar-collapse 
+  #navbarSupportedContent.collapse.navbar-collapse
     ul.navbar-nav.mr-auto
       li.nav-item
         a.nav-link href=leaderboard_index_path
-          | Leaderboard  
+          | Leaderboard
       - if current_user.student?
         li.nav-item.dropdown.active
           a.nav-link.dropdown-toggle data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
@@ -20,10 +20,10 @@ nav#navbar-main.navbar.navbar-expand-md.navbar-dark.justify-content-between.bg-b
             a.dropdown-item href=show_available_customisations_path(anchor: 'dashboard-styles')
               | Styles
             a.dropdown-item href=show_available_customisations_path(anchor: 'icons')
-              | Leaderboard Icons 
+              | Leaderboard Icons
       li.nav-item
         a.nav-link href=lessons_path
-          | Lessons     
+          | Lessons
       - if current_user.employee?
         li.nav-item
           a.nav-link href=dashboard_path
@@ -35,21 +35,21 @@ nav#navbar-main.navbar.navbar-expand-md.navbar-dark.justify-content-between.bg-b
         -if current_user.has_role? :school_admin
           li.nav-item
             a.nav-link href=classrooms_path
-              | Setup Classrooms    
+              | Setup Classrooms
         -if current_user.has_role? :question_author, :any
           li.nav-item
             a.nav-link href=questions_path
-              | Edit Questions      
+              | Edit Questions
 
     -if current_user.student?
       a href=show_available_customisations_path
         table
           td
-            i.fas.fa-star.f style='color: yellow'    
-          td#challenge-points.text-light = current_user.challenge_points          
+            i.fas.fa-star.f style='color: yellow'
+          td#challenge-points.text-light = current_user.challenge_points
     p.m-2#current_user_paragraph
       a#current_user.text-light href=user_path(current_user)
         => current_user.forename
         = current_user.surname
-    = link_to(destroy_user_session_path, method: :delete) do
+    = link_to(destroy_user_session_path, method: :delete, data: { turbo_method: :delete }) do
       button.btn.btn-light-outline Logout
