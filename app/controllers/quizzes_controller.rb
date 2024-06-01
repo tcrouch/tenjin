@@ -1,6 +1,5 @@
 # frozen_string_literal: true
 
-# rubocop:disable Metrics/ClassLength
 class QuizzesController < ApplicationController
   before_action :authenticate_user!
 
@@ -127,4 +126,3 @@ class QuizzesController < ApplicationController
     ((quiz.answered_correct / quiz.questions.length.to_f) * 100.to_f).round
   end
 end
-# rubocop:enable Metrics/ClassLength

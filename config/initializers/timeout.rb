@@ -1,1 +1,1 @@
-Rack::Timeout::Logger.level  = Logger::ERROR if Rails.env.production?
+Rack::Timeout::Logger.level = Logger::ERROR if Rails.env.production?

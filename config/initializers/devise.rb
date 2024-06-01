@@ -259,19 +259,19 @@ Devise.setup do |config|
   # config.omniauth :github, 'APP_ID', 'APP_SECRET', scope: 'user,public_repo'
 
   config.omniauth :wonde,
-    ENV['WONDE_CLIENT_ID'],
-    ENV['WONDE_SECRET'],
-    provider_ignores_state: true,
-    redirect_uri: ENV['WONDE_CALLBACK_URL'],
-    setup: (lambda do |env|
-      request = Rack::Request.new(env)
-      env['omniauth.strategy'].options['token_params'] = {:redirect_uri => ENV['WONDE_CALLBACK_URL']}
-    end)
+                  ENV['WONDE_CLIENT_ID'],
+                  ENV['WONDE_SECRET'],
+                  provider_ignores_state: true,
+                  redirect_uri: ENV['WONDE_CALLBACK_URL'],
+                  setup: (lambda do |env|
+                    request = Rack::Request.new(env)
+                    env['omniauth.strategy'].options['token_params'] = { redirect_uri: ENV['WONDE_CALLBACK_URL'] }
+                  end)
 
   config.omniauth :google_oauth2,
-    ENV['GOOGLE_CLIENT_ID'],
-    ENV['GOOGLE_SECRET'],
-    {}
+                  ENV['GOOGLE_CLIENT_ID'],
+                  ENV['GOOGLE_SECRET'],
+                  {}
 
   # ==> Warden configuration
   # If you want to use other strategies, that are not supported by Devise, or

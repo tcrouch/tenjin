@@ -1,39 +1,36 @@
-require: 
+require:
   - rubocop-rspec
-  - rubocop-performance 
+  - rubocop-performance
 
 AllCops:
   Exclude:
-    - 'Gemfile'
-    - 'db/**/*'
-    - 'config/**/*'
-    - 'script/**/*'
-    - 'bin/**/*'
-    - 'node_modules/**/*'
-    - 'lib/gem_ext/wondeclient/endpoints.rb'
-    - !ruby/regexp /old_and_unused\.rb$/
-  NewCops: enable  
-    
+    - "Gemfile"
+    - "db/**/*"
+    - "bin/**/*"
+    - "node_modules/**/*"
+    - "lib/gem_ext/wondeclient/endpoints.rb"
+  NewCops: enable
+
 RSpec/NamedSubject:
   Enabled: false
-  
+
 Style/ClassAndModuleChildren:
   EnforcedStyle: compact
 
 Style/FrozenStringLiteralComment:
   Exclude:
-    - 'lib/ext/Wondeclient/**/*.rb'
+    - "lib/ext/Wondeclient/**/*.rb"
 
 Metrics/MethodLength:
   Max: 12
 
 Metrics/BlockLength:
   Exclude:
-    - 'spec/**/*'  
+    - "spec/**/*"
 
 Naming/FileName:
   Exclude:
-    - 'spec/**/*'
+    - "spec/**/*"
 
 Style/Documentation:
   Enabled: false
