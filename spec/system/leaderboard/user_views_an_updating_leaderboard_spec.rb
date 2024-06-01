@@ -84,7 +84,7 @@ RSpec.describe 'User views an updating leaderboard', :default_creates, :js do
       expect(page).to have_css("tr#row-#{new_entry.user_id}.score-changed")
     end
 
-    it 'displays the name of a new student with a score ' do
+    it 'displays the name of a new student with a score' do
       Leaderboard::BroadcastLeaderboardPoint.new(topic, new_entry.user).call
       expect(page).to have_css("tr#row-#{new_entry.user_id}", text: new_entry.user.forename)
     end

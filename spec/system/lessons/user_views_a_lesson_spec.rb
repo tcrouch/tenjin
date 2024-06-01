@@ -28,7 +28,7 @@ RSpec.describe 'User views lessons', :default_creates, :js do
       expect(page).to have_no_css('.subject-title', text: not_enrolled_lesson.subject.name)
     end
 
-    it 'ignores lessons with no video link ' do
+    it 'ignores lessons with no video link' do
       lesson_no_content
       visit(lessons_path)
       expect(page).to have_no_content(lesson_no_content.title)
