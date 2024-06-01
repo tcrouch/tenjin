@@ -104,6 +104,7 @@ gem 'omniauth'
 gem 'omniauth-oauth2'
 gem 'omniauth-wonde', :path=>"omniauth-wonde/"
 gem 'omniauth-google-oauth2'
+gem 'omniauth-rails_csrf_protection'
 
 # Simple forms
 gem 'simple_form'

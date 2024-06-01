@@ -5,16 +5,16 @@ section.page-section.text-center
         h1.page-section-header.text-uppercase
           => @user.forename
           = @user.surname
-        ==render_small_separator   
+        ==render_small_separator
     = render('user_password') if policy(current_user).reset_password?
     .row.justify-content-center.py-3
       -if current_user.oauth_uid.blank?
-        .col-sm-3.text-sm-right.py-2      
+        .col-sm-3.text-sm-right.py-2
           p.text-right-md Link Account to Google
         .col-sm-3
-          =link_to image_pack_tag('btn_google_signin_dark_normal_web.png', id: 'loginGoogle', class: 'text-left-md'), user_google_oauth2_omniauth_authorize_path
+          = link_to image_pack_tag('btn_google_signin_dark_normal_web.png', id: 'loginGoogle', class: 'text-left-md'), user_google_oauth2_omniauth_authorize_path, method: :post
       -else
-        .col-sm-3.text-sm-right.py-2      
+        .col-sm-3.text-sm-right.py-2
           p.text-right-md Unlink Account from Google
         .col-sm-3
           =link_to "Unlink #{current_user.oauth_email}",
