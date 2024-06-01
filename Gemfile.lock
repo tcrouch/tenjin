@@ -349,7 +349,7 @@ GEM
       execjs
       railties (>= 3.2)
       tilt
-    recipient_interceptor (0.2.0)
+    recipient_interceptor (0.3.2)
       mail
     regexp_parser (1.7.1)
     responders (3.1.1)
