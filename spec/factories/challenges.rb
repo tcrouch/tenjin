@@ -5,7 +5,7 @@ FactoryBot.define do
     challenge_type { Challenge.challenge_types.values.sample }
     number_required { rand(4..10) }
     start_date { Time.current }
-    end_date { Time.current + 7.days }
+    end_date { 7.days.from_now }
     points { 10 }
     topic
     daily { false }

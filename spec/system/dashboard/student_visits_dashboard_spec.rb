@@ -11,7 +11,7 @@ RSpec.describe 'Student visits the dashboard', :default_creates, :js do
   it 'shows the arrow for a tutorial'
 
   context 'when looking at the challenges' do
-    let(:challenge_one) { create(:challenge, topic: topic, end_date: Time.current + 1.hour) }
+    let(:challenge_one) { create(:challenge, topic: topic, end_date: 1.hour.from_now) }
     let(:second_subject) { create(:subject) }
     let(:second_topic) { create(:topic, subject: second_subject) }
     let(:challenge_two) { create(:challenge, topic: create(:topic, subject: subject)) }
@@ -75,9 +75,9 @@ RSpec.describe 'Student visits the dashboard', :default_creates, :js do
   end
 
   context 'when looking at homeworks' do
-    let(:homework_future) { create(:homework, due_date: Time.current + 8.days, classroom: classroom) }
+    let(:homework_future) { create(:homework, due_date: 8.days.from_now, classroom: classroom) }
     let(:lesson) { create(:lesson, subject: classroom.subject) }
-    let(:homework_lesson) { create(:homework, due_date: Time.current + 8.days, classroom: classroom, lesson: lesson) }
+    let(:homework_lesson) { create(:homework, due_date: 8.days.from_now, classroom: classroom, lesson: lesson) }
 
     before do
       homework
@@ -106,14 +106,14 @@ RSpec.describe 'Student visits the dashboard', :default_creates, :js do
     end
 
     it 'shows overdue homeworks with an exclamation icon' do
-      homework.update_attribute(:due_date, Time.current - 1.day)
+      homework.update_attribute(:due_date, 1.day.ago)
       visit(dashboard_path)
       expect(page).to have_css(".homework-row[data-homework='#{homework.id}'] > td:last-child > svg.fa-exclamation")
     end
 
     it 'shows homeworks completed in the last week only' do
       HomeworkProgress.where(homework: homework, user: student).first.update_attribute(:completed, true)
-      homework.update_attribute(:due_date, Time.current - 2.weeks)
+      homework.update_attribute(:due_date, 2.weeks.ago)
       visit(dashboard_path)
       expect(page).to have_no_css(".homework-row[data-homework='#{homework.id}']")
     end

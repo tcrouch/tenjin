@@ -13,7 +13,7 @@ RSpec.describe Challenge::AddNewChallenges, :default_creates do
     it 'sets the duration correctly' do
       create(:topic)
       described_class.new(duration: 3.days).call
-      expect(Challenge.first.end_date).to be_within(1.second).of(Time.current + 3.days)
+      expect(Challenge.first.end_date).to be_within(1.second).of(3.days.from_now)
     end
 
     it 'sets the multiplier correctly' do

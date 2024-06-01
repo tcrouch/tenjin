@@ -23,7 +23,7 @@ RSpec.describe Challenge::UpdateChallengeProgress, :default_creates do
     end
     let(:challenge_full_marks) do
       create(:challenge, topic: topic, challenge_type: 'number_correct',
-                         number_required: 10, end_date: Time.current + 1.hour)
+                         number_required: 10, end_date: 1.hour.from_now)
     end
 
     it 'flags challenge as complete if the required number of questions have been answered correctly' do
@@ -50,7 +50,7 @@ RSpec.describe Challenge::UpdateChallengeProgress, :default_creates do
     it 'only updates the streak progress for the topic of the challenge' do
       challenge_different_topic = create(:challenge, topic: create(:topic, subject: subject),
                                                      challenge_type: 'number_correct', number_required: 3,
-                                                     end_date: Time.current + 1.hour)
+                                                     end_date: 1.hour.from_now)
       expect { described_class.new(quiz_full_marks, 'number_correct').call }
         .not_to change { ChallengeProgress.where(challenge: challenge_different_topic).count }
     end
@@ -66,7 +66,7 @@ RSpec.describe Challenge::UpdateChallengeProgress, :default_creates do
     let(:quiz_streak_of_five) { create(:quiz, subject: subject, user: student, topic: topic, streak: 5) }
     let(:quiz_streak_of_three) { create(:quiz, subject: subject, user: student, topic: topic, streak: 3) }
     let(:challenge_streak_of_five) do
-      create(:challenge, topic: topic, challenge_type: 'streak', number_required: 5, end_date: Time.current + 1.hour)
+      create(:challenge, topic: topic, challenge_type: 'streak', number_required: 5, end_date: 1.hour.from_now)
     end
     let(:completed_challenge_progress) do
       create(:challenge_progress, challenge: challenge_streak_of_five, user: student, completed: true, awarded: true)
@@ -113,7 +113,7 @@ RSpec.describe Challenge::UpdateChallengeProgress, :default_creates do
     context 'without a daily flag' do
       let(:challenge_get_fifty_points) do
         create(:challenge, topic: topic, challenge_type: 'number_of_points',
-                           number_required: 50, end_date: Time.current + 1.hour)
+                           number_required: 50, end_date: 1.hour.from_now)
       end
 
       let(:nearly_complete_fifty_point_progress) do
@@ -170,7 +170,7 @@ RSpec.describe Challenge::UpdateChallengeProgress, :default_creates do
     context 'with a daily flag' do
       let(:challenge_get_fifty_points_daily) do
         create(:challenge, topic: topic, challenge_type: 'number_of_points',
-                           number_required: 50, end_date: Time.current + 1.hour, daily: true)
+                           number_required: 50, end_date: 1.hour.from_now, daily: true)
       end
       let(:nearly_complete_fifty_point_progress_daily) do
         create(:challenge_progress, progress: 45, challenge: challenge_get_fifty_points_daily, user: student)
