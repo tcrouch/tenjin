@@ -103,9 +103,9 @@ group :development do
   gem 'httplog'
 
   # Linting
-  gem 'rubocop'
-  gem 'rubocop-performance'
-  gem 'rubocop-rspec'
+  gem 'rubocop', require: false
+  gem 'rubocop-performance', require: false
+  gem 'rubocop-rspec', require: false
 
   # Hunt for n+1
   gem 'bullet'
