@@ -1,0 +1,52 @@
+name: Test
+
+on: [push]
+jobs:
+  rspec:
+    name: Test
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:13-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      RAILS_ENV: test
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
+      SE_AVOID_STATS: true
+      # Hint for SimpleCov codeclimate compatibility
+      CC_TEST_REPORTER_ID: true
+    steps:
+      - uses: actions/checkout@v4
+      - run: echo fs.inotify.max_user_watches=524288 | sudo tee -a /etc/sysctl.conf && sudo sysctl -p
+      - uses: ruby/setup-ruby@v1
+        with:
+          bundler-cache: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: "yarn"
+      - uses: actions/cache@v4
+        name: Cache webpack
+        id: webpack-cache
+        with:
+          path: |
+            public/packs-test
+            tmp/cache/webpacker
+          key: webpack-cache-${{ runner.os }}-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: webpack-cache-${{ runner.os }}
+      - run: yarn install --frozen-lockfiles
+      - run: mkdir /tmp/test-results
+      - run: bin/rails db:create db:schema:load
+      - run: bin/rails webpacker:compile
+      - run: bin/rspec
