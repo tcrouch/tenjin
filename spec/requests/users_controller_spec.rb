@@ -2,7 +2,7 @@
 
 require 'rails_helper'
 
-RSpec.describe 'user controller', default_creates: true, type: :request do
+RSpec.describe 'user controller', :default_creates do
   before do
     student
   end

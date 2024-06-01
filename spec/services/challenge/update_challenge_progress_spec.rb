@@ -2,7 +2,7 @@
 
 require 'rails_helper'
 
-RSpec.describe Challenge::UpdateChallengeProgress, default_creates: true do
+RSpec.describe Challenge::UpdateChallengeProgress, :default_creates do
   context 'when updating a number correct challenge' do
     before do
       challenge_full_marks

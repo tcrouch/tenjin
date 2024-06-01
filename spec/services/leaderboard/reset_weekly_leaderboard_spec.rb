@@ -3,7 +3,7 @@
 require 'rails_helper'
 require 'support/session_helpers'
 
-RSpec.describe Leaderboard::ResetWeeklyLeaderboard, default_creates: true do
+RSpec.describe Leaderboard::ResetWeeklyLeaderboard, :default_creates do
   let(:topic_score) { create(:topic_score) }
   let(:top_score_same_school) do
     create(:topic_score, topic: topic_score.topic,

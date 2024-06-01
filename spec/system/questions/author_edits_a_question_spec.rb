@@ -2,7 +2,7 @@
 
 require 'rails_helper'
 
-RSpec.describe 'Author edits a question', type: :system, js: true, default_creates: true do
+RSpec.describe 'Author edits a question', :default_creates, :js do
   let(:author) { create(:question_author, subject: subject) }
   let(:question) { create(:question, topic: topic) }
   let(:lesson) { create(:lesson, topic: topic) }

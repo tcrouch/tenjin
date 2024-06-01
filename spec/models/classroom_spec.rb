@@ -2,7 +2,7 @@
 
 require 'rails_helper'
 
-RSpec.describe Classroom, type: :model do
+RSpec.describe Classroom do
   it { is_expected.to validate_presence_of(:client_id) }
   it { is_expected.to validate_presence_of(:name) }
 

@@ -3,7 +3,7 @@
 require 'rails_helper'
 require 'support/api_data'
 
-RSpec.describe 'User visits the homepage', :vcr, type: :system, js: true, default_creates: true do
+RSpec.describe 'User visits the homepage', :vcr, :default_creates, :js do
   include_context 'with api_data'
   include_context 'with wonde_test_data'
 

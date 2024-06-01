@@ -2,7 +2,7 @@
 
 require 'rails_helper'
 
-RSpec.describe Subject, type: :model do
+RSpec.describe Subject do
   subject { create(:subject) }
 
   it { is_expected.to validate_uniqueness_of(:name) }

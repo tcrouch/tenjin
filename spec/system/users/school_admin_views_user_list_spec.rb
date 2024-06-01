@@ -2,7 +2,7 @@
 
 require 'rails_helper'
 
-RSpec.describe 'School admin views user list', type: :system, js: true, default_creates: true do
+RSpec.describe 'School admin views user list', :default_creates, :js do
   before do
     setup_subject_database
     sign_in school_admin

@@ -3,7 +3,7 @@
 require 'rails_helper'
 require 'support/api_data'
 
-RSpec.describe Enrollment, type: :model do
+RSpec.describe Enrollment do
   let(:school) { create(:school, client_id: '1234') }
 
   it { is_expected.to belong_to(:user) }

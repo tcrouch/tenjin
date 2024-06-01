@@ -3,7 +3,7 @@
 require 'rails_helper'
 require 'support/api_data'
 
-RSpec.describe User, type: :model do
+RSpec.describe User do
   describe '#from_wonde' do
     include_context 'with api_data'
 

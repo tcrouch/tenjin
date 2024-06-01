@@ -2,7 +2,7 @@
 
 require 'rails_helper'
 
-RSpec.describe 'User attempts a challenge', type: :system, js: true, default_creates: true do
+RSpec.describe 'User attempts a challenge', :default_creates, :js do
   before do
     setup_subject_database
     sign_in student

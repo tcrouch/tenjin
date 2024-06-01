@@ -2,7 +2,7 @@
 
 require 'rails_helper'
 
-RSpec.describe 'User visits the homepage', :vcr, default_creates: true, type: :system, js: true do
+RSpec.describe 'User visits the homepage', :vcr, :default_creates, :js do
   let(:student) { create(:student) }
   let(:new_password) { FFaker::Lorem.word }
 

@@ -2,7 +2,7 @@
 
 require 'rails_helper'
 
-RSpec.describe 'User views lessons', type: :system, js: true, default_creates: true do
+RSpec.describe 'User views lessons', :default_creates, :js do
   let(:lesson) { create(:lesson, topic: topic) }
 
   context 'when a student' do

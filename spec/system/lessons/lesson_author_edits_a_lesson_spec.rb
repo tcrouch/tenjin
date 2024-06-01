@@ -2,7 +2,7 @@
 
 require 'rails_helper'
 
-RSpec.describe 'Lesson author edits a lesson', type: :system, js: true, default_creates: true do
+RSpec.describe 'Lesson author edits a lesson', :default_creates, :js do
   let(:second_subject) { create(:subject) }
   let!(:lesson) { create(:lesson, topic: topic) }
   let(:new_lesson) { build(:lesson, topic: topic) }

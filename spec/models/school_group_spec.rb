@@ -2,6 +2,6 @@
 
 require 'rails_helper'
 
-RSpec.describe SchoolGroup, type: :model do
+RSpec.describe SchoolGroup do
   it { is_expected.to validate_presence_of(:name) }
 end

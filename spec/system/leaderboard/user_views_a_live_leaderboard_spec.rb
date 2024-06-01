@@ -4,7 +4,7 @@ require 'rails_helper'
 require 'support/api_data'
 require 'pry'
 
-RSpec.describe 'User views an updating leaderboard', type: :system, default_creates: true, js: true do
+RSpec.describe 'User views an updating leaderboard', :default_creates, :js do
   before do
     setup_subject_database
     student_topic_score

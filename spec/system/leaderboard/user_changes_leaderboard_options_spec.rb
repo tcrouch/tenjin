@@ -2,7 +2,7 @@
 
 require 'rails_helper'
 
-RSpec.describe 'User changes leaderboard options', type: :system, js: true, default_creates: true do
+RSpec.describe 'User changes leaderboard options', :default_creates, :js do
   before do
     setup_subject_database
     sign_in student

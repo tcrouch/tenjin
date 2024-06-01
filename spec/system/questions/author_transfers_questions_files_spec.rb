@@ -2,7 +2,7 @@
 
 require 'rails_helper'
 
-RSpec.describe 'Author transfers question files', type: :system, js: true, default_creates: true do
+RSpec.describe 'Author transfers question files', :default_creates, :js do
   let(:author) { create(:question_author, subject: subject) }
 
   before do

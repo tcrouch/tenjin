@@ -2,7 +2,7 @@
 
 require 'rails_helper'
 
-RSpec.describe 'submitting a customisation', type: :request do
+RSpec.describe 'submitting a customisation' do
   let(:school) { create(:school) }
   let(:student) { create(:student, school: school, challenge_points: 100) }
   let(:customisation) { create(:customisation) }

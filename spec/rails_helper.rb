@@ -102,7 +102,7 @@ RSpec.configure do |config|
   # Required to use database cleaner with action cable
   # or feature testing will not work
 
-  config.after(:each, js: true) do
+  config.after(:each, :js) do
     errors = page.driver.browser.manage.logs.get(:browser)
     if errors.present?
       aggregate_failures 'javascript errors' do

@@ -2,7 +2,7 @@
 
 require 'rails_helper'
 
-RSpec.describe 'Student visits the dashboard', type: :system, js: true, default_creates: true do
+RSpec.describe 'Student visits the dashboard', :default_creates, :js do
   before do
     setup_subject_database
     sign_in student

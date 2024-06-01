@@ -2,7 +2,7 @@
 
 require 'rails_helper'
 
-RSpec.describe UpdateQuestionStatisticsJob, default_creates: true, type: :job do
+RSpec.describe UpdateQuestionStatisticsJob, :default_creates do
   let(:quiz) { create(:quiz, active: false, user: student) }
   let(:question) { create(:question) }
   let(:asked_question) { create(:asked_question, question: question, correct: true, quiz: quiz, user: student) }

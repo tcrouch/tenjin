@@ -2,7 +2,7 @@
 
 require 'rails_helper'
 
-RSpec.describe Challenge, type: :model do
+RSpec.describe Challenge do
   let(:subject) { create(:subject) }
   let(:topic) { create(:topic, subject: subject) }
   let(:different_subject_topic) { create(:topic) }

@@ -2,7 +2,7 @@
 
 require 'rails_helper'
 
-RSpec.describe Admin::ResetYear, '#call', default_creates: true do
+RSpec.describe Admin::ResetYear, '#call', :default_creates do
   before do
     create_active_database
   end

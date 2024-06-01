@@ -2,7 +2,7 @@
 
 require 'rails_helper'
 
-RSpec.describe Customisation::RefreshCustomisationsInStore, default_creates: true do
+RSpec.describe Customisation::RefreshCustomisationsInStore, :default_creates do
   let(:retired_customisation) { create(:dashboard_customisation, cost: 5, retired: true) }
 
   context 'when refreshing customisations' do

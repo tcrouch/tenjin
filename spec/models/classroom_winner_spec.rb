@@ -2,7 +2,7 @@
 
 require 'rails_helper'
 
-RSpec.describe ClassroomWinner, type: :model do
+RSpec.describe ClassroomWinner do
   let(:different_schools) { build(:classroom_winner, user: create(:student), classroom: create(:classroom)) }
   let(:school) { create(:school) }
   let(:same_school) do

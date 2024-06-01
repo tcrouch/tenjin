@@ -2,7 +2,7 @@
 
 require 'rails_helper'
 
-RSpec.describe 'User visits a classroom', type: :system, js: true, default_creates: true do
+RSpec.describe 'User visits a classroom', :default_creates, :js do
   let(:classroom) { create(:classroom, subject: subject, school: teacher.school) }
   let(:homework) { create(:homework, classroom: classroom) }
 
