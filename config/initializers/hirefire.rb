@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
-HireFire::Resource.configure do |config|
+HireFire.configure do |config|
   config.dyno(:worker) do
-    HireFire::Macro::Delayed::Job.queue(mapper: :active_record)
+    HireFire::Macro::Delayed::Job.job_queue_size
   end
 end
