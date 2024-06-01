@@ -6,7 +6,7 @@ class User::ChangeUserRole < ApplicationService
     @user = user
     @role = role
     @action = action
-    @subject = Subject.find(subject) unless subject.blank?
+    @subject = Subject.find(subject) if subject.present?
   end
 
   def call
