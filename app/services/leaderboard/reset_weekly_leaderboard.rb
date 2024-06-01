@@ -17,7 +17,7 @@ class Leaderboard::ResetWeeklyLeaderboard < ApplicationService
         top = build_leaderboard_for_subject(c.subject.name, sc.id)
         top = filter_by_classroom_name(top, c)
 
-        next unless top.present?
+        next if top.blank?
 
         create_winners_for_top_scoring_students(top, c)
       end
@@ -50,7 +50,7 @@ class Leaderboard::ResetWeeklyLeaderboard < ApplicationService
     School.find_each do |sc|
       Subject.find_each do |su|
         top = build_leaderboard_for_subject(su.name, sc.id)
-        next unless top.present?
+        next if top.blank?
 
         create_awards_for_top_scoring_students(top, su, sc)
       end

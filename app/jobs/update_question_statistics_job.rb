@@ -67,7 +67,7 @@ class UpdateQuestionStatisticsJob < ApplicationJob
   end
 
   def calculate_asked(asked_question)
-    return 1 unless asked_question.question.question_statistic.present?
+    return 1 if asked_question.question.question_statistic.blank?
 
     asked_question.question.question_statistic.number_asked + 1
   end

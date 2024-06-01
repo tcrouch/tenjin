@@ -5,7 +5,7 @@ class AnswersController < ApplicationController
 
   def new
     question = Question.find(new_answer_params[:question_id])
-    return unless question.present?
+    return if question.blank?
 
     authorize question.topic
     answer = Answer.create(question: question, correct: false)

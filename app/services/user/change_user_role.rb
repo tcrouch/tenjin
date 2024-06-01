@@ -10,8 +10,8 @@ class User::ChangeUserRole < ApplicationService
   end
 
   def call
-    return return_error('User not found') unless @user.present?
-    return return_error('Role not found') unless @role.present?
+    return return_error('User not found') if @user.blank?
+    return return_error('Role not found') if @role.blank?
     return return_error('Action must be "add" or "remove"') unless %i[add remove].include? @action
 
     if %w[lesson_author question_author].include?(@role) && @subject.blank?

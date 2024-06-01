@@ -7,8 +7,8 @@ class Customisation::BuyCustomisation < ApplicationService
   end
 
   def call
-    return error_openstruct('Customisation not found') unless @customisation.present?
-    return error_openstruct('User not found') unless @user.present?
+    return error_openstruct('Customisation not found') if @customisation.blank?
+    return error_openstruct('User not found') if @user.blank?
 
     unlock = CustomisationUnlock.where(customisation: @customisation, user: @user).first_or_initialize
     if unlock.new_record?

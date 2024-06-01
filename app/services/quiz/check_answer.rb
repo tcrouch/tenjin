@@ -37,7 +37,7 @@ class Quiz::CheckAnswer < ApplicationService
 
   def check_short_answer
     answer_text = Answer.where(question_id: @question).pick(:text)
-    return unless answer_text.present?
+    return if answer_text.blank?
 
     if @answer_given[:short_answer].casecmp(answer_text)&.zero?
       process_correct_answer
@@ -50,7 +50,7 @@ class Quiz::CheckAnswer < ApplicationService
     raise 'no valid answer given to multiple choice' if @answer_given[:id].blank?
 
     answer = Answer.where(id: @answer_given[:id]).pick(:correct)
-    return unless answer.present?
+    return if answer.blank?
 
     if answer
       process_correct_answer

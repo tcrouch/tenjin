@@ -38,7 +38,7 @@ class School::SyncSchool < ApplicationService
 
     User.from_wonde(@school, @sync_data, classroom)
 
-    return unless classroom.subject.present?
+    return if classroom.subject.blank?
 
     Enrollment.from_wonde(@sync_data)
   end

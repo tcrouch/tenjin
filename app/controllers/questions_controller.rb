@@ -9,7 +9,7 @@ class QuestionsController < ApplicationController
   end
 
   def topic
-    redirect questions_path unless topic_params.present?
+    redirect questions_path if topic_params.blank?
 
     @topic = Topic.find(topic_params)
     authorize @topic, :show?
@@ -22,7 +22,7 @@ class QuestionsController < ApplicationController
   end
 
   def lesson
-    redirect lessons_path unless lesson_params.present?
+    redirect lessons_path if lesson_params.blank?
 
     @lesson = Lesson.find(lesson_params)
     authorize @lesson, :view_questions?
@@ -52,7 +52,7 @@ class QuestionsController < ApplicationController
     @question = Question.new(question_params)
     authorize @question
 
-    return unless @question.topic.present?
+    return if @question.topic.blank?
 
     check_answers(@question)
   end

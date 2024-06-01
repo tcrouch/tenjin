@@ -59,7 +59,7 @@ class User < ApplicationRecord
   end
 
   def self.save_oauth_user_details(auth, current_user)
-    return unless auth['info'].present?
+    return if auth['info'].blank?
 
     current_user.oauth_uid = auth['uid']
     current_user.oauth_provider = auth['provider']
@@ -77,7 +77,7 @@ class User < ApplicationRecord
   def self.from_wonde(school, classroom, classroom_db)
     create_employee_users(classroom, school)
 
-    return unless classroom_db.subject.present?
+    return if classroom_db.subject.blank?
 
     create_student_users(classroom, school)
   end
@@ -92,9 +92,9 @@ class User < ApplicationRecord
     private
 
     def create_student_users(classroom, school)
-      return unless classroom.subject.present?
-      return unless classroom.students.present?
-      return unless classroom.students.data.present?
+      return if classroom.subject.blank?
+      return if classroom.students.blank?
+      return if classroom.students.data.blank?
 
       classroom.students.data.each do |student|
         u = initialize_user(student, 'student', school)
@@ -103,9 +103,9 @@ class User < ApplicationRecord
     end
 
     def create_employee_users(classroom, school)
-      return unless classroom.subject.present?
-      return unless classroom.employees.present?
-      return unless classroom.employees.data.present?
+      return if classroom.subject.blank?
+      return if classroom.employees.blank?
+      return if classroom.employees.data.blank?
 
       classroom.employees.data.each do |employee|
         u = initialize_user(employee, 'employee', school)
