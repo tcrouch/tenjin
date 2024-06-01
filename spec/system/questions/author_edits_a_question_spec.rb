@@ -273,7 +273,7 @@ RSpec.describe 'Author edits a question', type: :system, js: true, default_creat
       end
 
       it 'creates two answers, true and false' do
-        expect(page).to have_selector('input[value="True"]').and have_selector('input[value="False"]')
+        expect(page).to have_css('input[value="True"]').and have_css('input[value="False"]')
       end
 
       it 'allows you to set an answer as correct' do
