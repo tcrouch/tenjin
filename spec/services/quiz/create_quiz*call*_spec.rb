@@ -37,11 +37,11 @@ RSpec.describe Quiz::CreateQuiz, '#call', :default_creates do
 
     it 'logs the current date and time' do
       quiz
-      expect(User.first.time_of_last_quiz).to be_within(1.second).of(Time.now)
+      expect(User.first.time_of_last_quiz).to be_within(1.second).of(Time.current)
     end
 
     it 'returns an error if cooldown has not elapsed' do
-      student.update_attribute(:time_of_last_quiz, Time.now)
+      student.update_attribute(:time_of_last_quiz, Time.current)
       expect(quiz.errors).to match(/You need to wait/)
     end
 

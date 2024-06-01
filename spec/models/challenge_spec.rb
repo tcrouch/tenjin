@@ -10,7 +10,7 @@ RSpec.describe Challenge do
   let(:challenge_two) { described_class.create_challenge(topic.subject) }
   let(:challenge_full_marks) do
     create(:challenge, topic: topic, challenge_type: 'number_correct',
-                       number_required: 10, end_date: Time.now + 1.hour)
+                       number_required: 10, end_date: Time.current + 1.hour)
   end
 
   describe '#create_challenge' do
@@ -39,13 +39,13 @@ RSpec.describe Challenge do
     it 'allows me to specify a duration' do
       srand(1)
       expect(described_class.create_challenge(topic.subject, duration: 3.days).end_date)
-        .to be_within(1.second).of(Time.now + 3.days)
+        .to be_within(1.second).of(Time.current + 3.days)
     end
 
     it 'allows me to specify a duration in hours' do
       srand(1)
       expect(described_class.create_challenge(topic.subject, duration: 36.hours).end_date)
-        .to be_within(1.second).of(Time.now + 36.hours)
+        .to be_within(1.second).of(Time.current + 36.hours)
     end
 
     it 'defaults to a multiplier of x1' do

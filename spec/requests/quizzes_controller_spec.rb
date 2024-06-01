@@ -17,7 +17,7 @@ RSpec.describe 'using a quiz', :default_creates do
     end
 
     context 'when I have multiple quizzes' do
-      let(:quiz) { create(:quiz, user: student, created_at: Time.now - 1.hour) }
+      let(:quiz) { create(:quiz, user: student, created_at: Time.current - 1.hour) }
       let(:new_quiz) { create(:quiz, user: student) }
 
       it 'only shows the latest quiz' do

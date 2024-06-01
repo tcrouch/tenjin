@@ -30,7 +30,7 @@ class UpdateQuestionStatisticsJob < ApplicationJob
   def increase_question_asked_count(question)
     correct = calculate_correct(question)
     asked = calculate_asked(question)
-    now = Time.now
+    now = Time.current
     QuestionStatistic.upsert({ question_id: question.question_id,
                                number_asked: asked,
                                number_correct: correct,
