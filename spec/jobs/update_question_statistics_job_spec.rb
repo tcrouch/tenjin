@@ -64,7 +64,7 @@ RSpec.describe UpdateQuestionStatisticsJob, :default_creates do
       existing_statistic
       asked_question
       described_class.perform_now
-      expect { existing_statistic.reload }.to change(existing_statistic, :number_correct).by(0)
+      expect { existing_statistic.reload }.not_to change(existing_statistic, :number_correct)
     end
 
     it 'increments number asked' do
@@ -85,7 +85,7 @@ RSpec.describe UpdateQuestionStatisticsJob, :default_creates do
 
     it 'does not process asked_questions for active quizzes' do
       asked_question
-      expect { described_class.perform_now }.to change(AskedQuestion, :count).by(0)
+      expect { described_class.perform_now }.not_to change(AskedQuestion, :count)
     end
   end
 
@@ -102,7 +102,7 @@ RSpec.describe UpdateQuestionStatisticsJob, :default_creates do
 
     it 'leaves older statistics alone' do
       old_user_statistic
-      expect { current_user_statistic.reload }.to change(current_user_statistic, :questions_answered).by(0)
+      expect { current_user_statistic.reload }.not_to change(current_user_statistic, :questions_answered)
     end
 
     it 'creates new user statistics when old statistics present' do

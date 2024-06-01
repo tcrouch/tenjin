@@ -108,7 +108,7 @@ RSpec.describe 'User customises the site', :default_creates, :js do
       it 'allows you to buy a previously bought customisation at no cost' do
         visit(show_available_customisations_path)
         find("form[action='#{buy_customisation_path(dashboard_customisation)}'] input.btn").click
-        expect { student.reload }.to change(student, :challenge_points).by(0)
+        expect { student.reload }.not_to change(student, :challenge_points)
       end
     end
   end

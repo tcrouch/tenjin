@@ -83,7 +83,7 @@ RSpec.describe Customisation::BuyCustomisation, :default_creates do
 
     it 'does not cost anything' do
       described_class.new(student, customisation).call
-      expect { student.reload }.to change(student, :challenge_points).by(0)
+      expect { student.reload }.not_to change(student, :challenge_points)
     end
 
     it 'creates a new entry in the active customisaion table' do
