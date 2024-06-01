@@ -50,7 +50,7 @@ RSpec.describe 'Student visits the dashboard', type: :system, js: true, default_
       second_topic
       c = Challenge.create_challenge(second_subject)
       visit(dashboard_path)
-      expect(page).not_to have_content(c.stringify)
+      expect(page).to have_no_content(c.stringify)
     end
 
     it 'links you to the correct quiz when clicked' do
