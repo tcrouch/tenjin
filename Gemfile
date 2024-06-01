@@ -78,8 +78,6 @@ group :development do
 
   # Hunt for n+1
   gem 'bullet'
-
-
 end
 
 group :test do
