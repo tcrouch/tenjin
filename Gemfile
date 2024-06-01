@@ -22,8 +22,8 @@ gem 'rack-timeout', groups: [:production]
 
 gem 'delayed_job_active_record'
 
-gem 'aws-sdk-s3'
-gem 'aws-sdk-rails'
+gem 'aws-sdk-s3', '~> 1'
+gem 'aws-sdk-rails', '~> 3'
 
 # Wonde API client
 gem 'wondeclient', '~> 0.1.3'
