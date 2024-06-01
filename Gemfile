@@ -26,7 +26,7 @@ gem 'aws-sdk-s3'
 gem 'aws-sdk-rails'
 
 # Wonde API client
-gem 'wondeclient', github: 'wondeltd/ruby-client'
+gem 'wondeclient', '~> 0.1.3'
 
 # Templates & asset handling
 gem 'slim'
