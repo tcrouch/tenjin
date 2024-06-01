@@ -191,7 +191,7 @@ GEM
       faraday-net_http (>= 2.0, < 3.1)
       ruby2_keywords (>= 0.0.4)
     faraday-net_http (3.0.2)
-    ffaker (2.17.0)
+    ffaker (2.21.0)
     ffi (1.16.3)
     globalid (1.2.1)
       activesupport (>= 6.1)
