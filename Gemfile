@@ -62,6 +62,7 @@ gem 'simple_form'
 
 # Bootstrap for emails
 gem 'bootstrap-email'
+gem 'sass-embedded', '~> 1.53.0'
 
 # Dyno scaling
 gem 'hirefire-resource'
