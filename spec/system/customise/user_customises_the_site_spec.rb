@@ -73,7 +73,9 @@ RSpec.describe 'User customises the site', :default_creates, :js do
 
     context 'when looking at purchased customisation' do
       let(:dashboard_customisation) { create(:dashboard_customisation, cost: 6, purchasable: false) }
-      let(:unlocked_customisation) { create(:customisation_unlock, user: student, customisation: dashboard_customisation) }
+      let(:unlocked_customisation) do
+        create(:customisation_unlock, user: student, customisation: dashboard_customisation)
+      end
 
       before do
         unlocked_customisation

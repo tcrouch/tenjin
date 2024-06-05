@@ -52,7 +52,7 @@ RSpec.describe Challenge::UpdateChallengeProgress, :default_creates do
                                                      challenge_type: 'number_correct', number_required: 3,
                                                      end_date: 1.hour.from_now)
       expect { described_class.new(quiz_full_marks, 'number_correct').call }
-        .not_to change { ChallengeProgress.where(challenge: challenge_different_topic).count }
+        .not_to(change { ChallengeProgress.where(challenge: challenge_different_topic).count })
     end
 
     it 'only adds challenge points once' do
