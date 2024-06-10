@@ -24,7 +24,7 @@ class Homework < ApplicationRecord
 
   def create_homework_progresses
     users.where(role: 'student').find_each do |u|
-      HomeworkProgress.create(user: u, homework: self, progress: 0, completed: false)
+      homework_progresses.create(user: u, progress: 0, completed: false)
     end
   end
 
