@@ -14,7 +14,6 @@ class Homework < ApplicationRecord
   validate :due_date_cannot_be_in_the_past
 
   after_create :create_homework_progresses
-  before_destroy :destroy_homework_progresses
 
   private
 
@@ -26,9 +25,5 @@ class Homework < ApplicationRecord
     users.where(role: 'student').find_each do |u|
       homework_progresses.create(user: u, progress: 0, completed: false)
     end
-  end
-
-  def destroy_homework_progresses
-    HomeworkProgress.where(homework: self).destroy_all
   end
 end
