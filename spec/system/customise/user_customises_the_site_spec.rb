@@ -30,13 +30,12 @@ RSpec.describe 'User customises the site', :default_creates, :js do
   end
 
   context 'when looking at available dashboard styles' do
-    let(:dashboard_customisation) { create(:dashboard_customisation, cost: 6) }
+    let!(:dashboard_customisation) { create(:dashboard_customisation, cost: 6) }
     let(:dashboard_customisation_expensive) { create(:dashboard_customisation, cost: 20) }
     let(:second_customisation) { create(:dashboard_customisation, cost: 2) }
     let(:student) { create(:user, school: school, challenge_points: 10) }
 
     before do
-      dashboard_customisation
       visit(show_available_customisations_path)
     end
 
@@ -73,12 +72,11 @@ RSpec.describe 'User customises the site', :default_creates, :js do
 
     context 'when looking at purchased customisation' do
       let(:dashboard_customisation) { create(:dashboard_customisation, cost: 6, purchasable: false) }
-      let(:unlocked_customisation) do
+      let!(:unlocked_customisation) do
         create(:customisation_unlock, user: student, customisation: dashboard_customisation)
       end
 
       before do
-        unlocked_customisation
         visit(show_available_customisations_path)
       end
 
@@ -116,13 +114,12 @@ RSpec.describe 'User customises the site', :default_creates, :js do
   end
 
   context 'when purchasing a leaderboard icon' do
-    let(:icon_customisation) do
+    let!(:icon_customisation) do
       create(:customisation, customisation_type:
       'leaderboard_icon', value: 'black,star', cost: 10)
     end
 
     before do
-      icon_customisation
       student.update_attribute(:challenge_points, 1000)
       visit(show_available_customisations_path)
     end
