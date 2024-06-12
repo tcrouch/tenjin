@@ -13,6 +13,12 @@ RSpec.describe Enrollment do
     expect(build(:enrollment)).to be_valid
   end
 
+  describe 'validation' do
+    subject { build(:enrollment) }
+
+    it { is_expected.to validate_uniqueness_of(:user).scoped_to(:classroom_id) }
+  end
+
   context 'with classroom and user data' do
     let(:classrooms) { create_list(:classroom, 2, school: school) }
     let(:student) { create(:student, school: school) }
