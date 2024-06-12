@@ -17,7 +17,6 @@ class Lesson < ApplicationRecord
 
   enum category: { youtube: 0, vimeo: 1, no_content: 2 }
   has_many :questions
-  has_many :default_lessons
   belongs_to :topic
   has_one :subject, through: :topic
 
