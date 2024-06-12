@@ -9,6 +9,10 @@ RSpec.describe Enrollment do
   it { is_expected.to belong_to(:user) }
   it { is_expected.to belong_to(:classroom) }
 
+  it 'has a valid factory' do
+    expect(build(:enrollment)).to be_valid
+  end
+
   context 'with classroom and user data' do
     let(:classrooms) { create_list(:classroom, 2, school: school) }
     let(:student) { create(:student, school: school) }

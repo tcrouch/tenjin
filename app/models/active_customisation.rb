@@ -5,4 +5,5 @@ class ActiveCustomisation < ApplicationRecord
   belongs_to :user
 
   validates :user, uniqueness: { scope: [:customisation] }
+  validates :customisation, presence: true
 end

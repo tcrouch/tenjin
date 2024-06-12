@@ -13,6 +13,10 @@ RSpec.describe Challenge do
                        number_required: 10, end_date: 1.hour.from_now)
   end
 
+  it 'has a valid factory' do
+    expect(build(:challenge)).to be_valid
+  end
+
   describe '#create_challenge' do
     it 'creates a new challenge for a given subject' do
       expect(described_class.create_challenge(topic.subject).topic.subject).to eq(subject)

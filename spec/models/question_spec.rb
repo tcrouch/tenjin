@@ -6,7 +6,11 @@ require 'support/session_helpers'
 RSpec.describe Question, :default_creates do
   let(:mismatched_question) { build(:question, lesson: create(:lesson), topic: topic) }
 
-  context 'with validations' do
+  it 'has a valid factory' do
+    expect(build(:question)).to be_valid
+  end
+
+  describe 'validations' do
     subject { build(:question) }
 
     it { is_expected.to belong_to(:topic) }
@@ -68,12 +72,11 @@ RSpec.describe Question, :default_creates do
   end
 
   describe '.check_short_answer' do
-    let(:question) { create(:question, question_type: 'multiple') }
-    let(:answer) { create(:answer, question: question, correct: false) }
+    let!(:question) { create(:question, question_type: 'multiple') }
+    let!(:answer) { create(:answer, question: question, correct: false) }
 
     context 'when switching a question to a short answer question' do
       it 'changes all existing answers to be correct' do
-        answer
         question.update_attribute(:question_type, 'short_answer')
         expect(Answer.first.correct).to eq(true)
       end
