@@ -2,19 +2,20 @@
 
 class Lesson < ApplicationRecord
   LINK_REGEX = [
-    [:no_content, %r{\A[[:blank:]]*\z}],
-    [:vimeo, %r{(?:(?:https?:)?\/\/)?(?:www.)?(?:player.)?vimeo.com\/(?:[a-z]*\/)*(\d+)(?:\S*)}],
-    [:youtube, %r{(?:(?:https?:)?\/\/)?(?:(?:www|m)\.)?(?:youtube.com|youtu.be)(?:\/(?:[\w\-]+\?v=|embed\/|v\/)?)([\w\-]+)(?:\S*)}]
-  ]
+    [:no_content, /\A[[:blank:]]*\z/],
+    [:vimeo, %r{(?:(?:https?:)?//)?(?:www.)?(?:player.)?vimeo.com/(?:[a-z]*/)*(\d+)(?:\S*)}],
+    [:youtube,
+     %r{(?:(?:https?:)?//)?(?:(?:www|m)\.)?(?:youtube(?:-nocookie)?.com|youtu.be)(?:/(?:[\w\-\.\@]+\?v=|embed/|v/)?)([\w\-]+)(?:\S*)}]
+  ].freeze
   CATEGORY_VIDEOS = {
     vimeo: 'https://www.youtube.com/embed/%s',
     youtube: 'https://player.vimeo.com/video/%s'
-  }
+  }.freeze
   CATEGORY_THUMBNAILS = {
     youtube: 'https://img.youtube.com/vi/%s/hqdefault.jpg'
-  }
+  }.freeze
 
-  enum category: %i[youtube vimeo no_content]
+  enum category: { youtube: 0, vimeo: 1, no_content: 2 }
   has_many :questions
   has_many :default_lessons
   belongs_to :topic
@@ -29,7 +30,7 @@ class Lesson < ApplicationRecord
 
   def video_link=(value)
     self.category, self.video_id = extract_id(value)
-    super(value)
+    super
   end
 
   def video_link
