@@ -3,8 +3,14 @@
 require 'rails_helper'
 
 RSpec.describe Subject do
-  subject { create(:subject) }
+  it 'has a valid factory' do
+    expect(build(:subject)).to be_valid
+  end
 
-  it { is_expected.to validate_uniqueness_of(:name) }
-  it { is_expected.to validate_presence_of(:name) }
+  describe 'validations' do
+    subject { build(:subject) }
+
+    it { is_expected.to validate_uniqueness_of(:name) }
+    it { is_expected.to validate_presence_of(:name) }
+  end
 end

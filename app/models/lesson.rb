@@ -1,9 +1,6 @@
 # frozen_string_literal: true
 
 class Lesson < ApplicationRecord
-  validates :title, length: { minimum: 3 }
-  validate :check_video_id
-
   enum category: %i[youtube vimeo no_content]
   has_many :questions
   has_many :default_lessons
@@ -13,6 +10,9 @@ class Lesson < ApplicationRecord
 
   before_save :save_video_id
   before_destroy { |record| Question.where(lesson: record).update_all(lesson_id: nil) }
+
+  validates :title, length: { minimum: 3 }
+  validate :check_video_id
 
   def generate_video_src
     return "https://www.youtube.com/embed/#{video_id}" if youtube?

@@ -1,35 +1,51 @@
 # frozen_string_literal: true
 
 require 'rails_helper'
-require 'support/session_helpers'
 
 RSpec.describe Homework do
-  let(:homework) { create(:homework, classroom: classroom) }
-  let(:homework_old) { build(:homework, classroom: classroom, topic: topic, due_date: 1.day.ago) }
+  let(:classroom) { create(:classroom_with_students, student_count: 2) }
 
-  before do
-    create(:enrollment, classroom: classroom, user: student)
+  it 'has a valid factory' do
+    expect(build(:homework)).to be_valid
   end
 
-  context 'when dealing with homework progress', :default_creates do
+  describe 'validation' do
+    subject { build(:homework, classroom: classroom, due_date: due_on) }
+
+    let(:due_on) { 1.week.from_now }
+
+    it { is_expected.to validate_presence_of(:due_date) }
+    it { is_expected.to validate_presence_of(:topic) }
+    it { is_expected.to validate_presence_of(:required) }
+
+    context 'when due_date is in the past' do
+      let(:due_on) { 1.day.ago }
+
+      it { is_expected.not_to be_valid }
+    end
+  end
+
+  describe '#save' do
+    let(:homework) { build(:homework, classroom: classroom) }
+    let(:teacher) { create(:teacher) }
+
     it 'increases user progresses after being created' do
-      expect { homework }.to change(HomeworkProgress, :count).by 1
+      expect { homework.save }.to change(HomeworkProgress, :count).by 2
     end
 
-    it 'does not create a user progress for a non-student' do
-      create(:enrollment, classroom: classroom, user: teacher)
-      expect { homework }.to change(HomeworkProgress, :count).by 1
+    context 'with a teacher enrolled in the class' do
+      it 'does not create an additional progress for them' do
+        create(:enrollment, classroom: classroom, user: teacher)
+        expect { homework.save }.to change(HomeworkProgress, :count).by 2
+      end
     end
+  end
+
+  describe '#destroy' do
+    let!(:homework) { create(:homework, classroom: classroom) }
 
     it 'deletes user progresses after being destroyed' do
-      homework
-      expect { homework.destroy }.to change(HomeworkProgress, :count).by(-1)
-    end
-  end
-
-  context 'when creating a homework', :default_creates do
-    it 'does not let you create a homework with a due date in the past' do
-      expect { homework_old.save! }.to raise_error(ActiveRecord::RecordInvalid)
+      expect { homework.destroy }.to change(HomeworkProgress, :count).by(-2)
     end
   end
 end

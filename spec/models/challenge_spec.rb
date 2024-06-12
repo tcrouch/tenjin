@@ -13,13 +13,17 @@ RSpec.describe Challenge do
                        number_required: 10, end_date: 1.hour.from_now)
   end
 
+  it 'has a valid factory' do
+    expect(build(:challenge)).to be_valid
+  end
+
   describe '#create_challenge' do
     it 'creates a new challenge for a given subject' do
       expect(described_class.create_challenge(topic.subject).topic.subject).to eq(subject)
     end
 
     it 'has the default length of a week' do
-      expect(described_class.create_challenge(topic.subject).end_date).to be_within(1.second).of(Time.now.utc + 1.week)
+      expect(described_class.create_challenge(topic.subject).end_date).to be_within(1.second).of(1.week.from_now)
     end
 
     it 'is created with a random type when one not given' do

@@ -94,7 +94,7 @@ RSpec.describe 'Admin manages customisations', :default_creates, :js do
     end
 
     it 'updates the picture' do
-      attach_file('Image', "#{Rails.root}/spec/fixtures/files/computer-science.jpg")
+      attach_file('Image', "#{Rails.root.join('spec/fixtures/files/computer-science.jpg')}")
       click_button('Update Customisation')
       expect(page).to have_css('div [style*="computer-science.jpg"]')
     end
@@ -119,7 +119,7 @@ RSpec.describe 'Admin manages customisations', :default_creates, :js do
 
     it 'creates it' do
       fill_in_customisation_form
-      attach_file('Image', "#{Rails.root}/spec/fixtures/files/game-pieces.jpg")
+      attach_file('Image', "#{Rails.root.join('spec/fixtures/files/game-pieces.jpg')}")
       click_button('Create Customisation')
       expect(page).to have_content(new_name.upcase)
     end

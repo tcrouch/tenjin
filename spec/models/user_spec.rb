@@ -13,6 +13,17 @@ RSpec.describe User do
       school_api_data
     end
 
+    it 'has a valid factory' do
+      expect(build(:user)).to be_valid
+    end
+
+    describe 'validations' do
+      subject { build(:user) }
+
+      it { is_expected.to validate_presence_of :upi }
+      it { is_expected.to validate_presence_of :role }
+    end
+
     context 'with student api data' do
       it 'does not allow students missing a upi' do
         expect { create(:student, upi: '') }.to raise_error(ActiveRecord::RecordInvalid)

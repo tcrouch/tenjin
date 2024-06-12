@@ -4,14 +4,20 @@ require 'rails_helper'
 require 'support/api_data'
 
 RSpec.describe School do
-  subject { create(:school) }
-
   include_context 'with api_data'
 
-  it { is_expected.to validate_presence_of(:client_id) }
-  it { is_expected.to validate_uniqueness_of(:client_id) }
-  it { is_expected.to validate_presence_of(:name) }
-  it { is_expected.to validate_presence_of(:token) }
+  it 'has a valid factory' do
+    expect(build(:school)).to be_valid
+  end
+
+  describe 'validations' do
+    subject { build(:school) }
+
+    it { is_expected.to validate_presence_of(:client_id) }
+    it { is_expected.to validate_uniqueness_of(:client_id) }
+    it { is_expected.to validate_presence_of(:name) }
+    it { is_expected.to validate_presence_of(:token) }
+  end
 
   describe '#from_wonde' do
     let(:school) { described_class.from_wonde(OpenStruct.new(id: '1234', name: 'test'), 'token') }

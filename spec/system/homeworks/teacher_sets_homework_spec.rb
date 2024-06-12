@@ -5,7 +5,7 @@ require 'rails_helper'
 RSpec.describe 'Teacher sets homework', :default_creates, :js do
   let(:classroom) { create(:classroom, subject: subject, school: teacher.school) }
   let(:flatpickr_one_week_from_now) do
-    "span.flatpickr-day[aria-label=\"#{(1.week.from_now).strftime('%B %-e, %Y')}\"]"
+    "span.flatpickr-day[aria-label=\"#{1.week.from_now.strftime('%B %-e, %Y')}\"]"
   end
   let(:lesson) { create(:lesson, topic: topic) }
   let(:ten_questions) { create_list(:question, 10, lesson: lesson, topic: lesson.topic) }
@@ -70,7 +70,9 @@ RSpec.describe 'Teacher sets homework', :default_creates, :js do
     let(:nine_questions) { create_list(:question, 9, lesson: lesson, topic: lesson.topic) }
     let(:second_topic) { create(:topic, subject: subject) }
     let(:lesson_different_topic) { create(:lesson, topic: second_topic) }
-    let(:ten_questions_different_topic) { create_list(:question, 10, lesson: lesson_different_topic, topic: second_topic) }
+    let(:ten_questions_different_topic) do
+      create_list(:question, 10, lesson: lesson_different_topic, topic: second_topic)
+    end
 
     before do
       lesson

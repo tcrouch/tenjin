@@ -5,7 +5,7 @@ require 'ffaker'
 FactoryBot.define do
   factory :admin do
     email { FFaker::Internet.email }
-    role { 'admin' }
+    role { 'super' }
     password { FFaker::Internet.password }
 
     factory :super_admin do

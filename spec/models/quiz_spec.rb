@@ -7,6 +7,10 @@ RSpec.describe Quiz, :default_creates do
   let(:usage_statistic) { UsageStatistic.where(user: student).last }
   let(:old_statistic) { create(:usage_statistic, user: student, date: 1.day.ago) }
 
+  it 'has a valid factory' do
+    expect(build(:quiz)).to be_valid
+  end
+
   context 'when creating a quiz' do
     it 'increases the usage statistics quizzes created today by one' do
       quiz

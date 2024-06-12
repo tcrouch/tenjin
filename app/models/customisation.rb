@@ -1,10 +1,6 @@
 # frozen_string_literal: true
 
 class Customisation < ApplicationRecord
-  validates :cost, presence: true
-  validates :name, presence: true
-  validates :value, presence: true
-  validates :image, presence: true, if: :dashboard_style?
   enum customisation_type: %i[dashboard_style leaderboard_icon subject_image]
 
   has_many :customisation_unlocks
@@ -13,6 +9,11 @@ class Customisation < ApplicationRecord
   has_one_attached :image
 
   before_save :make_unpurchasable_if_retired
+
+  validates :cost, presence: true
+  validates :name, presence: true
+  validates :value, presence: true
+  validates :image, presence: true, if: :dashboard_style?
 
   def dashboard_style?
     customisation_type == 'dashboard_style'

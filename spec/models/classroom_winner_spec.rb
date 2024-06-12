@@ -10,6 +10,10 @@ RSpec.describe ClassroomWinner do
                              classroom: create(:classroom, school: school))
   end
 
+  it 'has a valid factory' do
+    expect(build(:classroom_winner)).to be_valid
+  end
+
   it 'validates the user and classroom belong to the same school' do
     expect { different_schools.save! }.to raise_error(ActiveRecord::RecordInvalid)
   end

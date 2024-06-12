@@ -2,7 +2,7 @@
 
 FactoryBot.define do
   factory :question do
-    sequence(:question_text) { |n| FFaker::Lorem.sentence + n.to_s }
+    sequence(:question_text) { |n| "#{FFaker::Lorem.sentence} #{n}" }
     question_type { 'multiple' }
     topic
     active { true }
