@@ -43,7 +43,9 @@ class Question < ApplicationRecord
   end
 
   def at_least_one_correct_answer
-    errors.add :base, 'Question must have at least one correct answer.' unless answers.each.pluck(:correct).include? true
+    return if answers.each.pluck(:correct).include? true
+
+    errors.add :base, 'Question must have at least one correct answer.'
   end
 
   def as_json(*)
