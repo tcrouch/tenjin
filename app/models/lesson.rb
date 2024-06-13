@@ -8,8 +8,8 @@ class Lesson < ApplicationRecord
      %r{(?:(?:https?:)?//)?(?:(?:www|m)\.)?(?:youtube(?:-nocookie)?.com|youtu.be)(?:/(?:[\w\-\.\@]+\?v=|embed/|v/)?)([\w\-]+)(?:\S*)}]
   ].freeze
   CATEGORY_VIDEOS = {
-    vimeo: 'https://www.youtube.com/embed/%s',
-    youtube: 'https://player.vimeo.com/video/%s'
+    youtube: 'https://www.youtube.com/embed/%s',
+    vimeo: 'https://player.vimeo.com/video/%s'
   }.freeze
   CATEGORY_THUMBNAILS = {
     youtube: 'https://img.youtube.com/vi/%s/hqdefault.jpg'
@@ -38,12 +38,12 @@ class Lesson < ApplicationRecord
   end
 
   def video_url
-    format = CATEGORY_VIDEOS[category]
+    format = CATEGORY_VIDEOS[category&.to_sym]
     format && (format % video_id)
   end
 
   def thumbnail_url
-    format = CATEGORY_THUMBNAILS[category]
+    format = CATEGORY_THUMBNAILS[category&.to_sym]
     format && (format % video_id)
   end
 
