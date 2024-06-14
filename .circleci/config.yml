@@ -59,7 +59,7 @@ jobs:
           PGUSER: root
           PGHOST: 127.0.0.1
           RAILS_ENV: test
-      - image: circleci/postgres:10.9
+      - image: cimg/postgres:13.14
         environment:
           POSTGRES_USER: root
 
