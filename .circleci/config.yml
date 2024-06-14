@@ -52,7 +52,7 @@ jobs:
           RAILS_ENV: test
   test:
     <<: *default_job
-    parallelism: 1
+    parallelism: 2
     docker:
       - image: cimg/ruby:2.7.8-browsers
         environment:
