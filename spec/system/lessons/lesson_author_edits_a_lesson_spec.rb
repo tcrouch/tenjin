@@ -3,94 +3,89 @@
 require 'rails_helper'
 
 RSpec.describe 'Lesson author edits a lesson', :default_creates, :js do
-  let(:second_subject) { create(:subject) }
   let!(:lesson) { create(:lesson, topic: topic) }
-  let(:new_lesson) { build(:lesson, topic: topic) }
-
-  def fill_in_form(lesson)
-    fill_in('URL', with: lesson.video_id)
-    fill_in('Title', with: lesson.title)
-    select lesson.topic.name, from: 'Topic'
-  end
 
   before do
+    teacher.add_role :lesson_author, subject
     sign_in teacher
   end
 
-  it 'shows an option to edit lessons when I allowed to' do
-    teacher.add_role :lesson_author, subject
-    visit(lessons_path)
-    expect(page).to have_link('Edit')
-  end
-
-  it 'only shows an option to edit lessons if I am allowed to' do
-    visit(lessons_path)
-    expect(page).to have_no_link('Edit')
-  end
-
-  it 'shows subjects that I can author a lesson for' do
-    teacher.add_role :lesson_author, subject
-    visit(lessons_path)
-    expect(page).to have_css('h1', text: 'CREATE LESSONS').and have_css('h3', text: subject.name)
-  end
-
-  it 'only shows subjects that I can author a lesson for' do
-    teacher.add_role :lesson_author, subject
-    second_subject
-    visit(lessons_path)
-    expect(page).to have_css('h1', text: 'CREATE LESSONS').and have_no_css('h3', text: second_subject.name)
-  end
-
-  context 'when adding a lesson' do
-    let(:new_lesson_bad_content) { build(:lesson, topic: topic, video_id: 'https://redtube.com/t-ZRX8984sc') }
-    let(:new_lesson_vimeo) { build(:lesson, topic: topic, video_id: 'https://vimeo.com/371104836') }
-
+  describe 'visiting the lessons index' do
     before do
-      teacher.add_role :lesson_author, subject
-      topic
+      visit(lessons_path)
     end
 
-    it 'allows me to create a lesson for a subject' do
-      visit(lessons_path)
+    it 'clicking on create navigates to the new lesson form' do
       click_link("Create #{subject.name} Lesson")
       expect(page).to have_current_path(new_lesson_path, ignore_query: true)
     end
 
-    it 'prevents me putting in a link to a bad website' do
-      visit(new_lesson_path(subject: subject))
-      fill_in_form(new_lesson_bad_content)
-      click_button('Create Lesson')
-      expect(page).to have_content('Must be a YouTube or Vimeo link')
-    end
+    context 'with lessons in multiple subjects' do
+      let!(:other_lesson) { create(:lesson) }
 
-    it 'allows me to create a lesson' do
-      visit(new_lesson_path(subject: subject))
-      fill_in_form(new_lesson)
-      click_button('Create Lesson')
-      expect(page).to have_css('.videoLink', count: 2)
-    end
+      it 'shows the option to edit lessons in subjects where the user is an author' do
+        expect(page)
+          .to have_link('Edit', count: 1)
+          .and have_css('.subject-title', text: subject.name)
+          .and have_no_css('.subject-title', text: other_lesson.subject.name)
+          .and have_content(lesson.title)
+          .and have_no_content(other_lesson.title)
+      end
 
-    it 'allows me to create a vimeo lesson' do
-      visit(new_lesson_path(subject: subject))
-      fill_in_form(new_lesson_vimeo)
-      click_button('Create Lesson')
-      expect(page).to have_css('.videoLink', count: 2)
+      it 'shows the option to create lessons in subjects where the user is an author' do
+        within('#createLessons') do
+          expect(page)
+            .to have_css('h1', text: 'CREATE LESSONS')
+            .and have_css('h3', text: subject.name)
+            .and have_no_css('h3', text: other_lesson.subject.name)
+        end
+      end
     end
   end
 
-  context 'when editing existings lesson' do
+  describe 'adding a lesson' do
+    it 'creates a lesson without a video link' do
+      visit(new_lesson_path(subject: subject))
+      fill_in 'Title', with: 'No video lesson'
+      select topic.name, from: 'Topic'
+      click_button('Create Lesson')
+      expect(page)
+        .to have_css('td', text: 'No video lesson')
+    end
+
+    it 'creates a lesson with a supported video link' do
+      visit(new_lesson_path(subject: subject))
+      fill_in 'URL', with: 'https://vimeo.com/371104836'
+      fill_in 'Title', with: 'Vimeo video lesson'
+      select topic.name, from: 'Topic'
+      click_button('Create Lesson')
+      expect(page).to have_css('.lesson-title', text: 'Vimeo video lesson')
+    end
+
+    it 'shows an error with an unsupported video link' do
+      visit(new_lesson_path(subject: subject))
+      fill_in 'URL', with: 'https://badtube.com/t-ZRX8984sc'
+      fill_in 'Title', with: 'Bad video lesson'
+      select topic.name, from: 'Topic'
+      click_button('Create Lesson')
+      expect(page).to have_content('Must be a YouTube or Vimeo link')
+    end
+  end
+
+  describe 'editing a lesson' do
     before do
       setup_subject_database
       create(:enrollment, user: teacher, subject: subject)
-      teacher.add_role :lesson_author, subject
     end
 
     it 'saves new lesson details' do
       visit(lessons_path)
       click_link('Edit')
-      fill_in_form(new_lesson)
+      fill_in 'Title', with: 'Fantastic new title'
       click_button('Update Lesson')
-      expect(page).to have_css(".videoLink[src=\"#{Lesson.last.video_url}\"]")
+      expect(page)
+        .to have_css(".videoLink[src=\"#{lesson.reload.video_url}\"]")
+        .and have_css('.lesson-title', text: 'Fantastic new title')
     end
 
     it 'deletes lessons' do
