@@ -15,21 +15,20 @@ class LessonsController < ApplicationController
     first_topic = Topic.where(active: true, subject: Subject.find(new_lesson_params)).first
     redirect_to lessons_path flash: { error: 'No topics found for subject' } if first_topic.blank?
 
-    @lesson = Lesson.new
-    @lesson.topic = first_topic
+    @lesson = Lesson.new(topic: first_topic)
     @topics = Topic.where(active: true, subject: Subject.find(new_lesson_params)).order(:name)
     authorize @lesson
-  end
-
-  def create
-    @lesson = Lesson.new(lesson_params)
-    save_lesson
   end
 
   def edit
     @lesson = find_lesson
     @topics = Topic.where(active: true, subject: @lesson.subject).order(:name)
     authorize @lesson
+  end
+
+  def create
+    @lesson = Lesson.new(lesson_params)
+    save_lesson
   end
 
   def update
