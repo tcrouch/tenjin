@@ -56,7 +56,7 @@ class SchoolsController < ApplicationController
   end
 
   def reset_all_passwords
-    school = authorize find_school
+    authorize find_school
     ResetUserPasswordsJob.perform_later(current_user)
     flash[:alert] = 'Request received.  You will receive an email shortly with usernames and passwords.'
     redirect_to users_path

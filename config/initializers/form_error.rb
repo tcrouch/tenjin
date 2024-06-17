@@ -5,8 +5,6 @@ ActionView::Base.field_error_proc = proc do |html_tag, instance_tag|
   model = instance_tag.object
   error_message = model.errors.full_messages.join(', ')
 
-  html_tag
-
   html = if field
            field['class'] = "#{field['class']} invalid"
            html = <<-HTML
