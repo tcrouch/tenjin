@@ -8,6 +8,9 @@ class SubjectsController < ApplicationController
     @deactivated_subjects = Subject.where(active: false)
   end
 
+  def show
+    @subject = authorize find_subject
+  end
   def new
     @subject = Subject.new
     authorize @subject
@@ -24,9 +27,6 @@ class SubjectsController < ApplicationController
     end
   end
 
-  def show
-    @subject = authorize find_subject
-  end
 
   def update
     subject = authorize find_subject

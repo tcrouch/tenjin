@@ -13,7 +13,7 @@ class QuizzesController < ApplicationController
   def show
     @quiz = authorize find_quiz
     @question = question_for_quiz(@quiz)
-    @multiplier = Multiplier.where('score <= ?', @quiz.streak).last
+    @multiplier = Multiplier.where(score: ..@quiz.streak).last
     @percent_complete = (@quiz.num_questions_asked / @quiz.questions.length.to_f) * 100.to_f
     @flagged_question = FlaggedQuestion.where(user: current_user, question: @question).first
     @lesson = lesson_for_question(@question)

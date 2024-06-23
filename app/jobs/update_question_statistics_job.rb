@@ -10,7 +10,7 @@ class UpdateQuestionStatisticsJob < ApplicationJob
   end
 
   def flag_old_quizzes
-    Quiz.where('updated_at < ?', 1.day.ago).update_all(active: false)
+    Quiz.where(updated_at: ...1.day.ago).update_all(active: false)
   end
 
   def update_question_statistics
@@ -52,7 +52,7 @@ class UpdateQuestionStatisticsJob < ApplicationJob
                  .where(quizzes: { active: false })
                  .destroy_all
 
-    AskedQuestion.where('updated_at < ?', 1.day.ago)
+    AskedQuestion.where(updated_at: ...1.day.ago)
                  .destroy_all
   end
 

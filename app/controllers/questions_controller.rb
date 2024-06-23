@@ -48,6 +48,12 @@ class QuestionsController < ApplicationController
     render :flagged
   end
 
+  def show
+    @question = find_question
+    @question.assign_attributes(question_params) if params[:question].present?
+    authorize @question
+    check_answers(@question)
+  end
   def new
     @question = Question.new(question_params)
     authorize @question
@@ -69,12 +75,6 @@ class QuestionsController < ApplicationController
     end
   end
 
-  def show
-    @question = find_question
-    @question.assign_attributes(question_params) if params[:question].present?
-    authorize @question
-    check_answers(@question)
-  end
 
   def update
     @question = find_question

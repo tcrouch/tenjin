@@ -18,6 +18,12 @@ class SchoolsController < ApplicationController
     render 'overall_statistics'
   end
 
+  def show
+    @school = authorize find_school
+    @school_statistics = School::CompileSchoolStatistics.call(@school)
+    @school_admins = User.where(school: @school).with_role(:school_admin)
+    @users = User.where(school: @school)
+  end
   def new
     @school = School.new
     authorize @school
@@ -62,12 +68,6 @@ class SchoolsController < ApplicationController
     redirect_to users_path
   end
 
-  def show
-    @school = authorize find_school
-    @school_statistics = School::CompileSchoolStatistics.call(@school)
-    @school_admins = User.where(school: @school).with_role(:school_admin)
-    @users = User.where(school: @school)
-  end
 
   private
 

@@ -4,11 +4,16 @@ class HomeworksController < ApplicationController
   before_action :authenticate_user!
   rescue_from ActionController::ParameterMissing, with: :no_classroom_id
 
+  def show
+    @homework = authorize find_homework
+    @homework_progress = HomeworkProgress.includes(:user).where(homework: @homework).order('users.surname')
+    @homework_counts = @homework.classroom.homework_counts.find_by(id: @homework)
+  end
   def new
     @classroom = find_classroom
     @homework = Homework.new(due_date: 1.week.from_now, classroom: @classroom, required: 70)
     authorize @homework
-    @lessons = Lesson.where(topic: @classroom.subject.topics).where('questions_count >= ?', 10)
+    @lessons = Lesson.where(topic: @classroom.subject.topics).where(questions_count: 10..)
   end
 
   def create
@@ -23,11 +28,6 @@ class HomeworksController < ApplicationController
     end
   end
 
-  def show
-    @homework = authorize find_homework
-    @homework_progress = HomeworkProgress.includes(:user).where(homework: @homework).order('users.surname')
-    @homework_counts = @homework.classroom.homework_counts.find_by(id: @homework)
-  end
 
   def destroy
     homework = authorize find_homework

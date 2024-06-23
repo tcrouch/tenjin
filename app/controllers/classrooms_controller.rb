@@ -3,6 +3,12 @@
 class ClassroomsController < ApplicationController
   before_action :authenticate_user!
 
+  def index
+    authorize current_user.school, :sync?
+    @classrooms = policy_scope(Classroom).order(:name)
+    @school = current_user.school
+    @subjects = Subject.where(active: true)
+  end
   def show
     @classroom = find_classroom
     authorize @classroom
@@ -14,12 +20,6 @@ class ClassroomsController < ApplicationController
                                          .order('homeworks.due_date desc')
   end
 
-  def index
-    authorize current_user.school, :sync?
-    @classrooms = policy_scope(Classroom).order(:name)
-    @school = current_user.school
-    @subjects = Subject.where(active: true)
-  end
 
   def update
     classroom = authorize find_classroom

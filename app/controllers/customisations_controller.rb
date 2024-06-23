@@ -10,6 +10,10 @@ class CustomisationsController < ApplicationController
     @retired_customisations = policy_scope(Customisation).where(retired: true).with_attached_image
   end
 
+  def new
+    @customisation = authorize Customisation.new(purchasable: false, retired: false)
+    render :edit
+  end
   def edit
     @customisation = authorize find_customisation
   end
@@ -24,10 +28,6 @@ class CustomisationsController < ApplicationController
     end
   end
 
-  def new
-    @customisation = authorize Customisation.new(purchasable: false, retired: false)
-    render :edit
-  end
 
   def update
     customisation = authorize find_customisation
