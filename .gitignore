@@ -53,13 +53,4 @@ yarn-debug.log*
 # Ignore the image downloads directory
 /db/downloads
 
-.env
-
 .vscode/
-
-/public/packs
-/public/packs-test
-/node_modules
-/yarn-error.log
-yarn-debug.log*
-.yarn-integrity
