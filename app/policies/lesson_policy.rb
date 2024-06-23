@@ -6,7 +6,7 @@ class LessonPolicy < ApplicationPolicy
   class Scope < Scope
     def resolve
       scope.includes(:topic)
-           .where(topics: { subject_id: user.subjects })
+        .where(topics: {subject_id: user.subjects})
     end
   end
 
@@ -20,8 +20,8 @@ class LessonPolicy < ApplicationPolicy
     user.subjects.include?(record.subject) || user.has_role?(:question_author, :any)
   end
 
-  alias create? new?
-  alias edit? new?
-  alias update? new?
-  alias destroy? new?
+  alias_method :create?, :new?
+  alias_method :edit?, :new?
+  alias_method :update?, :new?
+  alias_method :destroy?, :new?
 end

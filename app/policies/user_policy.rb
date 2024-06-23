@@ -36,12 +36,12 @@ class UserPolicy < ApplicationPolicy
     user.super? && record.employee?
   end
 
-  alias remove_role? set_role?
-  alias update_email? set_role?
-  alias send_welcome_email? set_role?
+  alias_method :remove_role?, :set_role?
+  alias_method :update_email?, :set_role?
+  alias_method :send_welcome_email?, :set_role?
 
-  alias reset_password? show?
-  alias unlink_oauth_account? show?
+  alias_method :reset_password?, :show?
+  alias_method :unlink_oauth_account?, :show?
 
   private
 

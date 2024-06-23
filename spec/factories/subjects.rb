@@ -5,7 +5,7 @@ FactoryBot.define do
     sequence(:name) { |n| "#{FFaker::Lorem.word} #{n}" }
 
     factory :computer_science do
-      name { 'Computer Science' }
+      name { "Computer Science" }
     end
   end
 end

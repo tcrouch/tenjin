@@ -21,9 +21,9 @@ class Challenge::UpdateChallengeProgress < ApplicationService
 
   def check_challenge_progress(challenge)
     case challenge.challenge_type
-    when 'number_correct' then upsert_progress(@quiz.answered_correct, challenge)
-    when 'streak' then upsert_progress(@quiz.streak, challenge)
-    when 'number_of_points' then upsert_points(@number_to_add, challenge)
+    when "number_correct" then upsert_progress(@quiz.answered_correct, challenge)
+    when "streak" then upsert_progress(@quiz.streak, challenge)
+    when "number_of_points" then upsert_points(@number_to_add, challenge)
     end
   end
 
@@ -40,8 +40,8 @@ class Challenge::UpdateChallengeProgress < ApplicationService
     completed = progress >= challenge.number_required
 
     binds = [[nil, progress], [nil, @quiz.user], [nil, challenge.id],
-             [nil, challenge.number_required], [nil, completed]]
-    ChallengeProgress.connection.exec_query <<~SQL, 'Upsert progress', binds
+      [nil, challenge.number_required], [nil, completed]]
+    ChallengeProgress.connection.exec_query <<~SQL, "Upsert progress", binds
       INSERT INTO challenge_progresses("progress","user_id", "challenge_id", "completed", "created_at","updated_at")
       values ($1, $2, $3, $5, current_timestamp, current_timestamp)
       ON CONFLICT ("user_id", "challenge_id")
@@ -62,15 +62,15 @@ class Challenge::UpdateChallengeProgress < ApplicationService
 
   def upsert_points(points, challenge)
     unless challenge.topic == @quiz.topic ||
-           challenge.topic == @question_topic ||
-           (challenge.daily && challenge.topic.subject == @question_topic.subject)
+        challenge.topic == @question_topic ||
+        (challenge.daily && challenge.topic.subject == @question_topic.subject)
       return
     end
 
     completed = points >= challenge.number_required
 
     binds = [[nil, points], [nil, @quiz.user], [nil, challenge.id], [nil, completed], [nil, challenge.number_required]]
-    ChallengeProgress.connection.exec_query <<~SQL, 'Upsert points', binds
+    ChallengeProgress.connection.exec_query <<~SQL, "Upsert points", binds
       INSERT INTO challenge_progresses("progress", "user_id", "challenge_id", "completed", "created_at", "updated_at")
       values ($1, $2, $3, $4, current_timestamp, current_timestamp)
       ON CONFLICT ("user_id", "challenge_id")
@@ -89,9 +89,9 @@ class Challenge::UpdateChallengeProgress < ApplicationService
 
   def challenges
     Challenge.joins(:topic)
-             .includes(topic: :subject)
-             .where(topics: { subject_id: @quiz.subject })
-             .where('end_date > ?', Time.current)
+      .includes(topic: :subject)
+      .where(topics: {subject_id: @quiz.subject})
+      .where("end_date > ?", Time.current)
   end
 
   def check_number_correct(challenge)

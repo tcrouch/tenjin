@@ -4,22 +4,22 @@ class DeviseCreateUsers < ActiveRecord::Migration[5.2]
   def change
     create_table :users do |t|
       ## Database authenticatable
-      t.string :email,              null: false, default: ""
+      t.string :email, null: false, default: ""
       t.string :encrypted_password, null: false, default: ""
 
       ## Recoverable
-      t.string   :reset_password_token
+      t.string :reset_password_token
       t.datetime :reset_password_sent_at
 
       ## Rememberable
       t.datetime :remember_created_at
 
       ## Trackable
-      t.integer  :sign_in_count, default: 0, null: false
+      t.integer :sign_in_count, default: 0, null: false
       t.datetime :current_sign_in_at
       t.datetime :last_sign_in_at
-      t.inet     :current_sign_in_ip
-      t.inet     :last_sign_in_ip
+      t.inet :current_sign_in_ip
+      t.inet :last_sign_in_ip
 
       ## Confirmable
       # t.string   :confirmation_token
@@ -32,14 +32,13 @@ class DeviseCreateUsers < ActiveRecord::Migration[5.2]
       # t.string   :unlock_token # Only if unlock strategy is :email or :both
       # t.datetime :locked_at
 
-
       t.timestamps null: false
 
       # End of devise default fields
       t.belongs_to :school, index: true
       t.integer :role, null: false
 
-      #Omniauth fields
+      # Omniauth fields
       t.string :provider
       t.string :upi, index: true, unique: true
       t.string :forename
@@ -47,12 +46,11 @@ class DeviseCreateUsers < ActiveRecord::Migration[5.2]
       t.string :photo
       t.string :type
 
-      #Additional custom fields
+      # Additional custom fields
       t.integer :challenge_points
       t.datetime :time_of_last_quiz
-  end
+    end
 
-    
     # add_index :users, :email,                unique: true
     # add_index :users, :reset_password_token, unique: true
     # add_index :users, :confirmation_token,   unique: true

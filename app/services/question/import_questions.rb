@@ -7,7 +7,7 @@ class Question::ImportQuestions < ApplicationService
     @topic = topic
     @questions_to_import = []
 
-    @name = filename.rpartition('.').first
+    @name = filename.rpartition(".").first
   end
 
   def call
@@ -34,8 +34,8 @@ class Question::ImportQuestions < ApplicationService
   end
 
   def build_question
-    @question['answers_attributes'] = @question['answers']
-    @question = @question.except('answers')
+    @question["answers_attributes"] = @question["answers"]
+    @question = @question.except("answers")
     return false unless find_or_create_lesson
 
     question_to_import = Question.new(@question)
@@ -45,34 +45,34 @@ class Question::ImportQuestions < ApplicationService
     if question_to_import.valid?
       @questions_to_import.push(question_to_import)
     else
-      raise_error(question_to_import.errors.full_messages.join(', '))
+      raise_error(question_to_import.errors.full_messages.join(", "))
     end
   end
 
   def find_or_create_lesson
     @lesson = nil
-    return true if @question['lesson'].nil?
+    return true if @question["lesson"].nil?
 
-    @lesson = Lesson.find_or_create_by(title: @question['lesson'], topic: @topic)
-    return raise_error(@lesson.errors.full_messages.join(', ')) unless @lesson.valid?
+    @lesson = Lesson.find_or_create_by(title: @question["lesson"], topic: @topic)
+    return raise_error(@lesson.errors.full_messages.join(", ")) unless @lesson.valid?
 
-    @question = @question.except('lesson')
+    @question = @question.except("lesson")
   end
 
   def validate_question
     unless %w[question_type answers question_text].all? { |s| @question.key? s }
-      return raise_error('Question missing key')
+      return raise_error("Question missing key")
     end
 
     validate_answers
   end
 
   def validate_answers
-    answers = @question['answers']
-    return raise_error('Answers for question not in array') unless answers.respond_to? :each
+    answers = @question["answers"]
+    return raise_error("Answers for question not in array") unless answers.respond_to? :each
 
     answers.each do |a|
-      return raise_error('Text key missing for answer') if a.key?('body')
+      return raise_error("Text key missing for answer") if a.key?("body")
     end
 
     true

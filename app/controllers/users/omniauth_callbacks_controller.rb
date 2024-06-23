@@ -7,10 +7,10 @@ class Users::OmniauthCallbacksController < Devise::OmniauthCallbacksController
     # the provided bearer token to retrieve user information
 
     # Setup the GraphQL query that will return all essential information
-    query = File.read('app/graphql/user_graphql_query')
+    query = File.read("app/graphql/user_graphql_query")
 
     # The bearer token can be found in the response callback
-    bearer_token = request.env['omniauth.auth'].credentials['token']
+    bearer_token = request.env["omniauth.auth"].credentials["token"]
 
     body = run_graphql_query(query, bearer_token)
 
@@ -28,14 +28,14 @@ class Users::OmniauthCallbacksController < Devise::OmniauthCallbacksController
   end
 
   def google_oauth2
-    @user = User.from_omniauth(request.env['omniauth.auth'], current_user)
+    @user = User.from_omniauth(request.env["omniauth.auth"], current_user)
 
     if current_user.present?
-      flash[:notice] = 'Successfully linked Google account'
+      flash[:notice] = "Successfully linked Google account"
       redirect_to dashboard_path
     else
       attempt_user_sign_in(@user)
-      set_flash_message(:notice, :success, kind: 'Google') if is_navigational_format?
+      set_flash_message(:notice, :success, kind: "Google") if is_navigational_format?
     end
   end
 
@@ -50,31 +50,31 @@ class Users::OmniauthCallbacksController < Devise::OmniauthCallbacksController
   end
 
   def fail_sign_in
-    flash[:alert] = 'Your account has not been found'
-    redirect_to '/'
+    flash[:alert] = "Your account has not been found"
+    redirect_to "/"
   end
 
   def run_graphql_query(query, bearer_token)
     # Connect to the GraphQL interface and run the query.
     # Save the response that has the user information into a response
     # object
-    conn = Faraday.new(url: 'https://api.wonde.com/graphql') do |faraday|
+    conn = Faraday.new(url: "https://api.wonde.com/graphql") do |faraday|
       faraday.request :url_encoded
       faraday.response :logger unless Rails.env.test?
       faraday.adapter Faraday.default_adapter
       faraday.authorization :Bearer, bearer_token
     end
 
-    response = conn.get '/graphql/me', query: query
+    response = conn.get "/graphql/me", query: query
 
     JSON.parse response.body
   end
 
   def extract_query_data(body)
-    return unless body.present? && body['data'].present?
+    return unless body.present? && body["data"].present?
 
-    query_data = body['data']['Me']['Person']
-    query_data['provider'] = 'Wonde'
+    query_data = body["data"]["Me"]["Person"]
+    query_data["provider"] = "Wonde"
     query_data
   end
 end

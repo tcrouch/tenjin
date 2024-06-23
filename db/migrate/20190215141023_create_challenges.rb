@@ -13,7 +13,6 @@ class CreateChallenges < ActiveRecord::Migration[5.2]
   end
 end
 
-
 # def up
 #   execute <<-DDL
 #     CREATE TYPE challenge_types AS ENUM (

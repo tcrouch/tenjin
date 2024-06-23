@@ -3,20 +3,20 @@
 FactoryBot.define do
   factory :question do
     sequence(:question_text) { |n| "#{FFaker::Lorem.sentence} #{n}" }
-    question_type { 'multiple' }
+    question_type { "multiple" }
     topic
     active { true }
     lesson { nil }
 
     factory :short_answer_question do
-      question_type { 'short_answer' }
+      question_type { "short_answer" }
     end
 
     factory :boolean_question do
-      question_type { 'boolean' }
+      question_type { "boolean" }
       after(:build) do |q|
-        q.answers.first.update_attribute(:text, 'true')
-        q.answers << create(:answer, question: q, text: 'false')
+        q.answers.first.update_attribute(:text, "true")
+        q.answers << create(:answer, question: q, text: "false")
       end
     end
 

@@ -15,7 +15,7 @@ module ApplicationHelper
 
   def print_subject_image(url)
     if asset_exists?(url).empty?
-      'default-subject.jpg'
+      "default-subject.jpg"
     else
       url
     end
@@ -32,14 +32,14 @@ module ApplicationHelper
   end
 
   def render_dashboard_style(style)
-    return '' if style.nil?
-    return '' unless style.image.attached?
+    return "" if style.nil?
+    return "" unless style.image.attached?
 
     "background:linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.5)), url(#{rails_blob_url(style.image)}) no-repeat;"
   end
 
   def get_user_classes(student)
-    student.enrollments.map { |e| e.classroom.name }.join(', ')
+    student.enrollments.map { |e| e.classroom.name }.join(", ")
   end
 
   def link_to_add_row(name, form, association, **args)
@@ -48,6 +48,6 @@ module ApplicationHelper
     fields = form.simple_fields_for(association, new_object, child_index: id) do |builder|
       render(association.to_s.singularize, f: builder)
     end
-    link_to(name, '#', class: "add_fields #{args[:class]}", data: { id: id, fields: fields.delete("\n") })
+    link_to(name, "#", class: "add_fields #{args[:class]}", data: {id: id, fields: fields.delete("\n")})
   end
 end

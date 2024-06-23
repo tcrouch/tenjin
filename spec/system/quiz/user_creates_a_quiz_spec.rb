@@ -1,34 +1,34 @@
 # frozen_string_literal: true
 
-require 'rails_helper'
-require 'support/api_data'
+require "rails_helper"
+require "support/api_data"
 
-RSpec.describe 'User creates a quiz', :default_creates, :js do
-  context 'when picking a subject' do
+RSpec.describe "User creates a quiz", :default_creates, :js do
+  context "when picking a subject" do
     let(:subject_cs) { create(:computer_science) }
     let(:classroom_cs) { create(:classroom, subject: subject_cs, school: school) }
 
-    it 'shows a subject image when there is one available' do
+    it "shows a subject image when there is one available" do
       create(:enrollment, classroom: classroom_cs, user: student)
       log_in
-      expect(page).to have_css('img[src*=computer-science]')
+      expect(page).to have_css("img[src*=computer-science]")
     end
 
-    it 'shows a default subject image if there is not a specific one' do
+    it "shows a default subject image if there is not a specific one" do
       setup_subject_database
       log_in
-      expect(page).to have_css('img[src*=default-subject]')
+      expect(page).to have_css("img[src*=default-subject]")
     end
 
-    it 'takes me to the correct topic select page' do
+    it "takes me to the correct topic select page" do
       setup_subject_database
       log_in
-      find(class: 'subject-carousel-item-image').click
+      find(class: "subject-carousel-item-image").click
       expect(page).to have_content(/Select topic/i)
     end
   end
 
-  context 'when creating two quizzes in quick succession' do
+  context "when creating two quizzes in quick succession" do
     before do
       setup_subject_database
       create_list(:answer, 3, question: question)
@@ -38,16 +38,16 @@ RSpec.describe 'User creates a quiz', :default_creates, :js do
       navigate_to_quiz
     end
 
-    it 'prevents you from taking a quiz if 40 seconds have not passed' do
+    it "prevents you from taking a quiz if 40 seconds have not passed" do
       expect(page).to have_current_path(dashboard_path)
     end
 
-    it 'says how long they need to wait to create another quiz' do
-      expect(page).to have_content('You need to wait')
+    it "says how long they need to wait to create another quiz" do
+      expect(page).to have_content("You need to wait")
     end
   end
 
-  context 'when creating a quiz for the same topic multiple times' do
+  context "when creating a quiz for the same topic multiple times" do
     let(:user_topic_score) { TopicScore.where(user: student, topic: topic).first.score }
     let(:two_quizzes_started) { create(:usage_statistic, user: student, topic: topic, quizzes_started: 2) }
     let(:three_quizzes_started) { create(:usage_statistic, user: student, topic: topic, quizzes_started: 3) }
@@ -58,28 +58,28 @@ RSpec.describe 'User creates a quiz', :default_creates, :js do
       sign_in student
     end
 
-    it 'allows you to score points for the first attempt' do
+    it "allows you to score points for the first attempt" do
       navigate_to_quiz
-      first(class: 'question-button').click
-      find('.correct-answer')
+      first(class: "question-button").click
+      find(".correct-answer")
       expect(user_topic_score).to eq(1)
     end
 
-    it 'allows you to score points for the third attempt' do
+    it "allows you to score points for the third attempt" do
       two_quizzes_started
       navigate_to_quiz
-      first(class: 'question-button').click
-      find('.correct-answer')
+      first(class: "question-button").click
+      find(".correct-answer")
       expect(user_topic_score).to eq(1)
     end
 
-    it 'always allows you to score with a lucky dip' do
+    it "always allows you to score with a lucky dip" do
       three_quizzes_started
       navigate_to_lucky_dip
-      expect(page).to have_no_content('not counting')
+      expect(page).to have_no_content("not counting")
     end
 
-    context 'when you should not be allowed to score' do
+    context "when you should not be allowed to score" do
       let(:three_quizzes_started) { create(:usage_statistic, user: student, topic: topic, quizzes_started: 3) }
 
       before do
@@ -87,22 +87,22 @@ RSpec.describe 'User creates a quiz', :default_creates, :js do
         navigate_to_quiz
       end
 
-      it 'does not allow you to score points for the fourth attempt' do
+      it "does not allow you to score points for the fourth attempt" do
         create(:topic_score, user: student, topic: topic, score: 3)
-        first(class: 'question-button').click
-        find('.correct-answer')
+        first(class: "question-button").click
+        find(".correct-answer")
         expect(user_topic_score).to eq(3)
       end
 
-      it 'informs the user they cannot currently score leaderboard points for this quiz' do
-        expect(page).to have_content('not counting')
+      it "informs the user they cannot currently score leaderboard points for this quiz" do
+        expect(page).to have_content("not counting")
       end
     end
   end
 
-  context 'when selecting a topic' do
+  context "when selecting a topic" do
     let(:topic) { create(:topic, subject: Subject.first) }
-    let(:customisation) { create(:dashboard_customisation, value: 'orange') }
+    let(:customisation) { create(:dashboard_customisation, value: "orange") }
     let(:active_customisation) { create(:active_customisation, user: student, customisation: customisation) }
 
     before do
@@ -111,20 +111,20 @@ RSpec.describe 'User creates a quiz', :default_creates, :js do
       log_in
     end
 
-    it 'allows me to select a topic' do
-      visit(new_quiz_path(params: { subject: subject.name }))
-      find(:xpath, '//select/option[1]')
-      expect(page).to have_select('quiz_topic_id', options: ['Lucky Dip', Topic.first.name])
+    it "allows me to select a topic" do
+      visit(new_quiz_path(params: {subject: subject.name}))
+      find(:xpath, "//select/option[1]")
+      expect(page).to have_select("quiz_topic_id", options: ["Lucky Dip", Topic.first.name])
     end
 
-    it 'creates a quiz on the correct topic' do
+    it "creates a quiz on the correct topic" do
       navigate_to_quiz
       expect(page).to have_current_path(%r{quizzes/[0-9]*})
     end
 
-    it 'has a separator of the correct colour' do
+    it "has a separator of the correct colour" do
       active_customisation
-      visit(new_quiz_path(params: { subject: subject.name }))
+      visit(new_quiz_path(params: {subject: subject.name}))
       expect(page).to have_css("hr[style*='#{active_customisation.customisation.value}'")
     end
   end

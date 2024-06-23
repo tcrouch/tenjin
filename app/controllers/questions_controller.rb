@@ -15,10 +15,10 @@ class QuestionsController < ApplicationController
     authorize @topic, :show?
     @topic_lessons = Lesson.where(topic: @topic)
     @questions = Question.with_rich_text_question_text_and_embeds
-                         .includes(:question_statistic, :lesson)
-                         .where(topic: @topic, active: true)
+      .includes(:question_statistic, :lesson)
+      .where(topic: @topic, active: true)
 
-    render 'topic_question_index'
+    render "topic_question_index"
   end
 
   def lesson
@@ -27,10 +27,10 @@ class QuestionsController < ApplicationController
     @lesson = Lesson.find(lesson_params)
     authorize @lesson, :view_questions?
     @questions = Question.with_rich_text_question_text_and_embeds
-                         .includes(:answers)
-                         .where(lesson: @lesson, active: true)
+      .includes(:answers)
+      .where(lesson: @lesson, active: true)
 
-    render 'lesson_question_index'
+    render "lesson_question_index"
   end
 
   def reset_flags
@@ -54,6 +54,7 @@ class QuestionsController < ApplicationController
     authorize @question
     check_answers(@question)
   end
+
   def new
     @question = Question.new(question_params)
     authorize @question
@@ -69,12 +70,11 @@ class QuestionsController < ApplicationController
     check_answers(@question)
 
     if @question.save
-      redirect_to topic_questions_path(topic_id: @question.topic), notice: 'Question successfully created'
+      redirect_to topic_questions_path(topic_id: @question.topic), notice: "Question successfully created"
     else
       render :new
     end
   end
-
 
   def update
     @question = find_question
@@ -83,7 +83,7 @@ class QuestionsController < ApplicationController
     check_answers(@question)
 
     if @question.save
-      redirect_to @question, notice: 'Question successfully updated'
+      redirect_to @question, notice: "Question successfully updated"
     else
       render :show
     end
@@ -102,8 +102,8 @@ class QuestionsController < ApplicationController
     questions = Question.where(topic: topic).to_json(include: :answers)
 
     send_data questions,
-              type: 'application/json; header=present',
-              disposition: "attachment; filename=#{topic.name}.json"
+      type: "application/json; header=present",
+      disposition: "attachment; filename=#{topic.name}.json"
   end
 
   def import_topic
@@ -116,7 +116,7 @@ class QuestionsController < ApplicationController
     authorize @topic, :update?
 
     if params[:file].nil?
-      flash[:alert] = 'Please attach a file'
+      flash[:alert] = "Please attach a file"
       return render :import_topic, topic_id: @topic
     end
 
@@ -142,7 +142,7 @@ class QuestionsController < ApplicationController
 
   def question_params
     params.require(:question).permit(:question_text, :question_type, :lesson_id,
-                                     :topic_id, answers_attributes: %i[correct id text _destroy])
+      :topic_id, answers_attributes: %i[correct id text _destroy])
   end
 
   def find_question
@@ -154,8 +154,8 @@ class QuestionsController < ApplicationController
     question.answers = question.answers.slice(0..1) if question.answers.length > 2
     return if question.valid?
 
-    question.answers.second.text = 'True'
-    question.answers.first.text = 'False'
+    question.answers.second.text = "True"
+    question.answers.first.text = "False"
   end
 
   def check_answers(question)

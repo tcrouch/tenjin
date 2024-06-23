@@ -9,22 +9,22 @@ class ClassroomsController < ApplicationController
     @school = current_user.school
     @subjects = Subject.where(active: true)
   end
+
   def show
     @classroom = find_classroom
     authorize @classroom
-    @students = User.joins(enrollments: :classroom).where(role: 'student', enrollments: { classroom: @classroom })
+    @students = User.joins(enrollments: :classroom).where(role: "student", enrollments: {classroom: @classroom})
     @homeworks = @classroom.homework_counts
 
     @homework_progress = HomeworkProgress.joins(:homework)
-                                         .where(homework: @homeworks.pluck(:id))
-                                         .order('homeworks.due_date desc')
+      .where(homework: @homeworks.pluck(:id))
+      .order("homeworks.due_date desc")
   end
-
 
   def update
     classroom = authorize find_classroom
     classroom.update(subject_id: update_classroom_params[:subject])
-    classroom.school.update(sync_status: 'needed')
+    classroom.school.update(sync_status: "needed")
   end
 
   private

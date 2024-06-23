@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'wondeclient'
+require "wondeclient"
 
 class School::AddSchool < ApplicationService
   def initialize(school_params)

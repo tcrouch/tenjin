@@ -8,14 +8,14 @@ module ClassroomsHelper
 
   def sync_status_button
     case @school.sync_status
-    when 'never', 'successful'
+    when "never", "successful"
       sync_button
-    when 'failed', 'needed'
+    when "failed", "needed"
       sync_needed_button
-    when @school.sync_status == 'syncing' && (Time.current - School.first.updated_at) < 240
+    when @school.sync_status == "syncing" && (Time.current - School.first.updated_at) < 240
       sync_timeout_button
     else
-      'Refresh the page to see the current sync status'
+      "Refresh the page to see the current sync status"
     end
   end
 
@@ -25,24 +25,24 @@ module ClassroomsHelper
   end
 
   def sync_button
-    link_to 'Sync Classrooms & Users', sync_school_path(current_user.school),
-            method: :patch,
-            id: 'syncButton',
-            class: 'btn btn-primary btn-block my-3'
+    link_to "Sync Classrooms & Users", sync_school_path(current_user.school),
+      method: :patch,
+      id: "syncButton",
+      class: "btn btn-primary btn-block my-3"
   end
 
   def sync_needed_button
-    link_to 'School sync required. Click here to start.',
-            sync_school_path(current_user.school),
-            method: :patch,
-            id: 'syncButton',
-            class: 'btn btn-danger btn-block my-3'
+    link_to "School sync required. Click here to start.",
+      sync_school_path(current_user.school),
+      method: :patch,
+      id: "syncButton",
+      class: "btn btn-danger btn-block my-3"
   end
 
   def sync_timeout_button
-    link_to 'Last Sync Timed Out.  Press here to try again.', sync_school_path(current_user.school),
-            method: :patch,
-            id: 'syncButton',
-            class: 'btn btn-secondary btn-block my-3'
+    link_to "Last Sync Timed Out.  Press here to try again.", sync_school_path(current_user.school),
+      method: :patch,
+      id: "syncButton",
+      class: "btn btn-secondary btn-block my-3"
   end
 end

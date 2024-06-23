@@ -4,7 +4,7 @@ class HomeworkPolicy < ApplicationPolicy
   class Scope < Scope
     def resolve
       if user.has_role?(:school_admin)
-        scope.joins(:classroom).where(classrooms: { school: user.school })
+        scope.joins(:classroom).where(classrooms: {school: user.school})
       else
         scope.where(classroom_id: user.classrooms)
       end

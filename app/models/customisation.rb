@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 class Customisation < ApplicationRecord
-  enum customisation_type: {:dashboard_style => 0, :leaderboard_icon => 1, :subject_image => 2}
+  enum customisation_type: {dashboard_style: 0, leaderboard_icon: 1, subject_image: 2}
 
   has_many :customisation_unlocks
   has_many :active_customisations
@@ -16,7 +16,7 @@ class Customisation < ApplicationRecord
   validates :image, presence: true, if: :dashboard_style?
 
   def dashboard_style?
-    customisation_type == 'dashboard_style'
+    customisation_type == "dashboard_style"
   end
 
   def make_unpurchasable_if_retired

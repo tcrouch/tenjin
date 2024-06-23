@@ -14,5 +14,6 @@ class LeaderboardChannel < ApplicationCable::Channel
     "leaderboard:#{subject}:#{location}"
   end
 
-  def unsubscribed; end
+  def unsubscribed
+  end
 end

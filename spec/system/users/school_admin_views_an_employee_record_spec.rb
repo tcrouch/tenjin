@@ -1,25 +1,25 @@
 # frozen_string_literal: true
 
-require 'rails_helper'
+require "rails_helper"
 
-RSpec.describe 'School admin views a teacher record', :default_creates, :js do
+RSpec.describe "School admin views a teacher record", :default_creates, :js do
   let(:new_password) { FFaker::Internet.password }
 
   before do
     setup_subject_database
   end
 
-  context 'when updating the user password' do
+  context "when updating the user password" do
     before do
       sign_in school_admin
       visit(user_path(teacher))
     end
 
-    it 'shows the user password reset option for a school_admin' do
-      expect(page).to have_button('Update Password')
+    it "shows the user password reset option for a school_admin" do
+      expect(page).to have_button("Update Password")
     end
 
-    it 'updates the user password' do
+    it "updates the user password" do
       update_password(new_password)
       sign_out school_admin
       log_in_through_front_page(teacher.username, new_password)
@@ -27,9 +27,9 @@ RSpec.describe 'School admin views a teacher record', :default_creates, :js do
     end
   end
 
-  it 'shows the user password reset option for an employee' do
+  it "shows the user password reset option for an employee" do
     sign_in teacher
     visit(user_path(teacher))
-    expect(page).to have_button('Update Password')
+    expect(page).to have_button("Update Password")
   end
 end

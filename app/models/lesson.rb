@@ -5,17 +5,17 @@ class Lesson < ApplicationRecord
     [:no_content, /\A[[:blank:]]*\z/],
     [:vimeo, %r{(?:(?:https?:)?//)?(?:www.)?(?:player.)?vimeo.com/(?:[a-z]*/)*(\d+)(?:\S*)}],
     [:youtube,
-     %r{(?:(?:https?:)?//)?(?:(?:www|m)\.)?(?:youtube(?:-nocookie)?.com|youtu.be)(?:/(?:[\w\-\.\@]+\?v=|embed/|v/)?)([\w\-]+)(?:\S*)}]
+      %r{(?:(?:https?:)?//)?(?:(?:www|m)\.)?(?:youtube(?:-nocookie)?.com|youtu.be)(?:/(?:[\w\-.@]+\?v=|embed/|v/)?)([\w-]+)(?:\S*)}]
   ].freeze
   CATEGORY_VIDEOS = {
-    youtube: 'https://www.youtube.com/embed/%s',
-    vimeo: 'https://player.vimeo.com/video/%s'
+    youtube: "https://www.youtube.com/embed/%s",
+    vimeo: "https://player.vimeo.com/video/%s"
   }.freeze
   CATEGORY_THUMBNAILS = {
-    youtube: 'https://img.youtube.com/vi/%s/hqdefault.jpg'
+    youtube: "https://img.youtube.com/vi/%s/hqdefault.jpg"
   }.freeze
 
-  enum category: { youtube: 0, vimeo: 1, no_content: 2 }
+  enum category: {youtube: 0, vimeo: 1, no_content: 2}
   has_many :questions
   belongs_to :topic
   has_one :subject, through: :topic
@@ -24,7 +24,7 @@ class Lesson < ApplicationRecord
 
   before_destroy { |record| Question.where(lesson: record).update_all(lesson_id: nil) }
 
-  validates :title, length: { minimum: 3 }
+  validates :title, length: {minimum: 3}
   validate :check_video_link
 
   def video_link=(value)
@@ -59,6 +59,6 @@ class Lesson < ApplicationRecord
   def check_video_link
     return unless video_link.present? && video_id.nil?
 
-    errors.add :video_link, 'Must be a YouTube or Vimeo link e.g https://youtu.be/z1aIdcb43RE'
+    errors.add :video_link, "Must be a YouTube or Vimeo link e.g https://youtu.be/z1aIdcb43RE"
   end
 end

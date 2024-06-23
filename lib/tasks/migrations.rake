@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 namespace :migrations do
-  desc 'Migrate data'
+  desc "Migrate data"
   task usage_statistic_questions: :environment do
     # Set start date for collecting statistics to the start of the year.
     start_date = Date.new(2020, 1, 6)

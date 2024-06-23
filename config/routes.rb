@@ -1,32 +1,32 @@
 # frozen_string_literal: true
 
 Rails.application.routes.draw do
-  devise_for :admins, controllers: { invitations: 'admins/invitations' }
-  devise_for :users, controllers: { omniauth_callbacks: 'users/omniauth_callbacks' }
+  devise_for :admins, controllers: {invitations: "admins/invitations"}
+  devise_for :users, controllers: {omniauth_callbacks: "users/omniauth_callbacks"}
 
   resources :quizzes
   resources :schools do
     collection do
-      get 'show_stats'
+      get "show_stats"
     end
     member do
-      patch 'reset_all_passwords'
-      patch 'sync'
+      patch "reset_all_passwords"
+      patch "sync"
     end
   end
   resources :leaderboard, only: %i[show index]
   resources :classrooms, only: %i[show index update]
   resources :questions do
     collection do
-      get 'topic'
-      get 'lesson'
-      get 'download_topic'
-      get 'import_topic'
-      get 'flagged_questions'
-      post 'import'
+      get "topic"
+      get "lesson"
+      get "download_topic"
+      get "import_topic"
+      get "flagged_questions"
+      post "import"
     end
     member do
-      patch 'reset_flags'
+      patch "reset_flags"
     end
   end
   resources :answers
@@ -35,21 +35,21 @@ Rails.application.routes.draw do
   resources :homeworks
   resources :users, only: %i[show index update] do
     member do
-      patch 'set_role'
-      patch 'reset_password'
-      patch 'update_email'
-      post 'send_welcome_email'
-      delete 'remove_role'
-      delete 'unlink_oauth_account'
+      patch "set_role"
+      patch "reset_password"
+      patch "update_email"
+      post "send_welcome_email"
+      delete "remove_role"
+      delete "unlink_oauth_account"
     end
     collection do
-      get 'manage_roles'
+      get "manage_roles"
     end
   end
   resources :admins, only: [:show] do
     member do
-      post 'become'
-      post 'reset_year'
+      post "become"
+      post "reset_year"
     end
   end
 
@@ -58,22 +58,22 @@ Rails.application.routes.draw do
   resources :lessons
   resources :customisations do
     collection do
-      get 'show_available'
+      get "show_available"
     end
     member do
-      post 'buy'
+      post "buy"
     end
   end
 
-  get 'quizzes/new/:subject', to: 'quizzes#new'
-  get 'dashboard/', to: 'dashboard#show'
+  get "quizzes/new/:subject", to: "quizzes#new"
+  get "dashboard/", to: "dashboard#show"
 
-  get '/pages/*id', to: 'pages#show', as: :page, format: false
+  get "/pages/*id", to: "pages#show", as: :page, format: false
 
   authenticated :user do
-    root to: 'dashboard#show', as: :authenticated_root
+    root to: "dashboard#show", as: :authenticated_root
   end
 
   # if routing the root path, update for your controller
-  root to: 'pages#show', id: 'home'
+  root to: "pages#show", id: "home"
 end

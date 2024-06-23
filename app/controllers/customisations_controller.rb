@@ -14,6 +14,7 @@ class CustomisationsController < ApplicationController
     @customisation = authorize Customisation.new(purchasable: false, retired: false)
     render :edit
   end
+
   def edit
     @customisation = authorize find_customisation
   end
@@ -27,7 +28,6 @@ class CustomisationsController < ApplicationController
       render :edit
     end
   end
-
 
   def update
     customisation = authorize find_customisation
@@ -43,8 +43,8 @@ class CustomisationsController < ApplicationController
     @bought_customisations = CustomisationUnlock.where(user: current_user).pluck(:customisation_id)
     @purchased_styles = Customisation.with_attached_image.where(id: @bought_customisations)
     @available_styles = Customisation.with_attached_image.where(purchasable: true)
-                                     .where.not(id: @bought_customisations)
-                                     .order('RANDOM()')
+      .where.not(id: @bought_customisations)
+      .order("RANDOM()")
   end
 
   def buy

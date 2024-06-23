@@ -9,7 +9,7 @@ class AnswersController < ApplicationController
 
     authorize question.topic
     answer = Answer.create(question: question, correct: false)
-    answer.update_attribute(:correct, true) if question.question_type == 'short_answer'
+    answer.update_attribute(:correct, true) if question.question_type == "short_answer"
 
     redirect_to question
   end

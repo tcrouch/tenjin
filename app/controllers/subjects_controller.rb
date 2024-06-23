@@ -11,6 +11,7 @@ class SubjectsController < ApplicationController
   def show
     @subject = authorize find_subject
   end
+
   def new
     @subject = Subject.new
     authorize @subject
@@ -27,7 +28,6 @@ class SubjectsController < ApplicationController
     end
   end
 
-
   def update
     subject = authorize find_subject
     subject.update(subject_params)
@@ -38,7 +38,7 @@ class SubjectsController < ApplicationController
     subject = authorize find_subject
     subject.update_attribute(:active, false)
 
-    Enrollment.joins(:classroom).where(classrooms: { subject_id: subject }).destroy_all
+    Enrollment.joins(:classroom).where(classrooms: {subject_id: subject}).destroy_all
     Classroom.where(subject: subject).update_all(subject_id: nil)
     redirect_to subjects_path
   end

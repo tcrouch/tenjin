@@ -47,7 +47,7 @@ class Quiz::CheckAnswer < ApplicationService
   end
 
   def check_multiple_choice
-    raise 'no valid answer given to multiple choice' if @answer_given[:id].blank?
+    raise "no valid answer given to multiple choice" if @answer_given[:id].blank?
 
     answer = Answer.where(id: @answer_given[:id]).pick(:correct)
     return if answer.blank?

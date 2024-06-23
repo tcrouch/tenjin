@@ -12,8 +12,8 @@ class Topic < ApplicationRecord
   has_many :usage_statistics, dependent: :destroy
 
   belongs_to :default_lesson,
-             optional: true,
-             class_name: 'Lesson'
+    optional: true,
+    class_name: "Lesson"
 
   validates :name, presence: true
 

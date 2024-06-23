@@ -6,9 +6,10 @@ class HomeworksController < ApplicationController
 
   def show
     @homework = authorize find_homework
-    @homework_progress = HomeworkProgress.includes(:user).where(homework: @homework).order('users.surname')
+    @homework_progress = HomeworkProgress.includes(:user).where(homework: @homework).order("users.surname")
     @homework_counts = @homework.classroom.homework_counts.find_by(id: @homework)
   end
+
   def new
     @classroom = find_classroom
     @homework = Homework.new(due_date: 1.week.from_now, classroom: @classroom, required: 70)
@@ -27,7 +28,6 @@ class HomeworksController < ApplicationController
       @classroom.present? ? render(:new) : redirect_to(dashboard_path)
     end
   end
-
 
   def destroy
     homework = authorize find_homework
@@ -63,7 +63,7 @@ class HomeworksController < ApplicationController
   end
 
   def no_classroom_id
-    flash[:alert] = 'Error! No classroom given when trying to create homework'
+    flash[:alert] = "Error! No classroom given when trying to create homework"
     redirect_to dashboard_path
   end
 end

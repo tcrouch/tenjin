@@ -15,8 +15,8 @@ class UpdateQuestionStatisticsJob < ApplicationJob
 
   def update_question_statistics
     inactive_asked_questions = AskedQuestion.joins(:quiz, :question)
-                                            .left_joins(question: :question_statistic)
-                                            .where(quizzes: { active: false })
+      .left_joins(question: :question_statistic)
+      .where(quizzes: {active: false})
     inactive_asked_questions.each do |q|
       unless q.correct.nil?
         increase_question_asked_count(q)
@@ -31,12 +31,12 @@ class UpdateQuestionStatisticsJob < ApplicationJob
     correct = calculate_correct(question)
     asked = calculate_asked(question)
     now = Time.current
-    QuestionStatistic.upsert({ question_id: question.question_id,
+    QuestionStatistic.upsert({question_id: question.question_id,
                                number_asked: asked,
                                number_correct: correct,
                                created_at: now,
-                               updated_at: now },
-                             unique_by: :question_id)
+                               updated_at: now},
+      unique_by: :question_id)
   end
 
   def increase_question_count_for_user(question)
@@ -48,12 +48,12 @@ class UpdateQuestionStatisticsJob < ApplicationJob
 
   def clean_old_questions
     AskedQuestion.joins(:quiz, :question)
-                 .left_joins(question: :question_statistic)
-                 .where(quizzes: { active: false })
-                 .destroy_all
+      .left_joins(question: :question_statistic)
+      .where(quizzes: {active: false})
+      .destroy_all
 
     AskedQuestion.where(updated_at: ...1.day.ago)
-                 .destroy_all
+      .destroy_all
   end
 
   def calculate_correct(asked_question)

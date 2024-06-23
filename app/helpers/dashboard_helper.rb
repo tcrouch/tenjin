@@ -3,7 +3,7 @@
 module DashboardHelper
   def write_challenge_progress(challenge, challenge_progresses)
     challenge_progress = challenge_progresses.select { |cp| cp.challenge_id == challenge.id }
-    return '0%' if challenge_progress.empty?
+    return "0%" if challenge_progress.empty?
     return '<i class="fas fa-check" style="color:green"></i>'.html_safe if challenge_progress.first.completed
 
     challenge_progress.first.progress.to_i.to_s
@@ -18,7 +18,7 @@ module DashboardHelper
   end
 
   def challenge_time_left(challenge)
-    return 'Soon' if challenge.end_date.past?
+    return "Soon" if challenge.end_date.past?
 
     distance_of_time_in_words(Time.current, challenge.end_date)
   end
