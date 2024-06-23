@@ -46,11 +46,6 @@ Customisation.create([
   {customisation_type: "leaderboard_icon", cost: 200, name: "Pizza", value: "black,pizza-slice"}
 ])
 
-case Rails.env
-when "development"
-  Admin.create(email: "n.houlton@grange.outwood.com", password: "password", password_confirmation: "password", role: "super")
-end
-
 CSV.foreach("db/CSV Output - question_export.csv", headers: true) do |row|
   topic = Topic.where(external_id: row["topic_id"]).first
 
