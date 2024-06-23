@@ -2,8 +2,8 @@
 
 module QuizzesHelper
   def render_question
-    return render('short_answer') if @question.question_type == 'short_answer'
+    return render("short_answer") if @question.question_type == "short_answer"
 
-    render('multiple_choice')
+    render("multiple_choice")
   end
 end

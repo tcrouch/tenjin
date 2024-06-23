@@ -11,7 +11,7 @@ class Admins::InvitationsController < Devise::InvitationsController
   private
 
   def invite_resource
-    super { |admin| admin.role = 'school_group' }
+    super { |admin| admin.role = "school_group" }
   end
 
   def after_accept_path_for(_resource)

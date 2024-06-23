@@ -10,12 +10,12 @@ class User::ChangeUserRole < ApplicationService
   end
 
   def call
-    return return_error('User not found') if @user.blank?
-    return return_error('Role not found') if @role.blank?
+    return return_error("User not found") if @user.blank?
+    return return_error("Role not found") if @role.blank?
     return return_error('Action must be "add" or "remove"') unless %i[add remove].include? @action
 
     if %w[lesson_author question_author].include?(@role) && @subject.blank?
-      return return_error('Must include a subject with a lesson or quesiton author role')
+      return return_error("Must include a subject with a lesson or quesiton author role")
     end
 
     change_user_role
@@ -39,7 +39,7 @@ class User::ChangeUserRole < ApplicationService
   end
 
   def add_user_role
-    if @role == 'school_admin'
+    if @role == "school_admin"
       @user.add_role @role
     elsif %w[question_author lesson_author].include? @role
       @user.add_role @role, @subject
@@ -47,7 +47,7 @@ class User::ChangeUserRole < ApplicationService
   end
 
   def remove_user_role
-    if @role == 'school_admin'
+    if @role == "school_admin"
       @user.remove_role @role
     elsif %w[question_author lesson_author].include? @role
       @user.remove_role @role, @subject

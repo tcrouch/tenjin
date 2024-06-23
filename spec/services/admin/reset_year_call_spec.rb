@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
-require 'rails_helper'
+require "rails_helper"
 
-RSpec.describe Admin::ResetYear, '#call', :default_creates do
+RSpec.describe Admin::ResetYear, "#call", :default_creates do
   before do
     create_active_database
   end
@@ -32,52 +32,52 @@ RSpec.describe Admin::ResetYear, '#call', :default_creates do
     leaderboard_award
   end
 
-  it 'removes topic scores' do
+  it "removes topic scores" do
     described_class.call
     expect(TopicScore.count).to eq(0)
   end
 
-  it 'removes all time topic scores' do
+  it "removes all time topic scores" do
     described_class.call
     expect(AllTimeTopicScore.count).to eq(0)
   end
 
-  it 'removes homeworks' do
+  it "removes homeworks" do
     described_class.call
     expect(Homework.count).to eq(0)
   end
 
-  it 'removes homework progress' do
+  it "removes homework progress" do
     described_class.call
     expect(HomeworkProgress.count).to eq(0)
   end
 
-  it 'removes enrollments' do
+  it "removes enrollments" do
     described_class.call
     expect(Enrollment.count).to eq(0)
   end
 
-  it 'removes challenges' do
+  it "removes challenges" do
     described_class.call
     expect(Challenge.count).to eq(0)
   end
 
-  it 'removes challenge progress' do
+  it "removes challenge progress" do
     described_class.call
     expect(ChallengeProgress.count).to eq(0)
   end
 
-  it 'removes leaderboard awards' do
+  it "removes leaderboard awards" do
     described_class.call
     expect(LeaderboardAward.count).to eq(0)
   end
 
-  it 'removes classrooms' do
+  it "removes classrooms" do
     described_class.call
     expect(Classroom.count).to eq(0)
   end
 
-  it 'removes classroom winners' do
+  it "removes classroom winners" do
     described_class.call
     expect(ClassroomWinner.count).to eq(0)
   end

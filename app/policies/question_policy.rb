@@ -11,7 +11,7 @@ class QuestionPolicy < ApplicationPolicy
     user.has_role? :question_author, record.topic.subject
   end
 
-  alias create? update?
-  alias destroy? update?
-  alias show? update?
+  alias_method :create?, :update?
+  alias_method :destroy?, :update?
+  alias_method :show?, :update?
 end

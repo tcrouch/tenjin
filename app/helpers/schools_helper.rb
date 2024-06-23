@@ -4,15 +4,15 @@ module SchoolsHelper
   # rubocop:disable Metrics/MethodLength
   def sync_status_icon(status)
     case status
-    when 'queued'
+    when "queued"
       "<i class='fas fa-clock'></i>".html_safe
-    when 'syncing'
+    when "syncing"
       "<i class='fas fa-sync'></i>".html_safe
-    when 'successful'
+    when "successful"
       "<i class='fas fa-check' style='color:green'></i>".html_safe
-    when 'failed'
+    when "failed"
       "<i class='fas fa-times' style='color:red'></i>".html_safe
-    when 'needed'
+    when "needed"
       "<i class='fas fa-exclamation-triangle' style='color:red'></i>".html_safe
     else
       "<i class='fas fa-question' style='color:red'></i>".html_safe

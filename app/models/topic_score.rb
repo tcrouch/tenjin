@@ -7,5 +7,5 @@ class TopicScore < ApplicationRecord
   has_one :subject, through: :topic
   has_one :school, through: :user
 
-  validates :score, numericality: { greater_than_or_equal_to: 0 }
+  validates :score, numericality: {greater_than_or_equal_to: 0}
 end

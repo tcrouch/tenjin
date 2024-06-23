@@ -1,12 +1,12 @@
 # frozen_string_literal: true
 
 namespace :challenges do
-  desc 'Removing old challenges'
+  desc "Removing old challenges"
   task remove_challenges: :environment do
     Challenge::ProcessExpiredChallenges.call
   end
 
-  desc 'Add new challenges'
+  desc "Add new challenges"
   task add_challenges: :environment do
     # Should be checked hourly
     today = Date.current

@@ -6,7 +6,7 @@ class Enrollment < ApplicationRecord
 
   has_one :subject, through: :classroom
 
-  validates :user, uniqueness: { scope: :classroom_id }
+  validates :user, uniqueness: {scope: :classroom_id}
 
   def self.from_wonde(classroom_api_data)
     classroom = Classroom.find_by(client_id: classroom_api_data.id)
@@ -35,7 +35,7 @@ class Enrollment < ApplicationRecord
         create_enrollment(classroom, student)
       end
 
-      classroom.update_attribute('disabled', classroom.enrollments.exists? ? false : true)
+      classroom.update_attribute("disabled", !classroom.enrollments.exists?)
     end
 
     def destroy_classroom_enrollments(classroom)

@@ -27,12 +27,12 @@ FactoryBot.define do
         topic_score.user = User.find(User.pluck(:id).sample)
       else
         topic_score.user.school = if evaluator.school.nil? && topic_score.user.school.nil?
-                                    create(:school)
-                                  elsif evaluator.school.nil?
-                                    topic_score.user.school
-                                  else
-                                    evaluator.school
-                                  end
+          create(:school)
+        elsif evaluator.school.nil?
+          topic_score.user.school
+        else
+          evaluator.school
+        end
       end
       topic_score.save
     end

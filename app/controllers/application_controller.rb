@@ -24,17 +24,17 @@ class ApplicationController < ActionController::Base
   private
 
   def user_not_authorized
-    flash[:alert] = 'You are not authorized to perform this action.'
-    redirect_to(request.referrer || root_path)
+    flash[:alert] = "You are not authorized to perform this action."
+    redirect_to(request.referer || root_path)
   end
 
   def find_dashboard_style
     style = ActiveCustomisation.joins(:customisation)
-                               .find_by(user: current_user,
-                                        customisations: { customisation_type: 'dashboard_style' })
+      .find_by(user: current_user,
+        customisations: {customisation_type: "dashboard_style"})
     return style.customisation if style.present?
 
-    Customisation.find_by(customisation_type: 'dashboard_style', value: 'red')
+    Customisation.find_by(customisation_type: "dashboard_style", value: "red")
   end
 
   def pundit_user

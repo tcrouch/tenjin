@@ -15,8 +15,8 @@ class SubjectPolicy < ApplicationPolicy
     user.has_role? :question_author, record
   end
 
-  alias create? update?
-  alias destroy? update?
-  alias show? update?
-  alias new? update?
+  alias_method :create?, :update?
+  alias_method :destroy?, :update?
+  alias_method :show?, :update?
+  alias_method :new?, :update?
 end

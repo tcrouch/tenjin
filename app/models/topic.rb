@@ -12,9 +12,8 @@ class Topic < ApplicationRecord
   has_many :usage_statistics, dependent: :destroy
 
   belongs_to :default_lesson,
-             optional: true,
-             class_name: 'Lesson',
-             foreign_key: 'default_lesson_id'
+    optional: true,
+    class_name: "Lesson"
 
   validates :name, presence: true
 

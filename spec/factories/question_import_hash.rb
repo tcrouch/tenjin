@@ -2,14 +2,14 @@
 
 FactoryBot.define do
   factory :question_import_hash, class: Hash do
-    question_type { 'multiple' }
-    question_text { { body: FFaker::Lorem.sentence } }
+    question_type { "multiple" }
+    question_text { {body: FFaker::Lorem.sentence} }
     answers do
       [
-        { text: FFaker::Lorem.sentence, correct: true },
-        { text: FFaker::Lorem.sentence, correct: false },
-        { text: FFaker::Lorem.sentence, correct: false },
-        { text: FFaker::Lorem.sentence, correct: false }
+        {text: FFaker::Lorem.sentence, correct: true},
+        {text: FFaker::Lorem.sentence, correct: false},
+        {text: FFaker::Lorem.sentence, correct: false},
+        {text: FFaker::Lorem.sentence, correct: false}
       ]
     end
 
@@ -20,8 +20,8 @@ FactoryBot.define do
     factory :question_import_hash_boolean do
       answers do
         [
-          { text: 'True', correct: true },
-          { text: 'False', correct: false }
+          {text: "True", correct: true},
+          {text: "False", correct: false}
         ]
       end
     end

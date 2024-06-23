@@ -16,10 +16,10 @@ class Leaderboard::BroadcastLeaderboardPoint < ApplicationService
   def channel_name
     school = @user.school
     location = if school.school_group_id.present?
-                 school.school_group.name
-               else
-                 school.name
-               end
+      school.school_group.name
+    else
+      school.name
+    end
     "#{@topic.subject.name}:#{location}"
   end
 
@@ -37,9 +37,9 @@ class Leaderboard::BroadcastLeaderboardPoint < ApplicationService
 
   def scores
     TopicScore.joins(:topic)
-              .where(user_id: @user)
-              .where(subject_topics.arel.exists)
-              .pick(s_score.as('subject_score'), t_score.as('topic_score'))
+      .where(user_id: @user)
+      .where(subject_topics.arel.exists)
+      .pick(s_score.as("subject_score"), t_score.as("topic_score"))
   end
 
   private
@@ -50,14 +50,14 @@ class Leaderboard::BroadcastLeaderboardPoint < ApplicationService
 
   def t_score
     TopicScore.select(s_score)
-              .where(user_id: @user, topic_id: @topic)
-              .arel
+      .where(user_id: @user, topic_id: @topic)
+      .arel
   end
 
   def subject_topics
     Topic.select(1)
-         .from('topics t2')
-         .where(t2: { id: @topic })
-         .where('t2.subject_id = topics.subject_id')
+      .from("topics t2")
+      .where(t2: {id: @topic})
+      .where("t2.subject_id = topics.subject_id")
   end
 end

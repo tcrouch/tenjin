@@ -7,12 +7,12 @@ class Customisation::BuyCustomisation < ApplicationService
   end
 
   def call
-    return error_openstruct('Customisation not found') if @customisation.blank?
-    return error_openstruct('User not found') if @user.blank?
+    return error_openstruct("Customisation not found") if @customisation.blank?
+    return error_openstruct("User not found") if @user.blank?
 
     unlock = CustomisationUnlock.where(customisation: @customisation, user: @user).first_or_initialize
     if unlock.new_record?
-      return error_openstruct('You do not have enough points') unless funds_present?
+      return error_openstruct("You do not have enough points") unless funds_present?
 
       unlock.user = @user
       deduct_challenge_points
@@ -36,9 +36,9 @@ class Customisation::BuyCustomisation < ApplicationService
 
   def destroy_old_active_customisation
     ActiveCustomisation.joins(:customisation)
-                       .where(customisations: { customisation_type: @customisation.customisation_type })
-                       .where(user: @user)
-                       .destroy_all
+      .where(customisations: {customisation_type: @customisation.customisation_type})
+      .where(user: @user)
+      .destroy_all
   end
 
   def create_new_active_customisation

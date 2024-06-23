@@ -1,28 +1,28 @@
 # frozen_string_literal: true
 
 # This file is copied to spec/ when you run 'rails generate rspec:install'
-require 'spec_helper'
-ENV['RAILS_ENV'] ||= 'test'
-require File.expand_path('../config/environment', __dir__)
+require "spec_helper"
+ENV["RAILS_ENV"] ||= "test"
+require File.expand_path("../config/environment", __dir__)
 # Prevent database truncation if the environment is production
-abort('The Rails environment is running in production mode!') if Rails.env.production?
-require 'rspec/rails'
+abort("The Rails environment is running in production mode!") if Rails.env.production?
+require "rspec/rails"
 # Add additional requires below this line. Rails is not loaded until this point!
 
-require 'capybara/rails'
-require 'webmock/rspec'
-require 'vcr'
+require "capybara/rails"
+require "webmock/rspec"
+require "vcr"
 
 WebMock.disable_net_connect!(allow_localhost: true)
 # WebMock.allow_net_connect!
 
 VCR.configure do |config|
-  config.cassette_library_dir = 'spec/fixtures/vcr_cassettes'
+  config.cassette_library_dir = "spec/fixtures/vcr_cassettes"
   config.hook_into :webmock
   config.ignore_localhost = true # allows oAuth testing
   config.configure_rspec_metadata!
-  config.ignore_hosts 'chromedriver.storage.googleapis.com'
-  config.ignore_hosts 'github.com'
+  config.ignore_hosts "chromedriver.storage.googleapis.com"
+  config.ignore_hosts "github.com"
 end
 
 # Requires supporting ruby files with custom matchers and macros, etc, in
@@ -38,7 +38,7 @@ end
 # directory. Alternatively, in the individual `*_spec.rb` files, manually
 # require only the support files necessary.
 #
-Dir[Rails.root.join('spec/support/**/*.rb')].sort.each { |f| require f }
+Dir[Rails.root.join("spec/support/**/*.rb")].sort.each { |f| require f }
 
 # Checks for pending migrations and applies them before tests are run.
 # If you are not using ActiveRecord, you can remove these lines.
@@ -51,18 +51,18 @@ end
 
 Capybara.register_driver :selenium_chrome_headless_download do |app|
   browser_options = Selenium::WebDriver::Chrome::Options.new.tap do |opts|
-    opts.args << '--headless'
-    opts.args << '--disable-site-isolation-trials'
+    opts.args << "--headless"
+    opts.args << "--disable-site-isolation-trials"
   end
   browser_options.add_preference(:download, prompt_for_download: false, default_directory: DownloadHelpers::PATH.to_s)
 
-  browser_options.add_preference(:browser, set_download_behavior: { behavior: 'allow' })
+  browser_options.add_preference(:browser, set_download_behavior: {behavior: "allow"})
   Capybara::Selenium::Driver.new(app, browser: :chrome, options: browser_options)
 end
 
 RSpec.configure do |config|
   # Remove this line if you're not using ActiveRecord or ActiveRecord fixtures
-  config.fixture_path = "#{Rails.root.join('spec/fixtures')}"
+  config.fixture_path = Rails.root.join("spec/fixtures").to_s
 
   # If you're not using ActiveRecord, or you'd prefer not to run each of your
   # examples within a transaction, remove the following line or assign false
@@ -97,7 +97,7 @@ RSpec.configure do |config|
   config.include DownloadHelpers, type: :system
   config.include ActiveJob::TestHelper
 
-  config.include_context 'with default_creates', default_creates: true
+  config.include_context "with default_creates", default_creates: true
 
   # Required to use database cleaner with action cable
   # or feature testing will not work
@@ -105,12 +105,12 @@ RSpec.configure do |config|
   config.after(:each, :js) do
     errors = page.driver.browser.manage.logs.get(:browser)
     if errors.present?
-      aggregate_failures 'javascript errors' do
+      aggregate_failures "javascript errors" do
         errors.each do |error|
-          expect(error.level).not_to eq('SEVERE'), error.message
-          next unless error.level == 'WARNING'
+          expect(error.level).not_to eq("SEVERE"), error.message
+          next unless error.level == "WARNING"
 
-          warn 'WARN: javascript warning'
+          warn "WARN: javascript warning"
           warn error.message
         end
       end
@@ -122,7 +122,7 @@ RSpec.configure do |config|
     page.driver.browser.manage.window.resize_to(1024, 768)
   end
 
-  if ENV['CI']
+  if ENV["CI"]
     # show retry status in spec process
     config.verbose_retry = true
     # show exception that triggers a retry if verbose_retry is set to true
@@ -151,5 +151,5 @@ Shoulda::Matchers.configure do |config|
   end
 end
 
-Capybara.server = :puma, { Silent: true }
-Capybara.default_max_wait_time = 15 if ENV['CI']
+Capybara.server = :puma, {Silent: true}
+Capybara.default_max_wait_time = 15 if ENV["CI"]

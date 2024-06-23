@@ -31,7 +31,7 @@ class QuizPolicy < ApplicationPolicy
     end
 
     def resolve
-      @scope.where('active = ? and user_id = ?', true, @user.id)
+      @scope.where("active = ? and user_id = ?", true, @user.id)
     end
   end
 end

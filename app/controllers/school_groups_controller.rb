@@ -7,27 +7,27 @@ class SchoolGroupsController < ApplicationController
     @school_groups = policy_scope(SchoolGroup)
   end
 
-  def new
-    @school_group = SchoolGroup.new(name: 'New Group')
-    authorize @school_group
-    render :show
-  end
-
   def show
     @school_group = authorize find_school_group
   end
 
-  def update
-    school_group = authorize find_school_group
-    school_group.update_attributes(school_group_params)
-    school_group.save
-
-    redirect_to school_groups_path
+  def new
+    @school_group = SchoolGroup.new(name: "New Group")
+    authorize @school_group
+    render :show
   end
 
   def create
     school_group = SchoolGroup.new(school_group_params)
     authorize school_group
+    school_group.save
+
+    redirect_to school_groups_path
+  end
+
+  def update
+    school_group = authorize find_school_group
+    school_group.update_attributes(school_group_params)
     school_group.save
 
     redirect_to school_groups_path

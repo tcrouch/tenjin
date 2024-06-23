@@ -17,7 +17,7 @@ class Quiz::CheckAnswer < ApplicationService
       answer: Answer.where(question: @question, correct: true),
       streak: @quiz.streak,
       answeredCorrect: @quiz.answered_correct,
-      multiplier: Multiplier.where('score <= ?', @quiz.streak).order(id: :desc).pick(:multiplier)
+      multiplier: Multiplier.where(score: ..@quiz.streak).order(id: :desc).pick(:multiplier)
     }
   end
 
@@ -47,7 +47,7 @@ class Quiz::CheckAnswer < ApplicationService
   end
 
   def check_multiple_choice
-    raise 'no valid answer given to multiple choice' if @answer_given[:id].blank?
+    raise "no valid answer given to multiple choice" if @answer_given[:id].blank?
 
     answer = Answer.where(id: @answer_given[:id]).pick(:correct)
     return if answer.blank?

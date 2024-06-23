@@ -12,7 +12,7 @@ class Question < ApplicationRecord
 
   has_rich_text :question_text
 
-  enum question_type: %i[short_answer boolean multiple]
+  enum question_type: {short_answer: 0, boolean: 1, multiple: 2}
 
   before_update :check_boolean
   before_update :check_short_answer
@@ -27,7 +27,7 @@ class Question < ApplicationRecord
   validate :lesson_is_for_topic
 
   def lesson_is_for_topic
-    errors.add :base, 'Lesson topic must match question topic' unless lesson.blank? || lesson.topic == topic
+    errors.add :base, "Lesson topic must match question topic" unless lesson.blank? || lesson.topic == topic
   end
 
   def boolean_true_or_false
@@ -35,23 +35,23 @@ class Question < ApplicationRecord
 
     answer_text = answers.filter_map { |i| i&.text }
     # Check for the presence of both true and false in two answers in a case insensitive search
-    return errors.add :base, 'Boolean question must contain two answers' unless answer_text.size == 2
+    return errors.add :base, "Boolean question must contain two answers" unless answer_text.size == 2
 
     return if answer_text.select { |text| %w[true false].detect { |permitted| permitted.casecmp(text).zero? } }
 
-    errors.add :base, 'Boolean must be true or false only'
+    errors.add :base, "Boolean must be true or false only"
   end
 
   def at_least_one_correct_answer
     return if answers.each.pluck(:correct).include? true
 
-    errors.add :base, 'Question must have at least one correct answer.'
+    errors.add :base, "Question must have at least one correct answer."
   end
 
   def as_json(*)
-    json = { question_text: question_text.body,
-             question_type: question_type,
-             answers: answers.as_json(only: %i[text correct]) }
+    json = {question_text: question_text.body,
+            question_type: question_type,
+            answers: answers.as_json(only: %i[text correct])}
     json[:lesson] = lesson.title if lesson
     json
   end
@@ -59,16 +59,16 @@ class Question < ApplicationRecord
   private
 
   def check_boolean
-    return unless question_type_changed? && question_type == 'boolean'
+    return unless question_type_changed? && question_type == "boolean"
 
     # Setup boolean question.  Only true and false allowed.
     answers.destroy_all
-    Answer.create(question: self, correct: false, text: 'False')
-    Answer.create(question: self, correct: false, text: 'True')
+    Answer.create(question: self, correct: false, text: "False")
+    Answer.create(question: self, correct: false, text: "True")
   end
 
   def check_short_answer
-    return unless question_type_changed? && question_type == 'short_answer'
+    return unless question_type_changed? && question_type == "short_answer"
 
     # Setup short answer.  Change all answers to correct
     answers.update_all(correct: true)

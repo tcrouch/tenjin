@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
-require 'rails_helper'
+require "rails_helper"
 
-RSpec.describe 'User visits the homepage', :default_creates, :js, :vcr do
+RSpec.describe "User visits the homepage", :default_creates, :js, :vcr do
   let(:student) { create(:student) }
   let(:new_password) { FFaker::Lorem.word }
 
@@ -14,26 +14,26 @@ RSpec.describe 'User visits the homepage', :default_creates, :js, :vcr do
   def log_in_via_google
     sign_out student
     visit root_path
-    click_button 'Login'
-    find_by_id('loginGoogle').click
-    find('.alert', text: 'authenticated')
+    click_button "Login"
+    find_by_id("loginGoogle").click
+    find(".alert", text: "authenticated")
   end
 
-  it 'change passwords' do
+  it "change passwords" do
     visit(user_path(student))
-    fill_in('user[password]', with: new_password)
-    click_button('Update Password')
+    fill_in("user[password]", with: new_password)
+    click_button("Update Password")
     log_in_through_front_page(student.username, new_password)
     expect(page).to have_content(student.forename).and have_content(student.surname)
   end
 
-  it 'unlinks Google accounts' do
+  it "unlinks Google accounts" do
     visit(user_path(student))
     page.accept_confirm { click_link "Unlink #{student.oauth_email}" }
-    expect(page).to have_css('#loginGoogle')
+    expect(page).to have_css("#loginGoogle")
   end
 
-  context 'when linking Google accounts' do
+  context "when linking Google accounts" do
     let(:student_no_oauth) { create(:student, :no_oauth) }
 
     before do
@@ -41,19 +41,19 @@ RSpec.describe 'User visits the homepage', :default_creates, :js, :vcr do
       stub_google_omniauth
     end
 
-    it 'links to Google accounts' do
+    it "links to Google accounts" do
       visit(user_path(student_no_oauth))
-      find_by_id('loginGoogle').click
-      find('.alert', text: 'linked')
+      find_by_id("loginGoogle").click
+      find(".alert", text: "linked")
       log_in_via_google
       expect(page).to have_content(student_no_oauth.forename).and have_content(student_no_oauth.surname)
     end
 
-    it 'shows an appropriate flash message when linking accounts' do
+    it "shows an appropriate flash message when linking accounts" do
       visit(user_path(student_no_oauth))
-      find('.shepherd-text')
-      find_by_id('loginGoogle').click
-      expect(page).to have_content('Successfully linked Google account')
+      find(".shepherd-text")
+      find_by_id("loginGoogle").click
+      expect(page).to have_content("Successfully linked Google account")
     end
   end
 end

@@ -11,6 +11,5 @@ class CreateUserStatistics < ActiveRecord::Migration[6.0]
     end
 
     add_index :user_statistics, [:user_id, :week_beginning], unique: true
-
   end
 end

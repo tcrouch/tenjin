@@ -6,7 +6,7 @@ class User < ApplicationRecord
   # :confirmable, :lockable, :timeoutable and :omniauthable
   # Note - removed :registerable so new accounts cannot be created
   devise :database_authenticatable, :rememberable, :trackable, :recoverable,
-         :omniauthable, omniauth_providers: %i[wonde google_oauth2], authentication_keys: [:login]
+    :omniauthable, omniauth_providers: %i[wonde google_oauth2], authentication_keys: [:login]
 
   has_many :quizzes
   has_many :enrollments
@@ -17,7 +17,7 @@ class User < ApplicationRecord
 
   belongs_to :school
 
-  enum role: { student: 0, employee: 1, contact: 2, school_admin: 3 }
+  enum role: {student: 0, employee: 1, contact: 2, school_admin: 3}
   validates :upi, presence: true
   validates :role, presence: true
 
@@ -35,8 +35,8 @@ class User < ApplicationRecord
   def self.find_for_database_authentication(warden_conditions)
     conditions = warden_conditions.dup
     if (login = conditions.delete(:login))
-      where(conditions.to_h).where(['lower(username) = :value OR lower(email) = :value',
-                                    { value: login.downcase }]).first
+      where(conditions.to_h).where(["lower(username) = :value OR lower(email) = :value",
+        {value: login.downcase}]).first
     elsif conditions.key?(:username) || conditions.key?(:email)
       where(conditions.to_h).first
     end
@@ -47,30 +47,30 @@ class User < ApplicationRecord
   end
 
   def self.from_omniauth(auth, current_user = nil)
-    user = find_by(provider: auth['provider'], upi: auth['upi'])
-    user = find_by(oauth_provider: auth['provider'], oauth_uid: auth['uid']) if user.nil?
+    user = find_by(provider: auth["provider"], upi: auth["upi"])
+    user = find_by(oauth_provider: auth["provider"], oauth_uid: auth["uid"]) if user.nil?
 
     return user if user.present?
 
     # If signed in and its an oauth2 google request, assume linking of accounts
-    return unless auth['provider'] == 'google_oauth2' && current_user.present?
+    return unless auth["provider"] == "google_oauth2" && current_user.present?
 
     save_oauth_user_details(auth, current_user)
   end
 
   def self.save_oauth_user_details(auth, current_user)
-    return if auth['info'].blank?
+    return if auth["info"].blank?
 
-    current_user.oauth_uid = auth['uid']
-    current_user.oauth_provider = auth['provider']
-    current_user.oauth_email = auth['info']['email']
+    current_user.oauth_uid = auth["uid"]
+    current_user.oauth_provider = auth["provider"]
+    current_user.oauth_email = auth["info"]["email"]
     current_user.save
     current_user
   end
 
   def self.unlink_account
-    current_user.oauth_uid = ''
-    current_user.oauth_provider = ''
+    current_user.oauth_uid = ""
+    current_user.oauth_provider = ""
     current_user.save
   end
 
@@ -97,7 +97,7 @@ class User < ApplicationRecord
       return if classroom.students.data.blank?
 
       classroom.students.data.each do |student|
-        u = initialize_user(student, 'student', school)
+        u = initialize_user(student, "student", school)
         u.save
       end
     end
@@ -108,7 +108,7 @@ class User < ApplicationRecord
       return if classroom.employees.data.blank?
 
       classroom.employees.data.each do |employee|
-        u = initialize_user(employee, 'employee', school)
+        u = initialize_user(employee, "employee", school)
         u.save
       end
     end
@@ -125,9 +125,9 @@ class User < ApplicationRecord
     end
 
     def initialize_user(user, role, school)
-      u = User.where(provider: 'Wonde', upi: user.upi).first_or_initialize
-      u.attributes = { school_id: school.id, role: role, provider: 'Wonde',
-                       upi: user.upi, forename: user.forename, surname: user.surname, disabled: false }
+      u = User.where(provider: "Wonde", upi: user.upi).first_or_initialize
+      u.attributes = {school_id: school.id, role: role, provider: "Wonde",
+                       upi: user.upi, forename: user.forename, surname: user.surname, disabled: false}
       u.challenge_points = 0 if u.challenge_points.blank?
       u.username = generate_username(u) if u.new_record? || u.username.blank?
       u

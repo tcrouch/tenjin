@@ -10,9 +10,10 @@ class LeaderboardChannel < ApplicationCable::Channel
 
   def stream_string
     subject = params[:subject]
-    location = params[:school_group].present? ? params[:school_group] : params[:school]
+    location = (params[:school_group].presence || params[:school])
     "leaderboard:#{subject}:#{location}"
   end
 
-  def unsubscribed; end
+  def unsubscribed
+  end
 end

@@ -13,7 +13,7 @@ class LessonsController < ApplicationController
 
   def new
     first_topic = Topic.where(active: true, subject: Subject.find(new_lesson_params)).first
-    redirect_to lessons_path flash: { error: 'No topics found for subject' } if first_topic.blank?
+    redirect_to lessons_path flash: {error: "No topics found for subject"} if first_topic.blank?
 
     @lesson = Lesson.new(topic: first_topic)
     @topics = Topic.where(active: true, subject: Subject.find(new_lesson_params)).order(:name)
@@ -78,11 +78,11 @@ class LessonsController < ApplicationController
     if @author
       @editable_subjects = Subject.with_role(:lesson_author, current_user)
       @lessons = policy_scope(Lesson)
-                 .or(Lesson
+        .or(Lesson
                   .includes(:topic)
-                  .where(topics: { subject: @editable_subjects.pluck(:id) })).order('topics.name, lessons.title')
+                  .where(topics: {subject: @editable_subjects.pluck(:id)})).order("topics.name, lessons.title")
     else
-      @lessons = policy_scope(Lesson).includes(:topic).order('topics.name, lessons.title')
+      @lessons = policy_scope(Lesson).includes(:topic).order("topics.name, lessons.title")
     end
   end
 end

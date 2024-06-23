@@ -11,11 +11,18 @@ class SchoolsController < ApplicationController
   def show_stats
     authorize current_admin
     @school_statistics = School::CompileSchoolStatistics.call
-    @customisation_statistics = Customisation.select(:name, :customisation_type, 'COUNT(customisations.id)')
-                                             .left_joins(:customisation_unlocks)
-                                             .group(:id)
-                                             .order(count: :desc)
-    render 'overall_statistics'
+    @customisation_statistics = Customisation.select(:name, :customisation_type, "COUNT(customisations.id)")
+      .left_joins(:customisation_unlocks)
+      .group(:id)
+      .order(count: :desc)
+    render "overall_statistics"
+  end
+
+  def show
+    @school = authorize find_school
+    @school_statistics = School::CompileSchoolStatistics.call(@school)
+    @school_admins = User.where(school: @school).with_role(:school_admin)
+    @users = User.where(school: @school)
   end
 
   def new
@@ -50,23 +57,16 @@ class SchoolsController < ApplicationController
     end
 
     school = authorize find_school
-    school.update_attribute('sync_status', 'queued')
+    school.update_attribute("sync_status", "queued")
     SyncSchoolJob.perform_later school
     redirect_to classrooms_path
   end
 
   def reset_all_passwords
-    school = authorize find_school
+    authorize find_school
     ResetUserPasswordsJob.perform_later(current_user)
-    flash[:alert] = 'Request received.  You will receive an email shortly with usernames and passwords.'
+    flash[:alert] = "Request received.  You will receive an email shortly with usernames and passwords."
     redirect_to users_path
-  end
-
-  def show
-    @school = authorize find_school
-    @school_statistics = School::CompileSchoolStatistics.call(@school)
-    @school_admins = User.where(school: @school).with_role(:school_admin)
-    @users = User.where(school: @school)
   end
 
   private

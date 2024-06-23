@@ -13,7 +13,7 @@ class QuizzesController < ApplicationController
   def show
     @quiz = authorize find_quiz
     @question = question_for_quiz(@quiz)
-    @multiplier = Multiplier.where('score <= ?', @quiz.streak).last
+    @multiplier = Multiplier.where(score: ..@quiz.streak).last
     @percent_complete = (@quiz.num_questions_asked / @quiz.questions.length.to_f) * 100.to_f
     @flagged_question = FlaggedQuestion.where(user: current_user, question: @question).first
     @lesson = lesson_for_question(@question)
@@ -22,10 +22,10 @@ class QuizzesController < ApplicationController
     percent_correct = calculate_percent_correct(@quiz)
 
     flash[:notice] = if percent_correct > 60
-                       "Finished!  You got #{percent_correct}%.  Well done!"
-                     else
-                       "Finished!  You got #{percent_correct}%"
-                     end
+      "Finished!  You got #{percent_correct}%.  Well done!"
+    else
+      "Finished!  You got #{percent_correct}%"
+    end
 
     redirect_to dashboard_path
   end
@@ -41,10 +41,10 @@ class QuizzesController < ApplicationController
       render :new
     else
       @topics = @subject.topics.where(active: true)
-                        .order(:name)
-                        .pluck(:name, :id)
-      @topics.prepend(['Lucky Dip', 'Lucky Dip'])
-      render 'select_topic'
+        .order(:name)
+        .pluck(:name, :id)
+      @topics.prepend(["Lucky Dip", "Lucky Dip"])
+      render "select_topic"
     end
   end
 
@@ -54,9 +54,9 @@ class QuizzesController < ApplicationController
     return select_quiz_topic(subject) if topic_id.blank?
 
     result = Quiz::CreateQuiz.call(user: current_user,
-                                   topic: topic_id,
-                                   subject: subject,
-                                   lesson: quiz_params[:lesson_id])
+      topic: topic_id,
+      subject: subject,
+      lesson: quiz_params[:lesson_id])
     result.success? ? authorize(result.quiz) : authorize(current_user, :show?, policy_class: UserPolicy)
     return fail_quiz_creation(result) unless result.success?
 
@@ -108,14 +108,14 @@ class QuizzesController < ApplicationController
 
   def quiz_not_authorized(exception)
     case exception.query
-    when 'new?'
+    when "new?"
       flash[:alert] = if exception.record.subject.present?
-                        ['Invalid subject ', exception.record.subject]
-                      else
-                        'Subject does not exist'
-                      end
-    when 'show?'
-      return flash[:alert] = 'Quiz does not belong to you' if exception.record.active?
+        ["Invalid subject ", exception.record.subject]
+      else
+        "Subject does not exist"
+      end
+    when "show?"
+      return flash[:alert] = "Quiz does not belong to you" if exception.record.active?
     end
     redirect_to dashboard_path
   end

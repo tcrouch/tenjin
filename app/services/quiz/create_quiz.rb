@@ -7,19 +7,19 @@ class Quiz::CreateQuiz < ApplicationService
     @topic_id = params[:topic]
     @subject = params[:subject]
     @lesson = (Lesson.find(params[:lesson]) if params[:lesson].present?)
-    @lucky_dip = @topic_id == 'Lucky Dip'
+    @lucky_dip = @topic_id == "Lucky Dip"
     @topic = Topic.find(@topic_id) unless @lucky_dip
     @quiz = Quiz.new
   end
 
   def call
-    return OpenStruct.new(success?: false, user: @user, errors: 'User not found') if @user.blank?
+    return OpenStruct.new(success?: false, user: @user, errors: "User not found") if @user.blank?
 
     initialise_quiz
 
     unless quiz_cooldown_expired?
       return OpenStruct.new(success?: false, cooldown: @seconds_left,
-                            errors: "You need to wait #{@seconds_left} seconds to start another quiz")
+        errors: "You need to wait #{@seconds_left} seconds to start another quiz")
     end
 
     initialise_questions
@@ -47,12 +47,12 @@ class Quiz::CreateQuiz < ApplicationService
 
   def initialise_questions
     questions = if @lucky_dip
-                  lucky_dip_questions
-                elsif @lesson
-                  lesson_questions
-                else
-                  subject_questions
-                end
+      lucky_dip_questions
+    elsif @lesson
+      lesson_questions
+    else
+      subject_questions
+    end
     @quiz.questions = questions
     @quiz.question_order = @quiz.questions.shuffle.pluck(:id)
   end
@@ -75,33 +75,33 @@ class Quiz::CreateQuiz < ApplicationService
 
   def additional_topic_questions
     Question.where(active: true)
-            .includes(:topic).references(:topic)
-            .select('questions.topic_id, questions.*')
-            .where(topics: { active: true, subject_id: @subject.id })
-            .order('questions.topic_id, random()')
+      .includes(:topic).references(:topic)
+      .select("questions.topic_id, questions.*")
+      .where(topics: {active: true, subject_id: @subject.id})
+      .order("questions.topic_id, random()")
   end
 
   def topic_questions
     Question.where(active: true)
-            .includes(:topic).references(:topic)
-            .select('DISTINCT ON(questions.topic_id) questions.topic_id, questions.*')
-            .where(topics: { active: true, subject_id: @subject.id })
-            .order('questions.topic_id, random()')
+      .includes(:topic).references(:topic)
+      .select("DISTINCT ON(questions.topic_id) questions.topic_id, questions.*")
+      .where(topics: {active: true, subject_id: @subject.id})
+      .order("questions.topic_id, random()")
   end
 
   def lesson_questions
     Question.where(active: true)
-            .includes(:lesson)
-            .where(lesson: @lesson)
-            .order(Arel.sql('RANDOM()'))
-            .take(10)
+      .includes(:lesson)
+      .where(lesson: @lesson)
+      .order(Arel.sql("RANDOM()"))
+      .take(10)
   end
 
   def subject_questions
     Question.where(active: true, topic: @topic_id)
-            .includes(:topic)
-            .order(Arel.sql('RANDOM()'))
-            .take(10)
+      .includes(:topic)
+      .order(Arel.sql("RANDOM()"))
+      .take(10)
   end
 
   def quiz_cooldown_expired?
@@ -121,13 +121,13 @@ class Quiz::CreateQuiz < ApplicationService
 
   def check_lesson_attempts
     !UsageStatistic.where(user: @user, topic: @quiz.topic, lesson: @quiz.lesson, date: Date.current.all_day)
-                   .where('quizzes_started >= 1')
-                   .exists?
+      .where("quizzes_started >= 1")
+      .exists?
   end
 
   def check_topic_attempts
     !UsageStatistic.where(user: @user, topic: @quiz.topic, date: Date.current.all_day)
-                   .where('quizzes_started >= 3')
-                   .exists?
+      .where("quizzes_started >= 3")
+      .exists?
   end
 end

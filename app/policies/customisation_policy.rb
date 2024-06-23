@@ -5,11 +5,11 @@ class CustomisationPolicy < ApplicationPolicy
     user.super?
   end
 
-  alias show? index?
-  alias edit? index?
-  alias update? index?
-  alias new? index?
-  alias create? index?
+  alias_method :show?, :index?
+  alias_method :edit?, :index?
+  alias_method :update?, :index?
+  alias_method :new?, :index?
+  alias_method :create?, :index?
 
   class Scope < Scope
     def resolve

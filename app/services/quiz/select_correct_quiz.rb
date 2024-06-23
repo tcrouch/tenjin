@@ -8,7 +8,7 @@ class Quiz::SelectCorrectQuiz < ApplicationService
 
   def call
     if @quizzes.length.zero?
-      '/quizzes/new'
+      "/quizzes/new"
     elsif @quizzes.length == 1
       @quizzes.first
     else
