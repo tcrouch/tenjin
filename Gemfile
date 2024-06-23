@@ -32,11 +32,9 @@ gem "wondeclient", "~> 0.1.3"
 gem "slim"
 gem "jbuilder", "~> 2.5"
 gem "high_voltage"
-gem "sassc"
 
 # Assets
 gem "shakapacker", "= 7.2.3"
-gem "uglifier", ">= 1.3.0"
 
 # Turbolinks makes navigating your web application faster. Read more: https://github.com/turbolinks/turbolinks
 gem "turbolinks", "~> 5.2.0"
