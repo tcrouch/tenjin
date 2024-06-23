@@ -82,6 +82,9 @@ group :development, :test do
 
   # Create a fake API
   gem 'vcr'
+
+  # Linting
+  gem 'standard'
 end
 
 group :development do
@@ -102,12 +105,6 @@ group :development do
 
   # Log messages sent to/from server
   gem 'httplog'
-
-  # Linting
-  gem 'rubocop', require: false
-  gem 'rubocop-performance', require: false
-  gem 'rubocop-rails', require: false
-  gem 'rubocop-rspec', require: false
 
   # Hunt for n+1
   gem 'bullet'
