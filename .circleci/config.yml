@@ -68,7 +68,7 @@ jobs:
       - run:
           name: precompile assets
           command: |
-            bin/rails webpacker:compile
+            bin/rails shakapacker:compile
           environment:
             NODE_OPTIONS: --openssl-legacy-provider
 
