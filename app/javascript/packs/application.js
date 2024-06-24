@@ -15,8 +15,6 @@ import { definitionsFromContext } from "stimulus/webpack-helpers";
 
 import flatpickr from "flatpickr";
 import "flatpickr/dist/flatpickr.min.css";
-import Shepherd from "shepherd.js";
-import Cookies from "js-cookie/src/js.cookie";
 
 import "app";
 
@@ -27,15 +25,15 @@ ActiveStorage.start();
 const images = require.context("../images", true);
 const imagePath = (name) => images(name, true);
 
-require("datatables.net-bs4");
-require("datatables.net-buttons-bs4");
-require("datatables.net-buttons/js/buttons.html5.js");
+import "datatables.net-bs4";
+import "datatables.net-buttons-bs4";
+import "datatables.net-buttons/js/buttons.html5.js";
 require("datetime-moment");
 
 require("trix");
-require("@rails/actiontext");
-require("@rails/actioncable");
-require("turbolinks");
+import "@rails/actiontext";
+import "@rails/actioncable";
+import "turbolinks";
 
 $(document).on("turbolinks:load", function () {
   if ($("#notice").text().length) {
@@ -56,6 +54,3 @@ ReactRailsUJS.useContext(componentRequireContext);
 const application = Application.start();
 const context = require.context("controllers", true, /\.js$/);
 application.load(definitionsFromContext(context));
-
-window.Shepherd = Shepherd;
-window.Cookies = Cookies;

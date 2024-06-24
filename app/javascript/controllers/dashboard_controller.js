@@ -1,5 +1,6 @@
 // src/controllers/dashboard_controller.js
 import { Controller } from "stimulus";
+import Shepherd from "shepherd.js";
 
 export default class extends Controller {
   initialize() {
