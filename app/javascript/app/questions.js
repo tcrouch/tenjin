@@ -28,11 +28,22 @@ $(document).on("turbolinks:load", () => {
       Turbolinks.visit(currentPath + "?" + formParams);
     });
 
-    $("form").on("click", ".remove_record", function (event) {
+    $("form").on("click", ".remove-row", function (event) {
       $(this).prev("input[type=hidden]").val("1");
       $(this).closest("tr").hide();
       $(this).closest("tr").remove();
       return event.preventDefault();
+    });
+
+    $("form").on("click", ".remove-record", function (event) {
+      event.preventDefault();
+      const form = this.closest("form");
+      const hiddenInput = document.createElement("input");
+      hiddenInput.type = "hidden";
+      hiddenInput.name = `${this.dataset.objectName}[_destroy]`;
+      hiddenInput.value = "true";
+      form.appendChild(hiddenInput);
+      form.submit();
     });
 
     $("form").on("click", ".add_fields", function (event) {
