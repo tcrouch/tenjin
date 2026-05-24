@@ -61,50 +61,44 @@ RSpec.describe "using a quiz", :default_creates do
     end
   end
 
-  describe "displaying a quiz" do
-    context "when trying to access a quiz" do
-      it "only lets me see a quiz that belongs to me" do
-        diff_user = create(:student)
-        quiz = create(:new_quiz, user: diff_user, question_order: [question.id])
-        get quiz_path(id: quiz.id)
-        expect(flash[:alert]).to match(/Quiz does not belong to you/)
-      end
-
-      it "prevents me from looking at a finished quiz" do
-        quiz = create(:new_quiz, user: student, active: false, question_order: [question.id])
-        get quiz_path(id: quiz.id)
-        expect(flash[:notice]).to match(/Finished!  You got 0%/)
-      end
+  context "when trying to access a quiz" do
+    it "only lets me see a quiz that belongs to me" do
+      diff_user = create(:student)
+      quiz = create(:new_quiz, user: diff_user, question_order: [question.id])
+      get quiz_path(id: quiz.id)
+      expect(flash[:alert]).to match(/Quiz does not belong to you/)
     end
 
-    context "when displaying a question" do
-      let(:multiplier) { create(:multiplier) }
-      let(:quiz) { create(:new_quiz, user: student, question_order: [question.id]) }
-      let(:classroom) { create(:classroom, subject: subject) }
+    it "prevents me from looking at a finished quiz" do
+      quiz = create(:new_quiz, user: student, active: false, question_order: [question.id])
+      get quiz_path(id: quiz.id)
+      expect(flash[:notice]).to match(/Finished!  You got 0%/)
+    end
+  end
 
-      before do
-        multiplier
-      end
+  context "when displaying a question" do
+    let!(:multiplier) { create(:multiplier) }
+    let(:quiz) { create(:new_quiz, user: student, question_order: [question.id]) }
+    let(:classroom) { create(:classroom, subject: subject) }
 
-      it "allows me to create a quiz" do
-        create(:enrollment, school: school, classroom: classroom, user: student)
-        create(:question, topic: topic)
-        post quizzes_path params: {quiz: {topic_id: topic, subject: subject}}
-        follow_redirect!
-        expect(response).to have_http_status(:success)
-      end
+    it "creates a quiz" do
+      create(:enrollment, school: school, classroom: classroom, user: student)
+      create(:question, topic: topic)
+      post quizzes_path params: {quiz: {topic_id: topic, subject: subject}}
+      follow_redirect!
+      expect(response).to have_http_status(:success)
+    end
 
-      it "renders a multiple choice quiz question" do
-        get quiz_path(id: quiz.id)
-        expect(response).to have_http_status(:success)
-      end
+    it "renders a multiple choice quiz question" do
+      get quiz_path(id: quiz.id)
+      expect(response).to have_http_status(:success)
+    end
 
-      it "renders a single word answer question" do
-        question = create(:question, question_type: "short_answer")
-        quiz.update_attribute(:question_order, [question.id])
-        get quiz_path(id: quiz.id)
-        expect(response).to have_http_status(:success)
-      end
+    it "renders a single word answer question" do
+      question = create(:question, question_type: "short_answer")
+      quiz.update_attribute(:question_order, [question.id])
+      get quiz_path(id: quiz.id)
+      expect(response).to have_http_status(:success)
     end
   end
 end
