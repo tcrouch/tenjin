@@ -11,23 +11,17 @@ RSpec.describe "Student visits the dashboard", :default_creates, :js do
   it "shows the arrow for a tutorial"
 
   context "when looking at the challenges" do
-    let(:challenge_one) { create(:challenge, topic: topic, end_date: 1.hour.from_now) }
+    let!(:challenge_one) { create(:challenge, topic: topic, end_date: 1.hour.from_now) }
+    let!(:challenge_two) { create(:challenge, topic: create(:topic, subject: subject)) }
+    let!(:answer) { create(:answer, question: question, correct: true) }
     let(:second_subject) { create(:subject) }
     let(:second_topic) { create(:topic, subject: second_subject) }
-    let(:challenge_two) { create(:challenge, topic: create(:topic, subject: subject)) }
     let(:progressed_challenge) { create(:challenge_progress, user: student, challenge: challenge_one, progress: 70) }
     let(:completed_challenge) do
       create(:challenge_progress, user: student,
         challenge: challenge_one, progress: 100, completed: true)
     end
-    let(:quiz) { create(:new_quiz) }
     let(:challenge_css_selector) { "#challenge-table tr[data-topic='#{topic.id}']" }
-
-    before do
-      challenge_one
-      challenge_two
-      answer
-    end
 
     it "shows challenges for subjects" do
       visit(dashboard_path)
@@ -46,44 +40,40 @@ RSpec.describe "Student visits the dashboard", :default_creates, :js do
       expect(page).to have_css("td svg.fa-check")
     end
 
-    it "only shows challenges for subjects I take" do
+    it "only shows challenges for enrolled subjects" do
       second_topic
       c = Challenge.create_challenge(second_subject)
       visit(dashboard_path)
       expect(page).to have_no_content(c.stringify)
     end
 
-    it "links you to the correct quiz when clicked" do
+    it "navigates to the correct quiz when clicked" do
       visit(dashboard_path)
       find(:css, challenge_css_selector).click
       expect(page).to have_css("p", exact_text: challenge_one.topic.name)
     end
 
-    it "allows me to answer a question after creating a quiz from a challenge" do # turbolinks bug
+    it "allows answering a question after creating a quiz from a challenge" do # turbolinks bug
       visit(dashboard_path)
       find(:css, challenge_css_selector).click
       first(class: "question-button").click
       expect(page).to have_text("Next Question")
     end
 
-    it "shows the number of challenge points I have received in the nav bar" do
-      User.first.challenge_points = 25
-      User.first.save!
+    it "shows the student's challenge points in the nav bar" do
+      student.update!(challenge_points: 25)
       visit(dashboard_path)
       expect(page).to have_css("p", exact_text: 25)
     end
   end
 
   context "when looking at homeworks" do
+    let!(:homework) { create(:homework, classroom: classroom, topic: topic) }
     let(:homework_future) { create(:homework, due_date: 8.days.from_now, classroom: classroom) }
     let(:lesson) { create(:lesson, subject: classroom.subject) }
     let(:homework_lesson) { create(:homework, due_date: 8.days.from_now, classroom: classroom, lesson: lesson) }
 
-    before do
-      homework
-    end
-
-    it "shows the homeworks I currnently have" do
+    it "shows current homework assignments" do
       visit(dashboard_path)
       expect(page).to have_content(homework.topic.name).and have_content(homework.required)
     end
@@ -124,7 +114,7 @@ RSpec.describe "Student visits the dashboard", :default_creates, :js do
       expect(page).to have_css(".homework-row:first-child[data-homework='#{homework.id}']")
     end
 
-    it "links you to the correct quiz when clicked" do
+    it "navigates to the correct quiz when clicked" do
       answer
       visit(dashboard_path)
       find(".homework-row").click
@@ -137,7 +127,7 @@ RSpec.describe "Student visits the dashboard", :default_creates, :js do
       expect(page).to have_content(homework_lesson.lesson.title)
     end
 
-    it "takes you to a lesson quiz when clicked" do
+    it "navigates to a lesson quiz when clicked" do
       homework_lesson
       create_list(:question, 10, lesson: homework_lesson.lesson, topic: homework_lesson.lesson.topic)
       visit(dashboard_path)
@@ -148,7 +138,7 @@ RSpec.describe "Student visits the dashboard", :default_creates, :js do
     it "stops points being added on third lesson attempt"
     it "prevents you taking a lesson homework that has already been completed"
 
-    it "only shows my homeworks" do
+    it "only shows homeworks for the current teacher" do
       create(:homework)
       visit(dashboard_path)
       expect(page).to have_css("tr.homework-row", count: 1)

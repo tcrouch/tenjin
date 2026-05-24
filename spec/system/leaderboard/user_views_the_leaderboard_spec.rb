@@ -1,12 +1,10 @@
 # frozen_string_literal: true
 
 require "rails_helper"
-require "support/api_data"
-require "pry"
 
 RSpec.describe "User views the leaderboard", :default_creates, :js do
-  let(:topic_score) { create(:topic_score, topic: topic, user: student) }
   let(:student) { create(:student, forename: "Aaaron", school: school) } # Ensure first alphabetically
+  let!(:topic_score) { create(:topic_score, topic: topic, user: student) }
   let(:student_name) { initialize_name student }
   let(:another_name) { initialize_name User.second }
   let(:one_to_ten) do
@@ -14,19 +12,13 @@ RSpec.describe "User views the leaderboard", :default_creates, :js do
       create(:topic_score, topic: topic, school: school, score: n)
     end
   end
-  let(:one_to_nine) do
-    (1..9).each do |n|
-      create(:topic_score, topic: topic, school: school, score: n)
-    end
-  end
 
   before do
     setup_subject_database
     sign_in student
-    topic_score
   end
 
-  it "displays myself if I have a score" do
+  it "displays the current student when they have a score" do
     visit(leaderboard_path(subject.name))
     expect(page).to have_css("td", exact_text: student_name)
   end
@@ -45,7 +37,7 @@ RSpec.describe "User views the leaderboard", :default_creates, :js do
     expect(page).to have_css("td", exact_text: another_name)
   end
 
-  it "shows me what position I am in within the school" do
+  it "shows the student's position within the school" do
     TopicScore.first.update(score: 5)
     student.update(forename: "Aaron") # Ensure first alphabetically
     one_to_ten
@@ -66,28 +58,28 @@ RSpec.describe "User views the leaderboard", :default_creates, :js do
     expect(page).to have_css("table#leaderboardTable tr", count: 11)
   end
 
-  it "shows the top 10 if I have no score" do
+  it "shows the top 10 when the student has no score" do
     TopicScore.first.destroy
     one_to_ten
     visit(leaderboard_path(subject.name))
     expect(page).to have_css("tr:nth-child(10) td", exact_text: "10")
   end
 
-  it "shows me when I am at the top of the table" do
+  it "shows the student when at the top of the table" do
     TopicScore.first.update(score: 50)
     one_to_ten
     visit(leaderboard_path(subject.name))
     expect(page).to have_css("table#leaderboardTable tr", count: 11)
   end
 
-  it "shows me when I am at the bottom of the table" do
+  it "shows the student when at the bottom of the table" do
     TopicScore.first.update(score: 0)
     one_to_ten
     visit(leaderboard_path(subject.name))
     expect(page).to have_css("tr:nth-child(10) td:nth-child(6)", text: TopicScore.first.score)
   end
 
-  it "shows others when I am near the bottom of the table" do # bug
+  it "shows other students when the current student is near the bottom" do # bug
     TopicScore.first.update(score: 3)
     one_to_ten
     visit(leaderboard_path(subject.name))

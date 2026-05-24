@@ -21,13 +21,13 @@ RSpec.describe "Teacher visits the dashboard", :default_creates, :js do
       expect(page).to have_content(classroom.name)
     end
 
-    it "allows you to go to a selected classroom" do
+    it "navigates to a selected classroom" do
       visit(dashboard_path)
       find("tr[data-classroom='#{classroom.id}']").click
       expect(page).to have_current_path(classroom_path(classroom))
     end
 
-    it "allows you to go to set homework for the classroom" do
+    it "navigates to the set homework form" do
       visit(dashboard_path)
       click_link("Set Homework")
       expect(page).to have_current_path(new_homework_path(classroom: {classroom_id: classroom.id}))
@@ -54,15 +54,14 @@ RSpec.describe "Teacher visits the dashboard", :default_creates, :js do
     before do
       create(:enrollment, classroom: classroom, user: school_admin)
       sign_in school_admin
+      visit(dashboard_path)
     end
 
     it "shows a link to the classrooms in the nav bar" do
-      visit(dashboard_path)
       expect(page).to have_link("Classrooms", href: dashboard_path)
     end
 
     it "shows a link to school admin in the nav bar" do
-      visit(dashboard_path)
       expect(page).to have_link("User Admin", href: users_path)
     end
   end

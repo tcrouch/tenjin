@@ -18,10 +18,9 @@ RSpec.describe "User visits the homepage", :default_creates, :js, :vcr do
   end
 
   context "when logging in" do
-    before do
-      visit root_path
-      student
-    end
+    let!(:student) { create(:student) }
+
+    before { visit root_path }
 
     it "pops up the student login when needed" do
       click_button "Login"

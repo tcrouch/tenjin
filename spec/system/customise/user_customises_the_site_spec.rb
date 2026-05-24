@@ -8,119 +8,121 @@ RSpec.describe "User customises the site", :default_creates, :js do
     sign_in student
   end
 
-  context "when visiting the customisation page from the navbar" do
-    it "visits from the customise link" do
-      visit(dashboard_path)
+  describe "visiting the customisation page" do
+    before { visit(dashboard_path) }
+
+    it "allows navigation from the customise link" do
       find("a", text: "Shop").click
       find("a", text: "Styles").click
       expect(page).to have_current_path(show_available_customisations_path)
     end
 
-    it "visits from the challenge star" do
-      visit(dashboard_path)
+    it "allows navigation from the challenge star" do
       find("svg.fa-star").click
       expect(page).to have_current_path(show_available_customisations_path)
     end
 
-    it "visits from the number of points" do
-      visit(dashboard_path)
+    it "allows navigation from the number of points" do
       find_by_id("challenge-points").click
       expect(page).to have_current_path(show_available_customisations_path)
     end
   end
 
-  context "when looking at available dashboard styles" do
+  describe "looking at available dashboard styles" do
     let!(:dashboard_customisation) { create(:dashboard_customisation, cost: 6) }
-    let(:dashboard_customisation_expensive) { create(:dashboard_customisation, cost: 20) }
-    let(:second_customisation) { create(:dashboard_customisation, cost: 2) }
+    let!(:second_customisation) { create(:dashboard_customisation, cost: 4) }
     let(:student) { create(:user, school: school, challenge_points: 10) }
 
     before do
       visit(show_available_customisations_path)
     end
 
-    it "shows available dashboard customisations" do
+    it "lists available customisations and their prices" do
       expect(page).to have_content(dashboard_customisation.name.upcase)
+        .and have_css("#cost", text: dashboard_customisation.cost)
     end
 
-    it "hides unpurchasable dashboard customisations" do
-      dashboard_customisation_unavailable = create(:dashboard_customisation, cost: 20, purchasable: false)
-      visit(show_available_customisations_path)
-      expect(page).to have_no_content(dashboard_customisation_unavailable.name.upcase)
-    end
+    context "when not all customisations are purchasable" do
+      let!(:dashboard_customisation_unavailable) { create(:dashboard_customisation, cost: 6, purchasable: false) }
 
-    it "allows you to buy a dashbord style" do
-      find("form[action='#{buy_customisation_path(dashboard_customisation)}'] input.btn").click
-      expect(page).to have_css("hr[style*=#{dashboard_customisation.value}]")
-    end
-
-    it "deducts the required amount of challenge points" do
-      find("form[action='#{buy_customisation_path(dashboard_customisation)}'] input.btn").click
-      expect { student.reload }.to change(student, :challenge_points).by(-dashboard_customisation.cost)
-    end
-
-    it "gives a notice if you do not have the required number of points" do
-      dashboard_customisation_expensive
-      visit(show_available_customisations_path)
-      find("form[action='#{buy_customisation_path(dashboard_customisation_expensive)}'] input.btn").click
-      expect(page).to have_css(".alert", text: "You do not have enough points")
-    end
-
-    it "shows the cost of the customisation" do
-      expect(page).to have_css("#cost", text: dashboard_customisation.cost)
-    end
-
-    context "when looking at purchased customisation" do
-      let(:dashboard_customisation) { create(:dashboard_customisation, cost: 6, purchasable: false) }
-      let!(:unlocked_customisation) do
-        create(:customisation_unlock, user: student, customisation: dashboard_customisation)
-      end
-
-      before do
-        visit(show_available_customisations_path)
-      end
-
-      it "always shows customisations I have already purchased" do
+      it "only lists the available customisations" do
         expect(page).to have_content(dashboard_customisation.name.upcase)
+          .and have_no_content(dashboard_customisation_unavailable.name.upcase)
+      end
+    end
+
+    describe "buying a customisation" do
+      before do
+        within("form[action='#{buy_customisation_path(dashboard_customisation)}']") do
+          click_button "Buy"
+        end
+        expect(page).to have_current_path(dashboard_path)
       end
 
-      it "shows purchased customisations in a separate section" do
-        within("section.purchased-styles") do
-          expect(page).to have_content(dashboard_customisation.name.upcase)
+      context "when the student has enough points" do
+        it "displays the style" do
+          expect(page).to have_css("hr[style*=#{dashboard_customisation.value}]")
+        end
+
+        it "shows their new points total" do
+          expect(page).to have_css("#challenge-points", text: (student.challenge_points - dashboard_customisation.cost).to_s)
         end
       end
 
-      it "says switch instead of buy for a bought customisation" do
-        visit(show_available_customisations_path)
-        expect(page).to have_css("input[value='Switch']")
+      context "when the student does not have enough points" do
+        let!(:dashboard_customisation) { create(:dashboard_customisation, cost: 20) }
+
+        it "notifies them" do
+          expect(page).to have_css(".alert", text: "You do not have enough points")
+        end
       end
     end
 
-    context "when repurchasing a customisation already unlocked" do
+    context "when they have bought a customisation" do
       before do
-        find("form[action='#{buy_customisation_path(dashboard_customisation)}'] input.btn").click
-        second_customisation
+        within("form[action='#{buy_customisation_path(dashboard_customisation)}']") do
+          click_button "Buy"
+        end
+        expect(page).to have_current_path(dashboard_path)
         visit(show_available_customisations_path)
-        find("form[action='#{buy_customisation_path(second_customisation)}'] input.btn").click
-        student.reload
       end
 
-      it "allows you to buy a previously bought customisation at no cost" do
+      it "shows the purchased customisation in a separate section" do
+        expect(page).to have_content(second_customisation.name.upcase)
+
+        within("section.purchased-styles") do
+          expect(page).to have_content(dashboard_customisation.name.upcase)
+            .and have_no_content(second_customisation.name.upcase)
+        end
+      end
+
+      it "says switch instead of buy for the purchased customisation" do
+        expect(page).to have_css("input[value='Switch']")
+      end
+
+      it "allows them to buy another customisation and then switch back at no cost" do
+        within("form[action='#{buy_customisation_path(second_customisation)}']") do
+          click_button "Buy"
+        end
+        expect(page).to have_current_path(dashboard_path)
         visit(show_available_customisations_path)
-        find("form[action='#{buy_customisation_path(dashboard_customisation)}'] input.btn").click
-        expect { student.reload }.not_to change(student, :challenge_points)
+        points_before_switch = find("#challenge-points").text
+        within("form[action='#{buy_customisation_path(dashboard_customisation)}']") do
+          click_button "Switch"
+        end
+        expect(page).to have_current_path(dashboard_path)
+        expect(page).to have_css("#challenge-points", text: points_before_switch)
       end
     end
   end
 
-  context "when purchasing a leaderboard icon" do
+  describe "purchasing a leaderboard icon" do
     let!(:icon_customisation) do
-      create(:customisation, customisation_type:
-      "leaderboard_icon", value: "black,star", cost: 10)
+      create(:customisation, customisation_type: "leaderboard_icon", value: "black,star", cost: 10)
     end
+    let(:student) { create(:student, school: school, challenge_points: 1000) }
 
     before do
-      student.update_attribute(:challenge_points, 1000)
       visit(show_available_customisations_path)
     end
 
@@ -130,18 +132,21 @@ RSpec.describe "User customises the site", :default_creates, :js do
 
     it "hides unpurchasable icons" do
       dashboard_customisation_unavailable = create(:customisation,
-        customisation_type: "leaderboard_icon", cost: 20, purchasable: false)
+        customisation_type: "leaderboard_icon", cost: 10, purchasable: false)
       visit(show_available_customisations_path)
       expect(page).to have_no_content(dashboard_customisation_unavailable.name.upcase)
     end
 
-    it "allows you to buy an icon" do
-      expect(page).to have_css("form[action='#{buy_customisation_path(icon_customisation)}'] input.btn")
+    it "shows a buy button for purchasable icons" do
+      expect(page).to have_button("Buy")
     end
 
     it "shows the icon on the leaderboard" do
       create(:topic_score, user: student, topic: topic)
-      find("form[action='#{buy_customisation_path(icon_customisation)}'] input.btn").click
+      within("form[action='#{buy_customisation_path(icon_customisation)}']") do
+        click_button "Buy"
+      end
+      expect(page).to have_current_path(dashboard_path)
       visit(leaderboard_path(subject.name))
       expect(page).to have_css("td svg.fa-star", style: "color: black;")
     end

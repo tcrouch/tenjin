@@ -2,14 +2,14 @@
 
 require "rails_helper"
 require "support/api_data"
-require "pry"
 
 RSpec.describe "User views an updating leaderboard", :default_creates, :js do
-  before do
-    setup_subject_database
-    student_topic_score
-    one_to_nine
+  let!(:student_topic_score) { create(:topic_score, user: student, score: 10, topic: topic) }
+  let!(:one_to_nine) do
+    (1..9).each { |n| create(:topic_score, topic: topic, school: school, score: n) }
   end
+
+  before { setup_subject_database }
 
   it "does not show the option for a student" do
     sign_in student
@@ -25,10 +25,10 @@ RSpec.describe "User views an updating leaderboard", :default_creates, :js do
 
   context "with a school group" do
     let(:second_student) { create(:student, school: second_school) }
-    let(:second_school) { create(:school, school_group: school.school_group) }
-    let(:topic_score_same_school_group) { create(:topic_score, score: 100, topic: topic, user: second_student) }
+    let!(:second_school) { create(:school, school_group: school.school_group) }
+    let!(:topic_score_same_school_group) { create(:topic_score, score: 100, topic: topic, user: second_student) }
     let(:student_same_school) { create(:student, school: school) }
-    let(:enrollment_different_classroom) do
+    let!(:enrollment_different_classroom) do
       create(:enrollment,
         user: student_same_school,
         classroom: create(:classroom, subject: subject, school: school))
@@ -36,10 +36,7 @@ RSpec.describe "User views an updating leaderboard", :default_creates, :js do
     let(:topic_score_different_classroom) { create(:topic_score, score: 100, topic: topic, user: student_same_school) }
 
     before do
-      second_school
-      enrollment_different_classroom
       sign_in teacher
-      topic_score_same_school_group
       visit(leaderboard_path(subject.name))
       find(:css, "#leaderboardTable tbody tr:nth-child(10)")
       find(:css, "#toggleLive label", visible: false).click
@@ -62,7 +59,7 @@ RSpec.describe "User views an updating leaderboard", :default_creates, :js do
         exact_text: 10)
     end
 
-    it "allows you to filter by class" do
+    it "filters updates by class" do
       click_button("Select Class")
       click_button(enrollment_different_classroom.classroom.name)
       Leaderboard::BroadcastLeaderboardPoint.new(topic_score_different_classroom,
@@ -70,7 +67,7 @@ RSpec.describe "User views an updating leaderboard", :default_creates, :js do
       expect(page).to have_css(".score-changed").and have_css("tbody tr", count: 1)
     end
 
-    it "allows you to filter by school" do
+    it "filters updates by school" do
       Leaderboard::BroadcastLeaderboardPoint.new(topic_score_same_school_group, topic_score_same_school_group.user).call
       click_button("All")
       click_button(topic_score_same_school_group.user.school.name)

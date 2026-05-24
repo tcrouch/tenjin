@@ -37,7 +37,7 @@ RSpec.describe "School admin views a student record", :default_creates, :js do
     expect(page).to have_button("Update Password")
   end
 
-  it "show the user password reset option for a student for their account" do
+  it "shows the user password reset option for their own account" do
     sign_in student
     visit(user_path(student))
     expect(page).to have_button("Update Password")

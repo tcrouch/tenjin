@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require "rails_helper"
-require "support/api_data"
 
 RSpec.describe "User takes a quiz", :default_creates, :js do
   let(:lesson) { create(:lesson, topic: topic) }
@@ -48,12 +47,12 @@ RSpec.describe "User takes a quiz", :default_creates, :js do
       expect(page).to have_content(question.question_text.to_plain_text)
     end
 
-    it "allows me to respond to a question" do
+    it "allows responding to a question" do
       first(class: "question-button").click
       expect(page).to have_css(".next-button", visible: :visible)
     end
 
-    it "disables all other buttons when I attempt to answer" do
+    it "disables all other buttons when answering" do
       first(class: "question-button").click
       expect(page).to have_css(".question-button[disabled]", visible: :visible)
     end
@@ -62,27 +61,27 @@ RSpec.describe "User takes a quiz", :default_creates, :js do
       expect(page).to have_css(".next-button", visible: :hidden)
     end
 
-    it "indicates if the answer I gave was right" do
+    it "shows the answer as correct when right" do
       find("button", text: correct_answer_text).click
       expect(page).to have_css("button.correct-answer", text: correct_answer_text)
     end
 
-    it "indicates if the answer I gave was wrong" do
+    it "shows the answer as incorrect when wrong" do
       find("button", text: incorrect_answer_text).click
       expect(page).to have_css("button.incorrect-answer", text: incorrect_answer_text)
     end
 
-    it "indicates the correct answer if the answer I gave was wrong" do
+    it "highlights the correct answer when the wrong answer is chosen" do
       find("button", text: incorrect_answer_text).click
       expect(page).to have_css("button.correct-answer", text: correct_answer_text)
     end
 
-    it "uses icons to show which questions are right" do
+    it "uses a check icon when the answer is correct" do
       find("button", text: correct_answer_text).click
       expect(page).to have_css("svg.fa-check")
     end
 
-    it "uses icons to show which questions are wrong" do
+    it "uses a times icon when the answer is incorrect" do
       find("button", text: incorrect_answer_text).click
       expect(page).to have_css("svg.fa-times")
     end
@@ -94,18 +93,18 @@ RSpec.describe "User takes a quiz", :default_creates, :js do
         expect(page).to have_css("svg.fa-flag")
       end
 
-      it "allows me to flag a question" do
+      it "flags a question" do
         find(:css, "svg.fa-flag").click
         expect(page).to have_css('svg.fa-flag[data-prefix="fas"]').and have_content("You have flagged this question as unfair")
       end
 
-      it "shows if I have already flagged a particular question" do
+      it "shows when a question has already been flagged" do
         flagged_question
         visit current_path
         expect(page).to have_css('svg.fa-flag[data-prefix="fas"]')
       end
 
-      it "allows me to unflag a question" do
+      it "unflags a question" do
         flagged_question
         visit current_path
         find(:css, 'svg.fa-flag[data-prefix="fas"]').click
@@ -185,33 +184,33 @@ RSpec.describe "User takes a quiz", :default_creates, :js do
         expect(page).to have_content(question.question_text.to_plain_text)
       end
 
-      it "allows me to respond to a question" do
+      it "allows responding to a question" do
         fill_in("shortAnswerText", with: incorrect_response).native.send_keys(:return)
         expect(page).to have_css(".next-button", visible: :visible)
       end
 
-      it "indicates if the answer I gave was right" do
+      it "shows the answer as correct when right" do
         fill_in("shortAnswerText", with: correct_response).native.send_keys(:return)
         expect(page).to have_css("#shortAnswerButton.correct-answer")
       end
 
-      it "ignores case in the answers I give" do
+      it "ignores case when checking the answer" do
         fill_in("shortAnswerText", with: correct_response.upcase).native.send_keys(:return)
         expect(page).to have_css("#shortAnswerButton.correct-answer")
       end
 
-      it "indicates if the answer I gave was wrong" do
+      it "shows the answer as incorrect when wrong" do
         fill_in("shortAnswerText", with: incorrect_response).native.send_keys(:return)
         expect(page).to have_css("#shortAnswerButton.incorrect-answer")
       end
 
-      it "gives the correct answer if I responded incorrectly" do
+      it "shows the correct answer when wrong" do
         fill_in("shortAnswerText", with: incorrect_response).native.send_keys(:return)
         find(".incorrect-answer")
         expect(find_field("shortAnswerText", disabled: true).value).to eq(correct_response)
       end
 
-      it "gives the correct answers if I responded incorrectly to a question that has multiple answers" do
+      it "shows all correct answers when wrong on a question with multiple correct answers" do
         second_correct_answer
         fill_in("shortAnswerText", with: incorrect_response).native.send_keys(:return)
         find(".incorrect-answer")
@@ -225,12 +224,12 @@ RSpec.describe "User takes a quiz", :default_creates, :js do
         expect(page).to have_css("#shortAnswerButton.correct-answer")
       end
 
-      it "uses icons to show when I am right" do
+      it "uses a check icon when the answer is correct" do
         fill_in("shortAnswerText", with: correct_response).native.send_keys(:return)
         expect(page).to have_css("svg.fa-check")
       end
 
-      it "uses icons to show when I am wrong" do
+      it "uses a times icon when the answer is incorrect" do
         fill_in("shortAnswerText", with: incorrect_response).native.send_keys(:return)
         expect(page).to have_css("svg.fa-times")
       end
@@ -271,20 +270,20 @@ RSpec.describe "User takes a quiz", :default_creates, :js do
         expect(find(".progress-bar")[:"aria-valuenow"].to_f).to be > 0
       end
 
-      it "increases my streak if I am right" do
+      it "increases the streak when the answer is correct" do
         fill_in("shortAnswerText", with: correct_response).native.send_keys(:return)
         first(class: "next-button").click
         expect(page).to have_css("#streak", text: 1)
       end
 
-      it "resets my streak to 0 if I am wrong" do
+      it "resets the streak to 0 when the answer is incorrect" do
         fill_in("shortAnswerText", with: correct_response).native.send_keys(:return)
         first(class: "next-button").click
         fill_in("shortAnswerText", with: incorrect_response).native.send_keys(:return)
         expect(page).to have_css("#streak", text: 0)
       end
 
-      it "updates my streak straight away after answering" do
+      it "updates the streak immediately after answering" do
         fill_in("shortAnswerText", with: correct_response).native.send_keys(:return)
         expect(page).to have_css("#streak", text: 1)
       end
@@ -295,7 +294,7 @@ RSpec.describe "User takes a quiz", :default_creates, :js do
         expect(page).to have_css("#answeredCorrect", text: 1)
       end
 
-      it "updates my number correct straight after answering" do
+      it "updates the correct answer count immediately" do
         fill_in("shortAnswerText", with: correct_response).native.send_keys(:return)
         expect(page).to have_css("#answeredCorrect", text: 1)
       end

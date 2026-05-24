@@ -25,23 +25,23 @@ RSpec.describe "User changes leaderboard options", :default_creates, :js do
       visit(leaderboard_path(subject.name))
     end
 
-    it "shows only my school by default" do
+    it "shows only the current school by default" do
       expect(page).to have_css("table#leaderboardTable tbody tr", count: 1)
     end
 
-    it "allows me to toggle to just my school" do
+    it "filters to show only the user's school" do
       click_button("Select School")
       click_button(student.school.name)
       expect(page).to have_css("table#leaderboardTable tbody tr", count: 1)
     end
 
-    it "allows me to toggle to all schools" do
+    it "shows all schools when toggled" do
       click_button("Select School")
       click_button("All")
       expect(page).to have_css("table#leaderboardTable tbody tr", count: 2)
     end
 
-    it "allows me to toggle back to viewing the school group from my school," do
+    it "toggles back to viewing the school group" do
       click_button("Select School")
       click_button("All")
       click_button("All")
@@ -57,13 +57,13 @@ RSpec.describe "User changes leaderboard options", :default_creates, :js do
       find(:css, "#leaderboardTable tbody tr:nth-child(10)")
     end
 
-    it "allows me to see all entries" do
+    it "shows all entries when toggled" do
       find(:css, "table#leaderboardTable tbody tr:nth-child(10)")
       find(:css, "#showAll label").click
       expect(page).to have_css("table#leaderboardTable tbody tr", count: 51)
     end
 
-    it "allows me to see myself only after viewing all entries" do
+    it "filters back to show only the top entries after deselecting show all" do
       find(:css, "#showAll label").click
       find(:css, "table#leaderboardTable tbody tr:nth-child(51)")
       find(:css, "#showAll label").click
@@ -87,7 +87,7 @@ RSpec.describe "User changes leaderboard options", :default_creates, :js do
       expect(page).to have_css("td", exact_text: overall_score)
     end
 
-    it "adds up a subject score accross multiple topics correctly" do
+    it "adds up a subject score across multiple topics correctly" do
       create(:all_time_topic_score, user: student, topic: second_topic)
       find_by_id("allTime").click
       expect(page).to have_css("td", exact_text: (TopicScore.first.score +
@@ -112,7 +112,7 @@ RSpec.describe "User changes leaderboard options", :default_creates, :js do
       expect(page).to have_css("td", exact_text: AllTimeTopicScore.second.score)
     end
 
-    it "adds up scores correctly for another user if I have no score" do
+    it "shows other users' scores when the student has none" do
       AllTimeTopicScore.first.destroy
       create(:all_time_topic_score, user: second_student, topic: second_topic)
       find_by_id("allTime").click
@@ -129,10 +129,11 @@ RSpec.describe "User changes leaderboard options", :default_creates, :js do
   context "when filtering by classroom" do
     let(:overall_score) { (AllTimeTopicScore.first.score + TopicScore.first.score).to_s }
     let(:second_topic) { create(:topic, subject: subject) }
-    let(:enrollment_classroom) { create(:enrollment, classroom: second_classroom, user: second_student) }
     let(:second_classroom) { create(:classroom, subject: subject, school: school) }
     let(:second_student) { create(:student, school: student.school) }
-    let(:topic_score_different_classroom) { create(:topic_score, user: second_student, subject: subject) }
+    let!(:enrollment_classroom) { create(:enrollment, classroom: second_classroom, user: second_student) }
+    let!(:topic_score_different_classroom) { create(:topic_score, user: second_student, subject: subject) }
+    let!(:second_school) { create(:school, school_group: school.school_group) }
     let(:different_school_same_classroom_name) do
       create(:classroom,
         name: second_classroom.name, school: second_school)
@@ -147,13 +148,7 @@ RSpec.describe "User changes leaderboard options", :default_creates, :js do
       different_school_topic_score
     end
 
-    before do
-      topic_score_different_classroom
-      enrollment_classroom
-      second_school
-      second_classroom
-      visit(leaderboard_path(subject.name))
-    end
+    before { visit(leaderboard_path(subject.name)) }
 
     it "shows different classrooms by default" do
       expect(page).to have_css("#leaderboardTable tbody tr", count: 2)

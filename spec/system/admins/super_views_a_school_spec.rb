@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "rails_helper"
+
 RSpec.describe "Super views a school", :default_creates, :js do
   let(:new_email) { FFaker::Internet.email }
   let(:save_email_notice) { "Updated email to #{school_admin.forename} #{school_admin.surname}" }
@@ -8,19 +9,16 @@ RSpec.describe "Super views a school", :default_creates, :js do
     "Setup email sent to #{school_admin.forename} #{school_admin.surname} (#{school_admin.email})"
   end
 
-  before do
-    sign_in super_admin
-    school
-  end
+  before { sign_in super_admin }
 
-  it "allows you to become a student" do
+  it "lets the super admin impersonate a student" do
     student
     visit(school_path(school))
     click_button("Become User")
     expect(page).to have_css("#current_user", text: "#{student.forename} #{student.surname}")
   end
 
-  it "allows you to become a school admin" do
+  it "lets the super admin impersonate a school admin" do
     school_admin
     visit school_path(school)
     within("#schoolAdminTable") { click_link "Become User" }
@@ -49,19 +47,15 @@ RSpec.describe "Super views a school", :default_creates, :js do
   end
 
   context "when viewing statistics" do
-    let(:statistic) { create(:user_statistic, user: student, week_beginning: Date.current.beginning_of_week) }
-    let(:older_statistic) do
+    let(:two_weeks_ago) { (Date.current - 2.weeks).beginning_of_week }
+    let!(:statistic) { create(:user_statistic, user: student, week_beginning: Date.current.beginning_of_week) }
+    let!(:older_statistic) do
       create(:user_statistic, user: create(:student, school: school),
         week_beginning: two_weeks_ago)
     end
-    let(:two_weeks_ago) { (Date.current - 2.weeks).beginning_of_week }
     let(:total_answered) { statistic.questions_answered + older_statistic.questions_answered }
 
-    before do
-      statistic
-      older_statistic
-      visit(school_path(school))
-    end
+    before { visit(school_path(school)) }
 
     it "tells you the number of questions asked overall" do
       expect(page).to have_css("#asked_questions", exact_text: total_answered)

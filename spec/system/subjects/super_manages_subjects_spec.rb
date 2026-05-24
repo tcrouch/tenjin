@@ -3,16 +3,14 @@
 require "rails_helper"
 
 RSpec.describe "Super manages subjects", :default_creates, :js do
+  let!(:subject) { create(:subject) }
   let(:new_subject_name) { FFaker::Lorem.word }
   let(:ten_questions_for_subject) { create_list(:question, 10, topic: topic) }
   let(:five_asked_questions_this_week) { create_list(:asked_question, 5, question: question) }
   let(:seven_asked_questions_previously) { create(:question_statistic, question: question, number_asked: 7) }
 
   context "when viewing all subjects" do
-    before do
-      sign_in super_admin
-      subject
-    end
+    before { sign_in super_admin }
 
     it "allows an admin to view subjects" do
       visit(subjects_path)
@@ -68,10 +66,7 @@ RSpec.describe "Super manages subjects", :default_creates, :js do
       find("table#active-subjects")
     end
 
-    before do
-      sign_in super_admin
-      subject
-    end
+    before { sign_in super_admin }
 
     it "allows admin to visit a subject page" do
       visit(subjects_path)
@@ -92,11 +87,7 @@ RSpec.describe "Super manages subjects", :default_creates, :js do
     end
 
     context "when deactivating a quiz" do
-      let(:enrollment) { create(:enrollment, classroom: classroom, user: student, subject: subject) }
-
-      before do
-        enrollment
-      end
+      let!(:enrollment) { create(:enrollment, classroom: classroom, user: student, subject: subject) }
 
       it "stops students from taking a quiz" do
         deactivate_subject

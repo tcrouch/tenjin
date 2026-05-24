@@ -4,12 +4,12 @@ require "rails_helper"
 
 RSpec.describe "Author transfers question files", :default_creates, :js do
   let(:author) { create(:question_author, subject: subject) }
+  let!(:topic) { create(:topic, subject: subject) }
+  let!(:question) { create(:question, topic: topic) }
 
   before do
     clear_downloads
     sign_in author
-    topic
-    question
     driven_by :selenium_chrome_headless_download
   end
 
@@ -48,5 +48,5 @@ RSpec.describe "Author transfers question files", :default_creates, :js do
     expect(page).to have_content("Please attach a file")
   end
 
-  it "allows you to delete multiple questions"
+  it "deletes multiple questions"
 end

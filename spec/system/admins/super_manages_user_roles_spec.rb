@@ -3,11 +3,10 @@
 require "rails_helper"
 
 RSpec.describe "Super manages user roles", :default_creates, :js do
+  let!(:subject) { create(:subject) }
+
   before do
     sign_in super_admin
-    school
-    subject
-    teacher
     visit(manage_roles_users_path(school: teacher.school))
   end
 

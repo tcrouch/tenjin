@@ -30,17 +30,12 @@ RSpec.describe "Admin manages customisations", :default_creates, :js do
   end
 
   context "when viewing the customisation index" do
-    let(:unavailable_customisation) { create(:dashboard_customisation, purchasable: false) }
-    let(:retired_customisation) { create(:dashboard_customisation, retired: true) }
-    let(:sticky_customisation) { create(:dashboard_customisation, sticky: true, purchasable: true) }
+    let!(:available_customisation) { create(:dashboard_customisation, purchasable: true) }
+    let!(:unavailable_customisation) { create(:dashboard_customisation, purchasable: false) }
+    let!(:retired_customisation) { create(:dashboard_customisation, retired: true) }
+    let!(:sticky_customisation) { create(:dashboard_customisation, sticky: true, purchasable: true) }
 
-    before do
-      available_customisation
-      unavailable_customisation
-      retired_customisation
-      sticky_customisation
-      visit customisations_path
-    end
+    before { visit customisations_path }
 
     it "shows currently available customisations" do
       expect(page).to have_css("section.available-customisations .card",
@@ -69,7 +64,7 @@ RSpec.describe "Admin manages customisations", :default_creates, :js do
       expect(page).to have_css("section.retired-customisations .card", text: retired_customisation.name.upcase)
     end
 
-    it "allows you to edit dashboard_style customisations" do
+    it "allows editing dashboard style customisations" do
       first(".card").click_link("Edit")
       expect(page).to have_current_path(edit_customisation_path(sticky_customisation))
     end
@@ -105,7 +100,7 @@ RSpec.describe "Admin manages customisations", :default_creates, :js do
       expect(page).to have_content("Stickied".upcase)
     end
 
-    it "updates if it is purchsable" do
+    it "updates the purchasable flag" do
       uncheck("Purchasable")
       click_button("Update Customisation")
       expect(page).to have_content("Unavailable".upcase)
@@ -146,7 +141,7 @@ RSpec.describe "Admin manages customisations", :default_creates, :js do
     expect(page).to have_current_path(new_admin_session_path)
   end
 
-  it "prevents me from accessing customisations unless I am a super admin" do
+  it "prevents school group admins from accessing customisations" do
     sign_out super_admin
     sign_in school_group_admin
     visit customisations_path

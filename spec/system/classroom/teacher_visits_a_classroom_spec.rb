@@ -7,7 +7,6 @@ RSpec.describe "User visits a classroom", :default_creates, :js do
   let(:homework) { create(:homework, classroom: classroom) }
 
   before do
-    topic
     setup_subject_database
     create(:enrollment, classroom: classroom, user: teacher)
     sign_in teacher
@@ -26,12 +25,12 @@ RSpec.describe "User visits a classroom", :default_creates, :js do
       expect(page).to have_content(student.forename)
     end
 
-    it "allows me to create a homework" do
+    it "navigates to the new homework form" do
       click_link("Set Homework")
       expect(page).to have_current_path(new_homework_path(classroom: {classroom_id: classroom.id}))
     end
 
-    it "takes me to a homework that I have clicked on" do
+    it "navigates to a homework when clicked" do
       homework
       visit(classroom_path(classroom))
       find(:css, "tr[data-controller='homeworks'][data-id='#{homework.id}']").click
@@ -89,14 +88,14 @@ RSpec.describe "User visits a classroom", :default_creates, :js do
         expect(page).to have_css(".homework-data", count: 5)
       end
 
-      it "allows me to reset a password" do
+      it "resets a student password" do
         visit(classroom_path(classroom))
         find_by_id("resetPasswordCheck").set(true)
         click_link("Reset Password")
         expect(page).to have_no_link("Reset Password").and have_css(".new-password")
       end
 
-      it "hides reset password buttons by defulat" do
+      it "hides reset password buttons by default" do
         visit(classroom_path(classroom))
         expect(page).to have_no_link("Reset Password")
       end

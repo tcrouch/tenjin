@@ -1,26 +1,26 @@
 # frozen_string_literal: true
 
 require "rails_helper"
-require "support/api_data"
-require "pry"
 
 RSpec.describe "User views an updating leaderboard", :default_creates, :js do
   let(:new_entry) { create(:topic_score, topic: topic, school: school, score: 11) }
+  let!(:student_topic_score) { create(:topic_score, user: student, score: 10, topic: topic) }
+  let!(:one_to_nine) do
+    (1..9).each { |n| create(:topic_score, topic: topic, school: school, score: n) }
+  end
 
   before do
     setup_subject_database
     sign_in student
-    student_topic_score
   end
 
   context "when receiving updates" do
     before do
-      one_to_nine
       visit(leaderboard_path(subject.name))
       find(:css, "#leaderboardTable tbody tr:nth-child(10)")
     end
 
-    it "flashes an update if I have a score" do
+    it "flashes an update for the current student's score" do
       Leaderboard::BroadcastLeaderboardPoint.new(topic, student_topic_score.user).call
       expect(page).to have_css("tr#row-#{student.id}.score-changed")
     end
@@ -62,7 +62,6 @@ RSpec.describe "User views an updating leaderboard", :default_creates, :js do
   context "with a school group" do
     before do
       create(:school, school_group: school.school_group)
-      one_to_nine
       visit(leaderboard_path(subject.name))
       find(:css, "#leaderboardTable tbody tr:nth-child(10)")
     end
@@ -89,7 +88,7 @@ RSpec.describe "User views an updating leaderboard", :default_creates, :js do
       expect(page).to have_css("tr#row-#{new_entry.user_id}", text: new_entry.user.forename)
     end
 
-    it "shows updates from only my school by default" do
+    it "shows updates from only the current school by default" do
       Leaderboard::BroadcastLeaderboardPoint.new(topic, topic_score_same_school_group.user).call
       name = "#{topic_score_same_school_group.user.forename} #{topic_score_same_school_group.user.surname[0]}"
       expect(page).to have_no_css("td",
@@ -108,7 +107,6 @@ RSpec.describe "User views an updating leaderboard", :default_creates, :js do
   context "without a school group" do
     before do
       school.update_attribute(:school_group_id, nil)
-      one_to_nine
       visit(leaderboard_path(subject.name))
       find(:css, "#leaderboardTable tbody tr:nth-child(10)")
     end
@@ -118,7 +116,7 @@ RSpec.describe "User views an updating leaderboard", :default_creates, :js do
       expect(page).to have_css("tr#row-#{TopicScore.second.user.id}.score-changed")
     end
 
-    it "updates me when I have a score" do
+    it "flashes an update when the student's school has a score" do
       Leaderboard::BroadcastLeaderboardPoint.new(student_topic_score, student_topic_score.user).call
       expect(page).to have_css("tr#row-#{student.id}.score-changed")
     end
@@ -126,7 +124,6 @@ RSpec.describe "User views an updating leaderboard", :default_creates, :js do
 
   context "when showing for a specific subject" do
     before do
-      one_to_nine
       visit(leaderboard_path(subject.name))
       find(:css, "#leaderboardTable tbody tr:nth-child(10)")
     end
@@ -142,7 +139,6 @@ RSpec.describe "User views an updating leaderboard", :default_creates, :js do
 
   context "when viewing a single topic" do
     before do
-      one_to_nine
       visit(leaderboard_path(subject.name, topic: Topic.first))
       find(:css, "#leaderboardTable tbody tr:nth-child(10)")
     end

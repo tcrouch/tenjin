@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require "rails_helper"
-require "support/api_data"
 
 RSpec.describe "User creates a quiz", :default_creates, :js do
   context "when picking a subject" do
@@ -20,7 +19,7 @@ RSpec.describe "User creates a quiz", :default_creates, :js do
       expect(page).to have_css("img[src*=default-subject]")
     end
 
-    it "takes me to the correct topic select page" do
+    it "navigates to the topic select page" do
       setup_subject_database
       log_in
       find(class: "subject-carousel-item-image").click
@@ -38,7 +37,7 @@ RSpec.describe "User creates a quiz", :default_creates, :js do
       navigate_to_quiz
     end
 
-    it "returns you to the dashboard and asks you to wait" do
+    it "redirects to the dashboard with a wait message" do
       expect(page).to have_current_path(dashboard_path)
         .and have_content("You need to wait")
     end
@@ -48,21 +47,21 @@ RSpec.describe "User creates a quiz", :default_creates, :js do
     let(:user_topic_score) { TopicScore.where(user: student, topic: topic).first.score }
     let(:two_quizzes_started) { create(:usage_statistic, user: student, topic: topic, quizzes_started: 2) }
     let(:three_quizzes_started) { create(:usage_statistic, user: student, topic: topic, quizzes_started: 3) }
+    let!(:question) { create(:question, topic: topic) }
 
     before do
       setup_subject_database
-      question
       sign_in student
     end
 
-    it "allows you to score points for the first attempt" do
+    it "awards points for the first attempt" do
       navigate_to_quiz
       first(class: "question-button").click
       find(".correct-answer")
       expect(user_topic_score).to eq(1)
     end
 
-    it "allows you to score points for the third attempt" do
+    it "awards points for the third attempt" do
       two_quizzes_started
       navigate_to_quiz
       first(class: "question-button").click
@@ -70,21 +69,18 @@ RSpec.describe "User creates a quiz", :default_creates, :js do
       expect(user_topic_score).to eq(1)
     end
 
-    it "always allows you to score with a lucky dip" do
+    it "always awards points for a lucky dip quiz" do
       three_quizzes_started
       navigate_to_lucky_dip
       expect(page).to have_no_content("not counting")
     end
 
     context "when you should not be allowed to score" do
-      let(:three_quizzes_started) { create(:usage_statistic, user: student, topic: topic, quizzes_started: 3) }
+      let!(:three_quizzes_started) { create(:usage_statistic, user: student, topic: topic, quizzes_started: 3) }
 
-      before do
-        three_quizzes_started
-        navigate_to_quiz
-      end
+      before { navigate_to_quiz }
 
-      it "does not allow you to score points for the fourth attempt" do
+      it "does not award points for the fourth attempt" do
         create(:topic_score, user: student, topic: topic, score: 3)
         first(class: "question-button").click
         find(".correct-answer")
@@ -97,10 +93,8 @@ RSpec.describe "User creates a quiz", :default_creates, :js do
     end
   end
 
-  context "when selecting a topic" do
-    let(:topic) { create(:topic, subject: Subject.first) }
-    let(:customisation) { create(:dashboard_customisation, value: "orange") }
-    let(:active_customisation) { create(:active_customisation, user: student, customisation: customisation) }
+  describe "selecting a topic" do
+    let(:topic) { create(:topic, subject: subject) }
 
     before do
       setup_subject_database
@@ -108,7 +102,7 @@ RSpec.describe "User creates a quiz", :default_creates, :js do
       log_in
     end
 
-    it "allows me to select a topic" do
+    it "allows selecting a topic" do
       visit(new_quiz_path(params: {subject: subject.name}))
       find(:xpath, "//select/option[1]")
       expect(page).to have_select("quiz_topic_id", options: ["Lucky Dip", Topic.first.name])
@@ -119,10 +113,15 @@ RSpec.describe "User creates a quiz", :default_creates, :js do
       expect(page).to have_current_path(%r{quizzes/[0-9]*})
     end
 
-    it "has a separator of the correct colour" do
-      active_customisation
-      visit(new_quiz_path(params: {subject: subject.name}))
-      expect(page).to have_css("hr[style*='#{active_customisation.customisation.value}'")
+    context "with an active dashboard customisation" do
+      let!(:active_customisation) do
+        create(:active_customisation, user: student, customisation: create(:dashboard_customisation, value: "orange"))
+      end
+
+      it "has a separator of the correct colour" do
+        visit(new_quiz_path(params: {subject: subject.name}))
+        expect(page).to have_css("hr[style*='#{active_customisation.customisation.value}'")
+      end
     end
   end
 end

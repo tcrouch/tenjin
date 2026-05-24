@@ -6,6 +6,7 @@ RSpec.describe "User views lessons", :default_creates, :js do
   let(:lesson) { create(:lesson, topic: topic) }
 
   context "when a student" do
+    let!(:lesson) { create(:lesson, topic: topic) }
     let(:second_subject) { create(:subject) }
     let(:second_topic) { create(:topic, subject: second_subject) }
     let(:not_enrolled_lesson) { create(:lesson, topic: second_topic) }
@@ -14,15 +15,14 @@ RSpec.describe "User views lessons", :default_creates, :js do
     before do
       setup_subject_database
       sign_in student
-      lesson
     end
 
-    it "shows videos for subjects I am enrolled for" do
+    it "shows lesson videos for enrolled subjects" do
       visit(lessons_path)
       expect(page).to have_css(".subject-title", text: lesson.subject.name)
     end
 
-    it "only shows videos for subjects I am enrolled for" do
+    it "hides lesson videos for subjects not enrolled in" do
       not_enrolled_lesson
       visit(lessons_path)
       expect(page).to have_no_css(".subject-title", text: not_enrolled_lesson.subject.name)
@@ -42,14 +42,13 @@ RSpec.describe "User views lessons", :default_creates, :js do
   end
 
   context "when a teacher" do
-    let(:question) { create(:question, lesson: lesson, topic: topic) }
-    let(:answer) { create(:answer, question: question) }
+    let!(:lesson) { create(:lesson, topic: topic) }
+    let!(:question) { create(:question, lesson: lesson, topic: topic) }
+    let!(:answer) { create(:answer, question: question) }
 
     before do
       setup_subject_database
       sign_in teacher
-      answer
-      lesson
       create(:enrollment, user: teacher, classroom: create(:classroom, school: school, subject: lesson.subject))
       visit(lessons_path)
     end

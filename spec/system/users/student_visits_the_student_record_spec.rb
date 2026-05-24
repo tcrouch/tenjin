@@ -2,7 +2,7 @@
 
 require "rails_helper"
 
-RSpec.describe "User visits the homepage", :default_creates, :js, :vcr do
+RSpec.describe "Student visits the student record", :default_creates, :js, :vcr do
   let(:student) { create(:student) }
   let(:new_password) { FFaker::Lorem.word }
 
@@ -19,7 +19,7 @@ RSpec.describe "User visits the homepage", :default_creates, :js, :vcr do
     find(".alert", text: "authenticated")
   end
 
-  it "change passwords" do
+  it "changes the password" do
     visit(user_path(student))
     fill_in("user[password]", with: new_password)
     click_button("Update Password")
@@ -36,10 +36,7 @@ RSpec.describe "User visits the homepage", :default_creates, :js, :vcr do
   context "when linking Google accounts" do
     let(:student_no_oauth) { create(:student, :no_oauth) }
 
-    before do
-      sign_in student_no_oauth
-      stub_google_omniauth
-    end
+    before { sign_in student_no_oauth }
 
     it "links to Google accounts" do
       visit(user_path(student_no_oauth))

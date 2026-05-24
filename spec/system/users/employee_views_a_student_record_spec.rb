@@ -28,6 +28,7 @@ RSpec.describe "Employee views a user record", :default_creates, :js do
     it "shows recently completed homeworks" do
       HomeworkProgress.all.update_all(completed: true)
       visit(user_path(student))
+      expect(page).to have_css("svg.fa-check")
     end
 
     it "only shows the homeworks for the classes the teacher belongs to" do
@@ -45,7 +46,7 @@ RSpec.describe "Employee views a user record", :default_creates, :js do
         sign_in teacher
       end
 
-      it "lets me reset a student password" do
+      it "resets a student password" do
         visit(user_path(student))
         update_password(new_password)
         sign_out teacher
@@ -53,12 +54,12 @@ RSpec.describe "Employee views a user record", :default_creates, :js do
         expect(page).to have_content(student.forename).and have_content(student.surname)
       end
 
-      it "does not allow me to reset an employee password" do
+      it "does not allow resetting an employee password" do
         visit(user_path(different_employee))
         expect(page).to have_no_css("#user_password")
       end
 
-      it "does not allow me to reset a school admin password" do
+      it "does not allow resetting a school admin password" do
         visit(user_path(school_admin))
         expect(page).to have_no_css("#user_password")
       end
