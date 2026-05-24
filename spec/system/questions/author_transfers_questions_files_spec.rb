@@ -8,9 +8,9 @@ RSpec.describe "Author transfers question files", :default_creates, :js do
   let!(:question) { create(:question, topic: topic) }
 
   before do
+    driven_by :selenium_chrome_headless_download
     clear_downloads
     sign_in author
-    driven_by :selenium_chrome_headless_download
   end
 
   after do
