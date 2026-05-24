@@ -2,10 +2,10 @@
 
 require "rails_helper"
 
-RSpec.describe Quiz::CreateQuiz, "#call", :default_creates do
-  context "when creating a lucky dip" do
-    let(:quiz) { described_class.new(user: student, topic: "Lucky Dip", subject: subject).call }
-    let(:quiz_with_topic) { described_class.new(user: student, topic: topic.id, subject: subject).call }
+RSpec.describe Quiz::CreateQuiz, :default_creates do
+  context "when creating a lucky dip quiz" do
+    let(:quiz) { described_class.call(user: student, topic: "Lucky Dip", subject: subject) }
+    let(:quiz_with_topic) { described_class.call(user: student, topic: topic.id, subject: subject) }
     let(:topics) { create_list(:topic, 10, subject: subject) }
 
     before do
@@ -14,46 +14,46 @@ RSpec.describe Quiz::CreateQuiz, "#call", :default_creates do
       end
     end
 
-    it "has 10 questions" do
+    it "includes 10 questions" do
       expect(quiz.quiz.questions.count).to eq(10)
     end
 
-    it "does not include inactive questions" do
+    it "excludes inactive questions" do
       Question.first.update_attribute(:active, false)
       expect(quiz.quiz.questions).not_to include(Question.first.id)
     end
 
-    it "creates a lucky dip" do
+    it "draws questions from multiple topics" do
       expect(quiz.quiz.questions.first.topic).not_to eq(quiz.quiz.questions.second.topic)
     end
 
-    it "does not have a topic for a lucky dip quiz" do
-      expect(quiz.quiz.topic).to eq(nil)
+    it "has no topic assigned for a lucky dip quiz" do
+      expect(quiz.quiz.topic).to be_nil
     end
 
-    it "sets the topic id for a non-lucky dip quiz" do
+    it "assigns the topic for a non-lucky dip quiz" do
       expect(quiz_with_topic.quiz.topic).to eq(topic)
     end
 
-    it "logs the current date and time" do
+    it "records the time the quiz was started" do
       quiz
       expect(User.first.time_of_last_quiz).to be_within(1.second).of(Time.current)
     end
 
-    it "returns an error if cooldown has not elapsed" do
+    it "returns an error when the cooldown has not elapsed" do
       student.update_attribute(:time_of_last_quiz, Time.current)
       expect(quiz.errors).to match(/You need to wait/)
     end
 
-    it "creates a quiz if there is currently no time of last quiz" do
+    it "creates a quiz when there is no previous quiz time" do
       student.update_attribute(:time_of_last_quiz, nil)
-      expect(quiz.success?).to eq(true)
+      expect(quiz.success?).to be(true)
     end
   end
 
   context "when creating a lesson based quiz" do
     let(:quiz_with_lesson) do
-      described_class.new(user: student, topic: topic.id, subject: subject, lesson: lesson.id).call
+      described_class.call(user: student, topic: topic.id, subject: subject, lesson: lesson.id)
     end
     let(:lesson) { create(:lesson, topic: topic) }
 
@@ -62,13 +62,11 @@ RSpec.describe Quiz::CreateQuiz, "#call", :default_creates do
       create_list(:question, 20, topic: topic)
     end
 
-    it "creates a lesson quiz with only lesson questions" do
-      quiz_with_lesson
+    it "includes only questions from the lesson" do
       expect(quiz_with_lesson.quiz.questions.where(lesson: lesson).count).to eq(10)
     end
 
-    it "assign the lesson to the quiz" do
-      quiz_with_lesson
+    it "assigns the lesson to the quiz" do
       expect(quiz_with_lesson.quiz.lesson).to eq(lesson)
     end
   end

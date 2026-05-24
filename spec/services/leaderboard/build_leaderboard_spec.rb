@@ -1,132 +1,131 @@
 # frozen_string_literal: true
 
 require "rails_helper"
-require "support/session_helpers"
 
 RSpec.describe Leaderboard::BuildLeaderboard, :default_creates do
-  before do
-    create(:enrollment, classroom: classroom, user: student)
-    create(:topic_score, topic: topic, user: student)
-  end
-
   let(:student) { create(:student, forename: "Aaaron", school: school) } # Ensure first alphabetically
   let(:topic_different_subject) { create(:topic) }
   let(:topic_same_subject) { create(:topic, subject: subject) }
   let(:school) { create(:school, school_group: nil) }
   let(:second_student) { create(:student, school: school) }
 
+  before do
+    create(:enrollment, classroom: classroom, user: student)
+    create(:topic_score, topic: topic, user: student)
+  end
+
   context "when returning student data" do
-    let(:call) { described_class.new(student, id: subject.name).call.first } # Issue with subject() Using let instead.
+    let(:leaderboard) { described_class.call(student, id: subject.name).first }
     let(:leaderboard_icon) { create(:customisation, customisation_type: "leaderboard_icon") }
 
     it "includes the school name" do
-      expect(call.school_name).to eq(school.name)
+      expect(leaderboard.school_name).to eq(school.name)
     end
 
     it "includes the first name and last initial of the student" do
-      expect(call.name).to eq("#{student.forename} #{student.surname.first}")
+      expect(leaderboard.name).to eq("#{student.forename} #{student.surname.first}")
     end
 
-    it "includes a leaderboard icon if it is active for the user" do
+    it "includes a leaderboard icon if the student has one active" do
       create(:active_customisation, user: student, customisation: leaderboard_icon)
-      expect(call.icon).to eq(leaderboard_icon.value)
+      expect(leaderboard.icon).to eq(leaderboard_icon.value)
     end
 
-    it "includes a leaderboard icon if it is active for others" do
+    it "includes a leaderboard icon for other students who have one active" do
       create(:active_customisation, user: second_student, customisation: leaderboard_icon)
       create(:topic_score, topic: topic, user: second_student)
-      expect(described_class.new(student, id: subject.name).call
-                            .find { |user| user["id"] == second_student.id }.icon).to eq(leaderboard_icon.value)
+      expect(described_class.call(student, id: subject.name)
+        .find { |user| user["id"] == second_student.id }.icon).to eq(leaderboard_icon.value)
     end
 
-    it "does not include a leaderboard icon for those that do not have one" do
+    it "returns nil icon for students without an active icon" do
       create(:topic_score, topic: topic, user: second_student)
-      expect(described_class.new(student, id: subject.name).call
-                            .find { |user| user["id"] == second_student.id }.icon).to eq(nil)
+      expect(described_class.call(student, id: subject.name)
+        .find { |user| user["id"] == second_student.id }.icon).to be_nil
     end
   end
 
   context "when building a subject leaderboard" do
-    let(:call) { described_class.new(student, id: subject.name).call }
+    let(:leaderboard) { described_class.call(student, id: subject.name) }
 
-    it "shows students from the correct subject" do
+    it "includes students who have scored in the subject" do
       create(:topic_score, topic: topic, school: school, score: 10)
-      expect(call.count).to eq(2)
+      expect(leaderboard.count).to eq(2)
     end
 
-    it "does not show students from other topics" do
+    it "excludes students from other subjects" do
       create(:topic_score, topic: topic_different_subject, school: school, score: 10)
-      expect(call.count).to eq(1)
+      expect(leaderboard.count).to eq(1)
     end
 
-    it "includes the score for the subject" do
+    it "sums scores across all topics in the subject" do
       create(:topic_score, user: student, topic: topic_same_subject, school: school)
-      expect(call.first.score).to eq(TopicScore.all.sum(:score))
+      expect(leaderboard.first.score).to eq(TopicScore.all.sum(:score))
     end
   end
 
-  context "when buildling a topic leaderboard" do
-    let(:call) { described_class.new(student, id: subject.name, topic: topic.id).call }
+  context "when building a topic leaderboard" do
+    let(:leaderboard) { described_class.call(student, id: subject.name, topic: topic.id) }
 
-    it "shows students from the same topic" do
+    it "includes students who have scored in the topic" do
       create(:topic_score, topic: topic, school: school, score: 10)
-      expect(call.count).to eq(2)
+      expect(leaderboard.count).to eq(2)
     end
 
-    it "does not show students from another topic" do
+    it "excludes students who scored in a different topic" do
       create(:topic_score, topic: topic_same_subject, school: school)
-      expect(call.count).to eq(1)
+      expect(leaderboard.count).to eq(1)
     end
 
-    it "includes the score for the topic only" do
+    it "shows only the score for the selected topic" do
       create(:topic_score, topic: topic_same_subject, school: school)
-      expect(call.first.score).to eq(TopicScore.first.score)
+      expect(leaderboard.first.score).to eq(TopicScore.first.score)
     end
   end
 
   context "when building a leaderboard for a single school" do
-    let(:call) { described_class.new(student, id: subject.name, topic: topic.id).call }
+    let(:leaderboard) { described_class.call(student, id: subject.name, topic: topic.id) }
     let(:different_school) { create(:school) }
 
-    it "shows students from that school" do
+    it "includes students from the same school" do
       create(:topic_score, topic: topic, school: school)
-      expect(call.count).to eq(2)
+      expect(leaderboard.count).to eq(2)
     end
 
-    it "does not show students from a different school" do
+    it "excludes students from a different school" do
       create(:topic_score, topic: topic, school: different_school)
-      expect(call.count).to eq(1)
+      expect(leaderboard.count).to eq(1)
     end
   end
 
-  context "when building a leaderboard for a school group" do
+  context "when building a school group leaderboard" do
     let(:school) { create(:school) }
     let(:school_different_school_group) { create(:school) }
     let(:student_no_school_group) { create(:student, school: school_without_school_group) }
-    let(:call) { described_class.new(student, id: subject.name, school_group: "true").call }
+    let(:leaderboard) { described_class.call(student, id: subject.name, school_group: "true") }
 
-    it "does not show students who belong to a different school group" do
+    it "excludes students from a different school group" do
       create(:topic_score, topic: topic, school: school_different_school_group)
-      expect(call.count).to eq(1)
+      expect(leaderboard.count).to eq(1)
     end
 
-    it "shows students who belong to the same school group" do
+    it "includes students from the same school group" do
       create(:topic_score, topic: topic, school: second_school)
-      expect(call.count).to eq(2)
+      expect(leaderboard.count).to eq(2)
     end
 
-    it "does not show students who do not belong to any school group" do
+    it "excludes students with no school group" do
       create(:topic_score, topic: topic, user: student_no_school_group)
-      expect(call.count).to eq(1)
+      expect(leaderboard.count).to eq(1)
     end
   end
 
   context "when building an all time leaderboard" do
-    let(:call) { described_class.new(student, id: subject.name, all_time: "true").call }
+    let(:leaderboard) { described_class.call(student, id: subject.name, all_time: "true") }
 
-    it "takes data from the all time topic scores" do
+    it "uses all time topic scores instead of weekly scores" do
       create(:all_time_topic_score, user: student, topic: topic)
-      expect(call.first.score).to eq(AllTimeTopicScore.all.sum(:score))
+      expect(leaderboard.first.score).to eq(AllTimeTopicScore.all.sum(:score))
     end
   end
 end
