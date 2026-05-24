@@ -12,18 +12,18 @@ RSpec.describe Quiz, :default_creates do
   end
 
   context "when creating a quiz" do
-    it "increases the usage statistics quizzes created today by one" do
+    it "creates a usage statistic for today" do
       quiz
       expect(usage_statistic.quizzes_started).to eq(1)
     end
 
-    it "increases the usage statistics for the correct day" do
+    it "does not update statistics for other days" do
       old_statistic
       quiz
       expect(usage_statistic.quizzes_started).to eq(1)
     end
 
-    it "increases the usage statistics for the correct record" do
+    it "creates a new statistic record rather than updating an existing one" do
       old_statistic
       quiz
       expect(usage_statistic.id).not_to eq(old_statistic.id)

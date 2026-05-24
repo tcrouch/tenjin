@@ -26,40 +26,40 @@ RSpec.describe Challenge do
       expect(described_class.create_challenge(topic.subject).end_date).to be_within(1.second).of(1.week.from_now)
     end
 
-    it "is created with a random type when one not given" do
+    it "assigns a random challenge type when none is specified" do
       srand(1)
       expect(challenge_one.challenge_type).not_to eq(challenge_two.challenge_type)
     end
 
-    it "allows me to specify a challenge type" do
+    it "accepts a specified challenge type" do
       expect(challenge_full_marks.challenge_type).to eq("number_correct")
     end
 
-    it "allows me to specify a point multiplier" do
+    it "accepts a points multiplier" do
       srand(1)
       expect(described_class.create_challenge(topic.subject, multiplier: 2).points).to eq(20)
     end
 
-    it "allows me to specify a duration" do
+    it "accepts a custom duration" do
       srand(1)
       expect(described_class.create_challenge(topic.subject, duration: 3.days).end_date)
         .to be_within(1.second).of(3.days.from_now)
     end
 
-    it "allows me to specify a duration in hours" do
+    it "accepts a duration in hours" do
       srand(1)
       expect(described_class.create_challenge(topic.subject, duration: 36.hours).end_date)
         .to be_within(1.second).of(36.hours.from_now)
     end
 
-    it "defaults to a multiplier of x1" do
+    it "defaults to a points multiplier of x1" do
       srand(1)
       expect(described_class.create_challenge(topic.subject).points).to eq(10)
     end
 
-    it "creates a daily challenge" do
+    it "creates a daily challenge when the daily flag is set" do
       srand(1)
-      expect(described_class.create_challenge(topic.subject, daily: true).daily).to eq(true)
+      expect(described_class.create_challenge(topic.subject, daily: true).daily).to be(true)
     end
   end
 

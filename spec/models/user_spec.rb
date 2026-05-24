@@ -4,6 +4,17 @@ require "rails_helper"
 require "support/api_data"
 
 RSpec.describe User do
+  it "has a valid factory" do
+    expect(build(:user)).to be_valid
+  end
+
+  describe "validations" do
+    subject { build(:user) }
+
+    it { is_expected.to validate_presence_of :upi }
+    it { is_expected.to validate_presence_of :role }
+  end
+
   describe "#from_wonde" do
     include_context "with api_data"
 
@@ -11,17 +22,6 @@ RSpec.describe User do
 
     before do
       school_api_data
-    end
-
-    it "has a valid factory" do
-      expect(build(:user)).to be_valid
-    end
-
-    describe "validations" do
-      subject { build(:user) }
-
-      it { is_expected.to validate_presence_of :upi }
-      it { is_expected.to validate_presence_of :role }
     end
 
     context "with student api data" do
@@ -73,11 +73,12 @@ RSpec.describe User do
       end
 
       it "does not update a username if the record already exists" do
+        pending "from_wonde overwrites username for existing users — model behavior needs investigation"
         described_class.create(upi: user_api_data.upi, username: "test")
         classroom_api_data.employees = user_api_data
         allow(school_api).to receive(:get).and_return(contact_details_api_data)
         described_class.from_wonde(school_api_data, classroom_api_data, classroom)
-        described_class.first.username = "test"
+        expect(described_class.first.username).to eq("test")
       end
     end
   end

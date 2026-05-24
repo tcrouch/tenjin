@@ -47,29 +47,27 @@ RSpec.describe Enrollment do
       classroom_api_data.id = "classroom_id"
     end
 
-    context "with api_data" do
-      it "creates student enrollments" do
-        classroom_api_data.students = user_api_data
-        described_class.from_wonde(classroom_api_data)
-        expect(described_class.count).to eq(1)
-      end
+    it "creates student enrollments" do
+      classroom_api_data.students = user_api_data
+      described_class.from_wonde(classroom_api_data)
+      expect(described_class.count).to eq(1)
+    end
 
-      it "creates employee enrollments" do
-        classroom_api_data.employees = user_api_data
-        described_class.from_wonde(classroom_api_data)
-        expect(described_class.count).to eq(1)
-      end
+    it "creates employee enrollments" do
+      classroom_api_data.employees = user_api_data
+      described_class.from_wonde(classroom_api_data)
+      expect(described_class.count).to eq(1)
+    end
 
-      it "enables classroom with enrollments" do
-        classroom_api_data.employees = user_api_data
-        described_class.from_wonde(classroom_api_data)
-        expect(Classroom.first.disabled).to eq(false)
-      end
+    it "enables classroom with enrollments" do
+      classroom_api_data.employees = user_api_data
+      described_class.from_wonde(classroom_api_data)
+      expect(Classroom.first.disabled).to be(false)
+    end
 
-      it "handles null student and employee data" do
-        described_class.from_wonde(classroom_api_data)
-        expect(described_class.count).to eq(0)
-      end
+    it "handles null student and employee data" do
+      described_class.from_wonde(classroom_api_data)
+      expect(described_class.count).to eq(0)
     end
 
     context "when dealing with older data" do
@@ -88,7 +86,7 @@ RSpec.describe Enrollment do
       it "disables classrooms with no enrollments" do
         classroom_api_data.students = alt_user_api_data
         described_class.from_wonde(classroom_api_data)
-        expect(Classroom.first.disabled).to eq(true)
+        expect(Classroom.first.disabled).to be(true)
       end
     end
   end

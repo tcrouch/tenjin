@@ -36,10 +36,8 @@ RSpec.describe Customisation do
   end
 
   it "sets a retired customisation to be unpurchasable" do
-    invalid_customisation = build(:customisation, retired: true,
+    customisation = create(:customisation, retired: true,
       purchasable: true, customisation_type: "leaderboard_icon")
-    invalid_customisation.save!
-    invalid_customisation.reload
-    expect(invalid_customisation.retired).to eq(true)
+    expect(customisation.reload.purchasable).to be(false)
   end
 end

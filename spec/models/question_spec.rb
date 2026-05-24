@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require "rails_helper"
-require "support/session_helpers"
 
 RSpec.describe Question, :default_creates do
   let(:mismatched_question) { build(:question, lesson: create(:lesson), topic: topic) }
@@ -40,7 +39,7 @@ RSpec.describe Question, :default_creates do
     end
   end
 
-  it "deletes answers when being deleted" do
+  it "removes the question from the database when destroyed" do
     question
     expect { question.destroy }.to change(described_class, :count).by(-1)
   end
@@ -49,7 +48,7 @@ RSpec.describe Question, :default_creates do
     context "when changing a question type to a boolean question" do
       let(:question) { create(:question, question_type: "multiple") }
 
-      it "deletes existing answers" do
+      it "replaces existing answers with boolean answer choices" do
         answer
         expect { question.update_attribute(:question_type, "boolean") }.to change(Answer, :count).by(1)
       end
@@ -66,7 +65,7 @@ RSpec.describe Question, :default_creates do
 
       it "sets answers as incorrect" do
         question.update_attribute(:question_type, "boolean")
-        expect(Answer.first.correct).to eq(false)
+        expect(Answer.first.correct).to be(false)
       end
     end
   end
@@ -78,7 +77,7 @@ RSpec.describe Question, :default_creates do
     context "when switching a question to a short answer question" do
       it "changes all existing answers to be correct" do
         question.update_attribute(:question_type, "short_answer")
-        expect(Answer.first.correct).to eq(true)
+        expect(Answer.first.correct).to be(true)
       end
     end
   end
