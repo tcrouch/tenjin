@@ -4,9 +4,6 @@ require "rails_helper"
 
 RSpec.describe "Teacher sets homework", :default_creates, :js do
   let(:classroom) { create(:classroom, subject: quiz_subject, school: teacher.school) }
-  let(:flatpickr_one_week_from_now) do
-    "span.flatpickr-day[aria-label=\"#{1.week.from_now.strftime("%B %-e, %Y")}\"]"
-  end
   let!(:topic) { create(:topic, subject: quiz_subject) }
   let(:lesson) { create(:lesson, topic: topic) }
 

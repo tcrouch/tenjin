@@ -77,6 +77,10 @@ module SessionHelpers
     select lesson.title, from: "Lesson"
   end
 
+  def flatpickr_one_week_from_now
+    "span.flatpickr-day[aria-label=\"#{1.week.from_now.strftime("%B %-e, %Y")}\"]"
+  end
+
   def initialize_name(user)
     "#{user.forename} #{user.surname[0]}"
   end
