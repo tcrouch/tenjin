@@ -5,7 +5,7 @@ require "rails_helper"
 RSpec.describe UpdateQuestionStatisticsJob, :default_creates do
   let(:quiz) { create(:quiz, active: false, user: student) }
   let(:question) { create(:question) }
-  let(:asked_question) { create(:asked_question, question: question, correct: true, quiz: quiz, user: student) }
+  let(:asked_question) { create(:asked_question, question: question, correct: true, quiz: quiz) }
   let(:existing_statistic) { create(:question_statistic, question: question) }
   let(:question_statistic) { QuestionStatistic.where(question: question).first }
   let(:current_user_statistic) do

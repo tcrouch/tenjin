@@ -38,12 +38,9 @@ RSpec.describe "User creates a quiz", :default_creates, :js do
       navigate_to_quiz
     end
 
-    it "prevents you from taking a quiz if 40 seconds have not passed" do
+    it "returns you to the dashboard and asks you to wait" do
       expect(page).to have_current_path(dashboard_path)
-    end
-
-    it "says how long they need to wait to create another quiz" do
-      expect(page).to have_content("You need to wait")
+        .and have_content("You need to wait")
     end
   end
 
