@@ -26,11 +26,11 @@ RSpec.describe "Super views all statistics", :default_creates, :js do
 
     before { visit(show_stats_schools_path) }
 
-    it "shows the total number of questions asked across multiple schools" do
+    it "shows total questions answered" do
       expect(page).to have_css("#asked_questions", exact_text: total_answered.to_s)
     end
 
-    it "shows the weekly number of questions asked across multiple schools" do
+    it "shows this week's questions answered" do
       expect(page).to have_css("#asked_questions_weekly", exact_text: weekly_answered.to_s)
     end
   end
@@ -55,11 +55,11 @@ RSpec.describe "Super views all statistics", :default_creates, :js do
 
     before { visit(show_stats_schools_path) }
 
-    it "shows the total number of homeworks completed across multiple schools" do
+    it "shows total homeworks completed" do
       expect(page).to have_css("#homeworks_completed", exact_text: "4")
     end
 
-    it "shows the weekly number of homeworks completed across multiple schools" do
+    it "shows this week's completed homeworks" do
       expect(page).to have_css("#homeworks_completed_weekly", exact_text: "2")
     end
   end

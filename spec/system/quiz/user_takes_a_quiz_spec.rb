@@ -36,6 +36,8 @@ RSpec.describe "User takes a quiz", :default_creates, :js do
         it "shows the lesson title" do
           expect(page).to have_content(lesson.title)
         end
+
+        it "shows the lesson video link" # pending — no positive assertion for .videoLink
       end
     end
 
@@ -48,12 +50,12 @@ RSpec.describe "User takes a quiz", :default_creates, :js do
     end
 
     it "allows responding to a question" do
-      first(class: "question-button").click
+      find("button.question-button:first-of-type").click
       expect(page).to have_css(".next-button", visible: :visible)
     end
 
     it "disables all other buttons when answering" do
-      first(class: "question-button").click
+      find("button.question-button:first-of-type").click
       expect(page).to have_css(".question-button[disabled]", visible: :visible)
     end
 
@@ -87,28 +89,28 @@ RSpec.describe "User takes a quiz", :default_creates, :js do
     end
 
     context "when flagging unfair questions" do
-      let(:flagged_question) { create(:flagged_question, user: student, question: question) }
-
       it "shows an option to flag a problem with a question" do
         expect(page).to have_css("svg.fa-flag")
       end
 
       it "flags a question" do
-        find(:css, "svg.fa-flag").click
+        find("svg.fa-flag").click
         expect(page).to have_css('svg.fa-flag[data-prefix="fas"]').and have_content("You have flagged this question as unfair")
       end
 
-      it "shows when a question has already been flagged" do
-        flagged_question
-        visit current_path
-        expect(page).to have_css('svg.fa-flag[data-prefix="fas"]')
-      end
+      context "when the question has already been flagged" do
+        let!(:flagged_question) { create(:flagged_question, user: student, question: question) }
 
-      it "unflags a question" do
-        flagged_question
-        visit current_path
-        find(:css, 'svg.fa-flag[data-prefix="fas"]').click
-        expect(page).to have_css('svg.fa-flag[data-prefix="far"]')
+        before { visit current_path }
+
+        it "shows the question is flagged" do
+          expect(page).to have_css('svg.fa-flag[data-prefix="fas"]')
+        end
+
+        it "unflags a question" do
+          find('svg.fa-flag[data-prefix="fas"]').click
+          expect(page).to have_css('svg.fa-flag[data-prefix="far"]')
+        end
       end
     end
   end
@@ -124,10 +126,10 @@ RSpec.describe "User takes a quiz", :default_creates, :js do
     end
 
     it "allows a user to go forward to the next question" do
-      find(class: "question-button").click
-      find(class: "next-button").click
-      find(class: "question-button").click
-      find(class: "next-button").click
+      find("button.question-button:first-of-type").click
+      find(".next-button").click
+      find("button.question-button:first-of-type").click
+      find(".next-button").click
       expect(page).to have_content("Finished!")
     end
   end
@@ -160,7 +162,6 @@ RSpec.describe "User takes a quiz", :default_creates, :js do
 
     context "with a single question" do
       let!(:question) { create(:short_answer_question, topic: topic) }
-      let(:second_correct_answer) { create(:answer, question: question, correct: true) }
 
       before do
         question.answers.find_by(correct: true).update!(text: correct_answer_text)
@@ -170,10 +171,13 @@ RSpec.describe "User takes a quiz", :default_creates, :js do
       context "with a lesson" do
         let(:question) { create(:short_answer_question, topic: topic, lesson: lesson) }
 
+        before { visit quizzes_path }
+
         it "shows a lesson video if one is present" do
-          visit quizzes_path
           expect(page).to have_content(lesson.title)
         end
+
+        it "shows the lesson video link" # pending — no positive assertion for .videoLink
       end
 
       it "doesn't show a lesson video" do
@@ -210,18 +214,20 @@ RSpec.describe "User takes a quiz", :default_creates, :js do
         expect(find_field("shortAnswerText", disabled: true).value).to eq(correct_response)
       end
 
-      it "shows all correct answers when wrong on a question with multiple correct answers" do
-        second_correct_answer
-        fill_in("shortAnswerText", with: incorrect_response).native.send_keys(:return)
-        find(".incorrect-answer")
-        expect(find_field("shortAnswerText", disabled: true).value).to include(correct_response)
-          .and include(second_correct_answer.text)
-      end
+      context "with multiple correct answers" do
+        let!(:second_correct_answer) { create(:answer, question: question, correct: true) }
 
-      it "allows multiple answers for a single word question" do
-        second_correct_answer
-        fill_in("shortAnswerText", with: second_correct_answer.text).native.send_keys(:return)
-        expect(page).to have_css("#shortAnswerButton.correct-answer")
+        it "shows all correct answers when wrong" do
+          fill_in("shortAnswerText", with: incorrect_response).native.send_keys(:return)
+          find(".incorrect-answer")
+          expect(find_field("shortAnswerText", disabled: true).value).to include(correct_response)
+            .and include(second_correct_answer.text)
+        end
+
+        it "allows multiple answers for a single word question" do
+          fill_in("shortAnswerText", with: second_correct_answer.text).native.send_keys(:return)
+          expect(page).to have_css("#shortAnswerButton.correct-answer")
+        end
       end
 
       it "uses a check icon when the answer is correct" do
@@ -250,35 +256,37 @@ RSpec.describe "User takes a quiz", :default_creates, :js do
           expect(page).to have_css("#multiplier", text: 1)
         end
 
-        it "moves the multiplier when enough questions are answered correctly" do
-          create(:multiplier, score: 1, multiplier: 2)
-          fill_in("shortAnswerText", with: correct_response).native.send_keys(:return)
-          first(class: "next-button").click
-          expect(page).to have_css("#multiplier", text: 2)
-        end
+        context "when a multiplier threshold is reached" do
+          let!(:multiplier) { create(:multiplier, score: 1, multiplier: 2) }
 
-        it "updates the multiplier straight after answering" do
-          create(:multiplier, score: 1, multiplier: 2)
-          fill_in("shortAnswerText", with: correct_response).native.send_keys(:return)
-          expect(page).to have_css("#multiplier", text: 2)
+          it "moves the multiplier after advancing to the next question" do
+            fill_in("shortAnswerText", with: correct_response).native.send_keys(:return)
+            find(".next-button").click
+            expect(page).to have_css("#multiplier", text: 2)
+          end
+
+          it "updates the multiplier straight after answering" do
+            fill_in("shortAnswerText", with: correct_response).native.send_keys(:return)
+            expect(page).to have_css("#multiplier", text: 2)
+          end
         end
       end
 
       it "increases the percentage complete after answering" do
         fill_in("shortAnswerText", with: correct_response).native.send_keys(:return)
-        first(class: "next-button").click
+        find(".next-button").click
         expect(find(".progress-bar")[:"aria-valuenow"].to_f).to be > 0
       end
 
       it "increases the streak when the answer is correct" do
         fill_in("shortAnswerText", with: correct_response).native.send_keys(:return)
-        first(class: "next-button").click
+        find(".next-button").click
         expect(page).to have_css("#streak", text: 1)
       end
 
       it "resets the streak to 0 when the answer is incorrect" do
         fill_in("shortAnswerText", with: correct_response).native.send_keys(:return)
-        first(class: "next-button").click
+        find(".next-button").click
         fill_in("shortAnswerText", with: incorrect_response).native.send_keys(:return)
         expect(page).to have_css("#streak", text: 0)
       end
@@ -290,7 +298,7 @@ RSpec.describe "User takes a quiz", :default_creates, :js do
 
       it "shows the number of correct answers so far" do
         fill_in("shortAnswerText", with: correct_response).native.send_keys(:return)
-        first(class: "next-button").click
+        find(".next-button").click
         expect(page).to have_css("#answeredCorrect", text: 1)
       end
 

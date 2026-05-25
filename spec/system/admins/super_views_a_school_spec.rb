@@ -3,47 +3,57 @@
 require "rails_helper"
 
 RSpec.describe "Super views a school", :default_creates, :js do
-  let(:new_email) { FFaker::Internet.email }
-  let(:save_email_notice) { "Updated email to #{school_admin.forename} #{school_admin.surname}" }
-  let(:email_notice) do
-    "Setup email sent to #{school_admin.forename} #{school_admin.surname} (#{school_admin.email})"
-  end
-
   before { sign_in super_admin }
 
-  it "lets the super admin impersonate a student" do
-    student
-    visit(school_path(school))
-    click_button("Become User")
-    expect(page).to have_css("#current_user", text: "#{student.forename} #{student.surname}")
+  context "when impersonating a student" do
+    let!(:student) { create(:student, school: school) }
+    before { visit(school_path(school)) }
+
+    it "shows the student as the current user" do
+      click_button("Become User")
+      expect(page).to have_css("#current_user", text: "#{student.forename} #{student.surname}")
+    end
   end
 
-  it "lets the super admin impersonate a school admin" do
-    school_admin
-    visit school_path(school)
-    within("#schoolAdminTable") { click_link "Become User" }
-    expect(page).to have_css("#current_user", text: "#{school_admin.forename} #{school_admin.surname}")
+  context "when impersonating a school admin" do
+    let!(:school_admin) { create(:school_admin, school: school) }
+    before { visit(school_path(school)) }
+
+    it "shows the school admin as the current user" do
+      within("#schoolAdminTable") { click_link "Become User" }
+      expect(page).to have_css("#current_user", text: "#{school_admin.forename} #{school_admin.surname}")
+    end
   end
 
-  it "links to role management for that school" do
-    visit(school_path(school))
-    click_link "Manage User Roles"
-    expect(page).to have_current_path(manage_roles_users_path(school: school))
+  context "when viewing a school" do
+    before { visit(school_path(school)) }
+
+    it "links to role management for that school" do
+      click_link "Manage User Roles"
+      expect(page).to have_current_path(manage_roles_users_path(school: school))
+    end
   end
 
-  it "saves email addresses of school admins" do
-    school_admin
-    visit(school_path(school))
-    fill_in "user-email-#{school_admin.id}", with: new_email
-    find("#save-email-#{school_admin.id}").click
-    expect(page).to have_css("#flash-notice", text: save_email_notice)
-  end
+  context "when managing school admin emails" do
+    let!(:school_admin) { create(:school_admin, school: school) }
+    let(:new_email) { FFaker::Internet.email }
+    let(:save_email_notice) { "Updated email to #{school_admin.forename} #{school_admin.surname}" }
+    let(:email_notice) do
+      "Setup email sent to #{school_admin.forename} #{school_admin.surname} (#{school_admin.email})"
+    end
 
-  it "notifies users that a setup email has been sent" do
-    school_admin
-    visit(school_path(school))
-    click_link "Send Setup Email"
-    expect(page).to have_css("#flash-notice", text: email_notice, wait: 6)
+    before { visit(school_path(school)) }
+
+    it "saves email addresses of school admins" do
+      fill_in "user-email-#{school_admin.id}", with: new_email
+      find("#save-email-#{school_admin.id}").click
+      expect(page).to have_css("#flash-notice", text: save_email_notice)
+    end
+
+    it "notifies users that a setup email has been sent" do
+      click_link "Send Setup Email"
+      expect(page).to have_css("#flash-notice", text: email_notice, wait: 6)
+    end
   end
 
   context "when viewing statistics" do
@@ -57,11 +67,11 @@ RSpec.describe "Super views a school", :default_creates, :js do
 
     before { visit(school_path(school)) }
 
-    it "tells you the number of questions asked overall" do
+    it "shows total questions answered" do
       expect(page).to have_css("#asked_questions", exact_text: total_answered)
     end
 
-    it "tells you the number of questions asked this week" do
+    it "shows this week's questions answered" do
       expect(page).to have_css("#asked_questions_weekly", exact_text: statistic.questions_answered)
     end
   end

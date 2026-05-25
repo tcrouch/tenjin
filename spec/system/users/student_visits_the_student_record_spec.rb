@@ -9,6 +9,7 @@ RSpec.describe "Student visits the student record", :default_creates, :js, :vcr 
   before do
     sign_in student
     stub_google_omniauth
+    visit(user_path(student))
   end
 
   def log_in_via_google
@@ -20,15 +21,13 @@ RSpec.describe "Student visits the student record", :default_creates, :js, :vcr 
   end
 
   it "changes the password" do
-    visit(user_path(student))
     fill_in("user[password]", with: new_password)
     click_button("Update Password")
     log_in_through_front_page(student.username, new_password)
     expect(page).to have_content(student.forename).and have_content(student.surname)
   end
 
-  it "unlinks Google accounts" do
-    visit(user_path(student))
+  it "unlinks a Google account" do
     page.accept_confirm { click_link "Unlink #{student.oauth_email}" }
     expect(page).to have_css("#loginGoogle")
   end
@@ -36,18 +35,19 @@ RSpec.describe "Student visits the student record", :default_creates, :js, :vcr 
   context "when linking Google accounts" do
     let(:student_no_oauth) { create(:student, :no_oauth) }
 
-    before { sign_in student_no_oauth }
-
-    it "links to Google accounts" do
+    before do
+      sign_in student_no_oauth
       visit(user_path(student_no_oauth))
+    end
+
+    it "links a Google account" do
       find_by_id("loginGoogle").click
       find(".alert", text: "linked")
       log_in_via_google
       expect(page).to have_content(student_no_oauth.forename).and have_content(student_no_oauth.surname)
     end
 
-    it "shows an appropriate flash message when linking accounts" do
-      visit(user_path(student_no_oauth))
+    it "shows a success message" do
       find(".shepherd-text")
       find_by_id("loginGoogle").click
       expect(page).to have_content("Successfully linked Google account")

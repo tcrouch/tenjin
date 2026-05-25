@@ -3,27 +3,35 @@
 require "rails_helper"
 
 RSpec.describe "User creates a quiz", :default_creates, :js do
-  context "when picking a subject" do
+  describe "picking a subject" do
     let(:subject_cs) { create(:computer_science) }
     let(:classroom_cs) { create(:classroom, subject: subject_cs, school: school) }
 
-    it "shows a subject image when there is one available" do
-      create(:enrollment, classroom: classroom_cs, user: student)
-      log_in
-      expect(page).to have_css("img[src*=computer-science]")
+    context "with a subject-specific image" do
+      before do
+        create(:enrollment, classroom: classroom_cs, user: student)
+        log_in
+      end
+
+      it "shows a subject image" do
+        expect(page).to have_css("img[src*=computer-science]")
+      end
     end
 
-    it "shows a default subject image if there is not a specific one" do
-      setup_subject_database
-      log_in
-      expect(page).to have_css("img[src*=default-subject]")
-    end
+    context "with no subject-specific image" do
+      before do
+        setup_subject_database
+        log_in
+      end
 
-    it "navigates to the topic select page" do
-      setup_subject_database
-      log_in
-      find(class: "subject-carousel-item-image").click
-      expect(page).to have_content(/Select topic/i)
+      it "shows a default subject image" do
+        expect(page).to have_css("img[src*=default-subject]")
+      end
+
+      it "navigates to the topic select page" do
+        find(class: "subject-carousel-item-image").click
+        expect(page).to have_content(/Select topic/i)
+      end
     end
   end
 
@@ -44,9 +52,9 @@ RSpec.describe "User creates a quiz", :default_creates, :js do
   end
 
   context "when creating a quiz for the same topic multiple times" do
-    let(:user_topic_score) { TopicScore.where(user: student, topic: topic).first.score }
-    let(:two_quizzes_started) { create(:usage_statistic, user: student, topic: topic, quizzes_started: 2) }
-    let(:three_quizzes_started) { create(:usage_statistic, user: student, topic: topic, quizzes_started: 3) }
+    # TopicScore has no visible representation during the quiz itself;
+    # it only appears on the leaderboard page. DB assertions are appropriate here.
+    let(:user_topic_score) { TopicScore.find_by!(user: student, topic: topic).score }
     let!(:question) { create(:question, topic: topic) }
 
     before do
@@ -54,25 +62,36 @@ RSpec.describe "User creates a quiz", :default_creates, :js do
       sign_in student
     end
 
-    it "awards points for the first attempt" do
-      navigate_to_quiz
-      first(class: "question-button").click
-      find(".correct-answer")
-      expect(user_topic_score).to eq(1)
+    context "on the first attempt" do
+      before { navigate_to_quiz }
+
+      it "awards leaderboard points" do
+        find(".question-button").click
+        find(".correct-answer")
+        expect(user_topic_score).to eq(1)
+      end
     end
 
-    it "awards points for the third attempt" do
-      two_quizzes_started
-      navigate_to_quiz
-      first(class: "question-button").click
-      find(".correct-answer")
-      expect(user_topic_score).to eq(1)
+    context "on the third attempt" do
+      let!(:two_quizzes_started) { create(:usage_statistic, user: student, topic: topic, quizzes_started: 2) }
+
+      before { navigate_to_quiz }
+
+      it "awards leaderboard points" do
+        find(".question-button").click
+        find(".correct-answer")
+        expect(user_topic_score).to eq(1)
+      end
     end
 
-    it "always awards points for a lucky dip quiz" do
-      three_quizzes_started
-      navigate_to_lucky_dip
-      expect(page).to have_no_content("not counting")
+    context "with a lucky dip quiz" do
+      let!(:three_quizzes_started) { create(:usage_statistic, user: student, topic: topic, quizzes_started: 3) }
+
+      before { navigate_to_lucky_dip }
+
+      it "always awards leaderboard points" do
+        expect(page).to have_no_content("not counting")
+      end
     end
 
     context "when you should not be allowed to score" do
@@ -80,15 +99,18 @@ RSpec.describe "User creates a quiz", :default_creates, :js do
 
       before { navigate_to_quiz }
 
-      it "does not award points for the fourth attempt" do
-        create(:topic_score, user: student, topic: topic, score: 3)
-        first(class: "question-button").click
-        find(".correct-answer")
-        expect(user_topic_score).to eq(3)
-      end
-
       it "informs the user they cannot currently score leaderboard points for this quiz" do
         expect(page).to have_content("not counting")
+      end
+
+      context "when a prior score exists" do
+        let!(:prior_score) { create(:topic_score, user: student, topic: topic, score: 3) }
+
+        it "does not update the leaderboard score" do
+          find(".question-button").click
+          find(".correct-answer")
+          expect(user_topic_score).to eq(3)
+        end
       end
     end
   end
@@ -102,10 +124,13 @@ RSpec.describe "User creates a quiz", :default_creates, :js do
       log_in
     end
 
-    it "allows selecting a topic" do
-      visit(new_quiz_path(params: {subject: quiz_subject.name}))
-      find(:xpath, "//select/option[1]")
-      expect(page).to have_select("quiz_topic_id", options: ["Lucky Dip", Topic.first.name])
+    context "when viewing the topic select page" do
+      before { visit(new_quiz_path(params: {subject: quiz_subject.name})) }
+
+      it "lists available topics" do
+        find(:xpath, "//select/option[1]")
+        expect(page).to have_select("quiz_topic_id", options: ["Lucky Dip", Topic.first.name])
+      end
     end
 
     it "creates a quiz on the correct topic" do
@@ -118,8 +143,9 @@ RSpec.describe "User creates a quiz", :default_creates, :js do
         create(:active_customisation, user: student, customisation: create(:dashboard_customisation, value: "orange"))
       end
 
+      before { visit(new_quiz_path(params: {subject: quiz_subject.name})) }
+
       it "has a separator of the correct colour" do
-        visit(new_quiz_path(params: {subject: quiz_subject.name}))
         expect(page).to have_css("hr[style*='#{active_customisation.customisation.value}'")
       end
     end

@@ -3,7 +3,7 @@
 require "rails_helper"
 require "support/api_data"
 
-RSpec.describe "User views an updating leaderboard", :default_creates, :js do
+RSpec.describe "User views a live leaderboard", :default_creates, :js do
   let!(:student_topic_score) { create(:topic_score, user: student, score: 10, topic: topic) }
   let!(:one_to_nine) do
     (1..9).each { |n| create(:topic_score, topic: topic, school: school, score: n) }
@@ -11,16 +11,26 @@ RSpec.describe "User views an updating leaderboard", :default_creates, :js do
 
   before { setup_subject_database }
 
-  it "does not show the option for a student" do
-    sign_in student
-    visit(leaderboard_path(quiz_subject.name))
-    expect(page).to have_no_css("#toggleLive")
+  describe "as a student" do
+    before do
+      sign_in student
+      visit(leaderboard_path(quiz_subject.name))
+    end
+
+    it "does not show the live toggle" do
+      expect(page).to have_no_css("#toggleLive")
+    end
   end
 
-  it "shows the option for a school_admin" do
-    sign_in school_admin
-    visit(leaderboard_path(quiz_subject.name))
-    expect(page).to have_css("#toggleLive")
+  describe "as a school admin" do
+    before do
+      sign_in school_admin
+      visit(leaderboard_path(quiz_subject.name))
+    end
+
+    it "shows the live toggle" do
+      expect(page).to have_css("#toggleLive")
+    end
   end
 
   context "with a school group" do
@@ -38,8 +48,8 @@ RSpec.describe "User views an updating leaderboard", :default_creates, :js do
     before do
       sign_in teacher
       visit(leaderboard_path(quiz_subject.name))
-      find(:css, "#leaderboardTable tbody tr:nth-child(10)")
-      find(:css, "#toggleLive label", visible: false).click
+      find("#leaderboardTable tbody tr:nth-child(10)")
+      find("#toggleLive label", visible: false).click
     end
 
     it "resets all scores to 0 when live leaderboard selected" do
@@ -51,12 +61,15 @@ RSpec.describe "User views an updating leaderboard", :default_creates, :js do
       expect(page).to have_css("#leaderboardTable tbody tr")
     end
 
-    it "shows updates from other schools when selected" do
-      topic_score_same_school_group.update_attribute("score", 110)
-      click_button("All")
-      Leaderboard::BroadcastLeaderboardPoint.new(topic_score_same_school_group, second_student).call
-      expect(page).to have_css("#leaderboardTable tbody tr td#score-#{topic_score_same_school_group.user.id}",
-        exact_text: 10)
+    context "with an updated score from another school" do
+      let!(:topic_score_same_school_group) { create(:topic_score, score: 110, topic: topic, user: second_student) }
+
+      it "shows updates from other schools when selected" do
+        click_button("All")
+        Leaderboard::BroadcastLeaderboardPoint.new(topic_score_same_school_group, second_student).call
+        expect(page).to have_css("#leaderboardTable tbody tr td#score-#{topic_score_same_school_group.user.id}",
+          exact_text: 10)
+      end
     end
 
     it "filters updates by class" do
@@ -76,16 +89,16 @@ RSpec.describe "User views an updating leaderboard", :default_creates, :js do
   end
 
   context "when an employee" do
-    let(:add_score) { rand(0..1000) }
+    let(:add_score) { 500 }
 
     before do
       sign_in teacher
       visit(leaderboard_path(quiz_subject.name))
-      find(:css, "#leaderboardTable tbody tr:nth-child(10)")
-      find(:css, "#toggleLive label").click
+      find("#leaderboardTable tbody tr:nth-child(10)")
+      find("#toggleLive label").click
     end
 
-    it "shows the option or a school admin or employee" do
+    it "shows the live toggle" do
       expect(page).to have_css("#toggleLive")
     end
 
@@ -94,7 +107,7 @@ RSpec.describe "User views an updating leaderboard", :default_creates, :js do
     end
 
     it "shows weekly scores when turned off" do
-      find(:css, "#toggleLive label").click
+      find("#toggleLive label").click
       expect(page).to have_css("tbody tr", count: 10)
     end
 
@@ -103,11 +116,16 @@ RSpec.describe "User views an updating leaderboard", :default_creates, :js do
       expect(page).to have_css("tr.score-changed")
     end
 
-    it "calculates the score correctly" do
-      student_topic_score.update_attribute("score", student_topic_score.score + add_score)
-      student_topic_score.reload
-      Leaderboard::BroadcastLeaderboardPoint.new(student_topic_score.topic, student_topic_score.user).call
-      expect(page).to have_css("td", exact_text: add_score.to_s)
+    context "with an updated score" do
+      before do
+        student_topic_score.update!(score: student_topic_score.score + add_score)
+        student_topic_score.reload
+      end
+
+      it "calculates the score correctly" do
+        Leaderboard::BroadcastLeaderboardPoint.new(student_topic_score.topic, student_topic_score.user).call
+        expect(page).to have_css("td", exact_text: add_score.to_s)
+      end
     end
   end
 end

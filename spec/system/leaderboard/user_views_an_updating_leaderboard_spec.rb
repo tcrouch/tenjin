@@ -15,9 +15,12 @@ RSpec.describe "User views an updating leaderboard", :default_creates, :js do
   end
 
   context "when receiving updates" do
+    let(:another_student) { topic.topic_scores.where.not(user: student).first.user }
+
     before do
       visit(leaderboard_path(quiz_subject.name))
-      find(:css, "#leaderboardTable tbody tr:nth-child(10)")
+      expect(page).to have_css("#leaderboardTable tbody tr:nth-child(10)")
+      expect(page).to have_css("#connected", visible: :all)
     end
 
     it "flashes an update for the current student's score" do
@@ -26,15 +29,15 @@ RSpec.describe "User views an updating leaderboard", :default_creates, :js do
     end
 
     it "flashes an update if someone else has a score" do
-      Leaderboard::BroadcastLeaderboardPoint.new(topic, User.second).call
-      expect(page).to have_css("tr#row-#{User.second.id}.score-changed")
+      Leaderboard::BroadcastLeaderboardPoint.new(topic, another_student).call
+      expect(page).to have_css("tr#row-#{another_student.id}.score-changed")
     end
 
     it "receives two scores at the same time for different users" do
       Leaderboard::BroadcastLeaderboardPoint.new(topic, student).call
-      Leaderboard::BroadcastLeaderboardPoint.new(topic, User.second).call
+      Leaderboard::BroadcastLeaderboardPoint.new(topic, another_student).call
       expect(page).to have_css("tr#row-#{student.id}.score-changed")
-        .and have_css("tr#row-#{User.second.id}.score-changed")
+        .and have_css("tr#row-#{another_student.id}.score-changed")
     end
 
     it "only displays 10 users after adding a new person" do
@@ -52,30 +55,34 @@ RSpec.describe "User views an updating leaderboard", :default_creates, :js do
       expect(page).to have_no_css("tr.score-changed", wait: 1.5)
     end
 
-    it "re-ranks correctly" do
-      new_entry
-      Leaderboard::BroadcastLeaderboardPoint.new(topic, new_entry.user).call
-      expect(page).to have_css("tr:nth-child(2)#row-#{student.id}")
+    context "when a new entry re-ranks the leaderboard" do
+      let!(:new_entry) { create(:topic_score, topic: topic, school: school, score: 11) }
+
+      it "re-ranks correctly" do
+        Leaderboard::BroadcastLeaderboardPoint.new(topic, new_entry.user).call
+        expect(page).to have_css("tr:nth-child(2)#row-#{student.id}")
+      end
     end
   end
 
   context "with a school group" do
+    let(:topic_score_same_school_group) { create(:topic_score, topic: topic, school: second_school) }
+
     before do
       create(:school, school_group: school.school_group)
       visit(leaderboard_path(quiz_subject.name))
-      find(:css, "#leaderboardTable tbody tr:nth-child(10)")
+      expect(page).to have_css("#leaderboardTable tbody tr:nth-child(10)")
+      expect(page).to have_css("#connected", visible: :all)
     end
 
-    let(:student_another_school) { create(:student) }
-    let(:student_same_school_group) { create(:student, school_group: student.school.school_group) }
-    let(:topic_score_same_school_group) { create(:topic_score, topic: topic, school: second_school) }
-    let(:topic_score_different_school_group) { create(:topic_score, topic: topic) }
-    let(:another_name) { initialize_name User.second }
+    context "when an update arrives from a different school group" do
+      let(:student_another_school) { create(:student) }
+      let!(:topic_score_different_school_group) { create(:topic_score, topic: topic) }
 
-    it "does not update if update is from an different school group" do
-      topic_score_different_school_group
-      Leaderboard::BroadcastLeaderboardPoint.new(topic, student_another_school).call
-      expect(page).to have_no_css("tr.score-changed")
+      it "does not update" do
+        Leaderboard::BroadcastLeaderboardPoint.new(topic, student_another_school).call
+        expect(page).to have_no_css("tr.score-changed")
+      end
     end
 
     it "displays a new student with a score in the correct window" do
@@ -105,15 +112,18 @@ RSpec.describe "User views an updating leaderboard", :default_creates, :js do
   end
 
   context "without a school group" do
+    let(:another_student_score) { topic.topic_scores.where.not(user: student).first }
+
     before do
-      school.update_attribute(:school_group_id, nil)
+      school.update!(school_group_id: nil)
       visit(leaderboard_path(quiz_subject.name))
-      find(:css, "#leaderboardTable tbody tr:nth-child(10)")
+      expect(page).to have_css("#leaderboardTable tbody tr:nth-child(10)")
+      expect(page).to have_css("#connected", visible: :all)
     end
 
     it "updates if someone from the same schools has a score" do
-      Leaderboard::BroadcastLeaderboardPoint.new(TopicScore.second, User.second).call
-      expect(page).to have_css("tr#row-#{TopicScore.second.user.id}.score-changed")
+      Leaderboard::BroadcastLeaderboardPoint.new(another_student_score, another_student_score.user).call
+      expect(page).to have_css("tr#row-#{another_student_score.user_id}.score-changed")
     end
 
     it "flashes an update when the student's school has a score" do
@@ -125,7 +135,8 @@ RSpec.describe "User views an updating leaderboard", :default_creates, :js do
   context "when showing for a specific subject" do
     before do
       visit(leaderboard_path(quiz_subject.name))
-      find(:css, "#leaderboardTable tbody tr:nth-child(10)")
+      expect(page).to have_css("#leaderboardTable tbody tr:nth-child(10)")
+      expect(page).to have_css("#connected", visible: :all)
     end
 
     let(:different_subject) { create(:subject) }
@@ -139,8 +150,9 @@ RSpec.describe "User views an updating leaderboard", :default_creates, :js do
 
   context "when viewing a single topic" do
     before do
-      visit(leaderboard_path(quiz_subject.name, topic: Topic.first))
-      find(:css, "#leaderboardTable tbody tr:nth-child(10)")
+      visit(leaderboard_path(quiz_subject.name, topic: topic))
+      expect(page).to have_css("#leaderboardTable tbody tr:nth-child(10)")
+      expect(page).to have_css("#connected", visible: :all)
     end
 
     let(:different_topic) { create(:topic, subject: quiz_subject) }

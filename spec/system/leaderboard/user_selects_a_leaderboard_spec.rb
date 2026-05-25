@@ -8,7 +8,7 @@ RSpec.describe "User selects a leaderboard", :default_creates, :js do
     sign_in student
   end
 
-  context "when selecting a leaderboard to view" do
+  context "with a topic and a second subject enrolled" do
     let!(:topic) { create(:topic, subject: quiz_subject) }
     let(:second_subject) { create(:subject) }
     let(:second_classroom) { create(:classroom, subject: second_subject, school: school) }
