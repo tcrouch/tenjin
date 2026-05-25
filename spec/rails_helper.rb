@@ -115,6 +115,8 @@ RSpec.configure do |config|
         end
       end
     end
+  rescue NoMethodError
+    # manage.logs not supported in this ChromeDriver version
   end
 
   config.before(:each, type: :system) do
