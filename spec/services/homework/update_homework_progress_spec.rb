@@ -11,12 +11,12 @@ RSpec.describe Homework::UpdateHomeworkProgress, :default_creates do
     let(:mark_required) { 100 }
 
     let(:quiz_full_marks) do
-      create(:quiz, subject: subject, topic: topic, num_questions_asked: 10,
+      create(:quiz, subject: quiz_subject, topic: topic, num_questions_asked: 10,
         answered_correct: 10, active: false, user: student)
     end
 
     let(:quiz_7_out_of_10) do
-      create(:quiz, subject: subject, topic: topic, num_questions_asked: 10,
+      create(:quiz, subject: quiz_subject, topic: topic, num_questions_asked: 10,
         answered_correct: 7, active: false, user: student)
     end
 
@@ -41,7 +41,7 @@ RSpec.describe Homework::UpdateHomeworkProgress, :default_creates do
     let(:mark_required) { 30 }
 
     let(:quiz_1_out_of_3) do
-      create(:quiz, subject: subject, topic: topic, num_questions_asked: 3,
+      create(:quiz, subject: quiz_subject, topic: topic, num_questions_asked: 3,
         answered_correct: 1, active: false, user: student)
     end
 

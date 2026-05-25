@@ -3,8 +3,8 @@
 require "rails_helper"
 
 RSpec.describe Challenge do
-  let(:subject) { create(:subject) }
-  let(:topic) { create(:topic, subject: subject) }
+  let(:quiz_subject) { create(:subject) }
+  let(:topic) { create(:topic, subject: quiz_subject) }
   let(:different_subject_topic) { create(:topic) }
   let(:challenge_one) { described_class.create_challenge(topic.subject) }
   let(:challenge_two) { described_class.create_challenge(topic.subject) }
@@ -19,7 +19,7 @@ RSpec.describe Challenge do
 
   describe "#create_challenge" do
     it "creates a new challenge for a given subject" do
-      expect(described_class.create_challenge(topic.subject).topic.subject).to eq(subject)
+      expect(described_class.create_challenge(topic.subject).topic.subject).to eq(quiz_subject)
     end
 
     it "has the default length of a week" do

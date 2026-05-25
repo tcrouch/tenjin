@@ -4,9 +4,9 @@ require "rails_helper"
 
 RSpec.describe Quiz::CreateQuiz, :default_creates do
   context "when creating a lucky dip quiz" do
-    let(:quiz) { described_class.call(user: student, topic: "Lucky Dip", subject: subject) }
-    let(:quiz_with_topic) { described_class.call(user: student, topic: topic.id, subject: subject) }
-    let(:topics) { create_list(:topic, 10, subject: subject) }
+    let(:quiz) { described_class.call(user: student, topic: "Lucky Dip", subject: quiz_subject) }
+    let(:quiz_with_topic) { described_class.call(user: student, topic: topic.id, subject: quiz_subject) }
+    let(:topics) { create_list(:topic, 10, subject: quiz_subject) }
 
     before do
       topics.each do |t|
@@ -53,7 +53,7 @@ RSpec.describe Quiz::CreateQuiz, :default_creates do
 
   context "when creating a lesson based quiz" do
     let(:quiz_with_lesson) do
-      described_class.call(user: student, topic: topic.id, subject: subject, lesson: lesson.id)
+      described_class.call(user: student, topic: topic.id, subject: quiz_subject, lesson: lesson.id)
     end
     let(:lesson) { create(:lesson, topic: topic) }
 

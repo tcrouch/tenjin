@@ -3,10 +3,10 @@
 require "rails_helper"
 
 RSpec.describe "using question editing" do
-  let(:subject) { create(:subject) }
+  let(:quiz_subject) { create(:subject) }
   let(:school) { create(:school) }
   let(:student) { create(:student) }
-  let(:author) { create(:question_author, subject: subject) }
+  let(:author) { create(:question_author, subject: quiz_subject) }
 
   context "when I am a student" do
     it "redirects me to the dashboard" do

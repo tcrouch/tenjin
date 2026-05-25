@@ -14,7 +14,7 @@ RSpec.describe "User changes leaderboard options", :default_creates, :js do
 
     it "hides the school group option" do
       School.first.update_attribute(:school_group_id, nil)
-      visit(leaderboard_path(subject.name))
+      visit(leaderboard_path(quiz_subject.name))
       expect(page).to have_no_button("Select School")
     end
   end
@@ -22,7 +22,7 @@ RSpec.describe "User changes leaderboard options", :default_creates, :js do
   context "with a school group" do
     before do
       create(:topic_score, school: second_school, topic: topic)
-      visit(leaderboard_path(subject.name))
+      visit(leaderboard_path(quiz_subject.name))
     end
 
     it "shows only the current school by default" do
@@ -53,7 +53,7 @@ RSpec.describe "User changes leaderboard options", :default_creates, :js do
   context "when viewing all users" do
     before do
       create_list(:topic_score, 50, school: school, topic: topic)
-      visit(leaderboard_path(subject.name))
+      visit(leaderboard_path(quiz_subject.name))
       find(:css, "#leaderboardTable tbody tr:nth-child(10)")
     end
 
@@ -73,13 +73,13 @@ RSpec.describe "User changes leaderboard options", :default_creates, :js do
 
   context "when viewing the all time leaderboard" do
     let(:overall_score) { (AllTimeTopicScore.first.score + TopicScore.first.score).to_s }
-    let(:second_topic) { create(:topic, subject: subject) }
+    let(:second_topic) { create(:topic, subject: quiz_subject) }
     let(:second_subject_topic) { create(:topic) }
     let(:second_student) { create(:student, school: student.school) }
 
     before do
       create(:all_time_topic_score, user: student, topic: topic)
-      visit(leaderboard_path(subject.name))
+      visit(leaderboard_path(quiz_subject.name))
     end
 
     it "adds up the the overall score correctly" do
@@ -107,7 +107,7 @@ RSpec.describe "User changes leaderboard options", :default_creates, :js do
 
     it "adds up scores only for that topic" do
       create(:all_time_topic_score, user: student, topic: second_topic)
-      visit(leaderboard_path(subject.name, topic: second_topic))
+      visit(leaderboard_path(quiz_subject.name, topic: second_topic))
       find_by_id("allTime").click
       expect(page).to have_css("td", exact_text: AllTimeTopicScore.second.score)
     end
@@ -128,11 +128,11 @@ RSpec.describe "User changes leaderboard options", :default_creates, :js do
 
   context "when filtering by classroom" do
     let(:overall_score) { (AllTimeTopicScore.first.score + TopicScore.first.score).to_s }
-    let(:second_topic) { create(:topic, subject: subject) }
-    let(:second_classroom) { create(:classroom, subject: subject, school: school) }
+    let(:second_topic) { create(:topic, subject: quiz_subject) }
+    let(:second_classroom) { create(:classroom, subject: quiz_subject, school: school) }
     let(:second_student) { create(:student, school: student.school) }
     let!(:enrollment_classroom) { create(:enrollment, classroom: second_classroom, user: second_student) }
-    let!(:topic_score_different_classroom) { create(:topic_score, user: second_student, subject: subject) }
+    let!(:topic_score_different_classroom) { create(:topic_score, user: second_student, subject: quiz_subject) }
     let!(:second_school) { create(:school, school_group: school.school_group) }
     let(:different_school_same_classroom_name) do
       create(:classroom,
@@ -140,7 +140,7 @@ RSpec.describe "User changes leaderboard options", :default_creates, :js do
     end
     let(:different_school_enrollment) { create(:enrollment, classroom: different_school_same_classroom_name) }
     let(:different_school_topic_score) do
-      create(:topic_score, subject: subject,
+      create(:topic_score, subject: quiz_subject,
         user: different_school_enrollment.user)
     end
     let(:same_name_different_school) do
@@ -148,7 +148,7 @@ RSpec.describe "User changes leaderboard options", :default_creates, :js do
       different_school_topic_score
     end
 
-    before { visit(leaderboard_path(subject.name)) }
+    before { visit(leaderboard_path(quiz_subject.name)) }
 
     it "shows different classrooms by default" do
       expect(page).to have_css("#leaderboardTable tbody tr", count: 2)
@@ -170,7 +170,7 @@ RSpec.describe "User changes leaderboard options", :default_creates, :js do
 
     it "filters classrooms with the same name in another school out" do
       same_name_different_school
-      visit(leaderboard_path(subject.name))
+      visit(leaderboard_path(quiz_subject.name))
       click_button("Select Class")
       click_button(second_classroom.name)
       expect(page).to have_css("#leaderboardTable tbody tr", count: 1)

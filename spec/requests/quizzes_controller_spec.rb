@@ -79,12 +79,12 @@ RSpec.describe "using a quiz", :default_creates do
   context "when displaying a question" do
     let!(:multiplier) { create(:multiplier) }
     let(:quiz) { create(:new_quiz, user: student, question_order: [question.id]) }
-    let(:classroom) { create(:classroom, subject: subject) }
+    let(:classroom) { create(:classroom, subject: quiz_subject) }
 
     it "creates a quiz" do
       create(:enrollment, school: school, classroom: classroom, user: student)
       create(:question, topic: topic)
-      post quizzes_path params: {quiz: {topic_id: topic, subject: subject}}
+      post quizzes_path params: {quiz: {topic_id: topic, subject: quiz_subject}}
       follow_redirect!
       expect(response).to have_http_status(:success)
     end

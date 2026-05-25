@@ -3,7 +3,7 @@
 require "rails_helper"
 
 RSpec.describe "Teacher visits the dashboard", :default_creates, :js do
-  let(:classroom) { create(:classroom, subject: subject, school: teacher.school) }
+  let(:classroom) { create(:classroom, subject: quiz_subject, school: teacher.school) }
   let(:other_classroom) { create(:classroom, school: school) }
 
   before do

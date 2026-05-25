@@ -66,7 +66,7 @@ RSpec.describe Leaderboard::ResetWeeklyLeaderboard, :default_creates do
     let(:top_score) { create(:topic_score, subject: classroom.subject, user: student, score: 1000) }
     let(:enrollments) { create_list(:enrollment, 5, classroom: classroom) }
     let(:topic) { create(:topic, subject: classroom.subject) }
-    let(:second_classroom) { create(:classroom, school: school, subject: subject) }
+    let(:second_classroom) { create(:classroom, school: school, subject: quiz_subject) }
     let(:second_classroom_enrollment) { create(:enrollment, classroom: second_classroom) }
 
     before do
@@ -93,7 +93,7 @@ RSpec.describe Leaderboard::ResetWeeklyLeaderboard, :default_creates do
 
     it "awards winners for multiple classrooms" do
       second_classroom_enrollment
-      create(:topic_score, user: second_classroom_enrollment.user, subject: subject)
+      create(:topic_score, user: second_classroom_enrollment.user, subject: quiz_subject)
       expect { described_class.call }.to change(ClassroomWinner, :count).by(2)
     end
   end

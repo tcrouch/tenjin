@@ -83,7 +83,7 @@ RSpec.describe "User attempts a challenge", :default_creates, :js do
     end
 
     it "flags the challenge complete" do
-      create(:question, topic: create(:topic, subject: subject))
+      create(:question, topic: create(:topic, subject: quiz_subject))
       visit(dashboard_path)
       find(:css, "#challenge-table tbody tr:nth-child(1)").click
       click_through_quiz
@@ -92,7 +92,7 @@ RSpec.describe "User attempts a challenge", :default_creates, :js do
 
     it "only increases points for this student" do
       second_enrollment = create(:enrollment, classroom: classroom)
-      create(:question, topic: create(:topic, subject: subject))
+      create(:question, topic: create(:topic, subject: quiz_subject))
       visit(dashboard_path)
       find(:css, "#challenge-table tbody tr:nth-child(1)").click
       click_through_quiz

@@ -147,7 +147,7 @@ RSpec.describe "User customises the site", :default_creates, :js do
         click_button "Buy"
       end
       expect(page).to have_current_path(dashboard_path)
-      visit(leaderboard_path(subject.name))
+      visit(leaderboard_path(quiz_subject.name))
       expect(page).to have_css("td svg.fa-star", style: "color: black;")
     end
   end

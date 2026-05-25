@@ -3,11 +3,11 @@
 require "rails_helper"
 
 RSpec.describe "Teacher sets homework", :default_creates, :js do
-  let(:classroom) { create(:classroom, subject: subject, school: teacher.school) }
+  let(:classroom) { create(:classroom, subject: quiz_subject, school: teacher.school) }
   let(:flatpickr_one_week_from_now) do
     "span.flatpickr-day[aria-label=\"#{1.week.from_now.strftime("%B %-e, %Y")}\"]"
   end
-  let!(:topic) { create(:topic, subject: subject) }
+  let!(:topic) { create(:topic, subject: quiz_subject) }
   let(:lesson) { create(:lesson, topic: topic) }
 
   before do
@@ -96,7 +96,7 @@ RSpec.describe "Teacher sets homework", :default_creates, :js do
 
     context "when a topic has been selected" do
       let!(:lesson_different_topic) do
-        other_topic = create(:topic, subject: subject)
+        other_topic = create(:topic, subject: quiz_subject)
         other_lesson = create(:lesson, topic: other_topic)
         create_list(:question, question_count, lesson: other_lesson, topic: other_topic)
         other_lesson

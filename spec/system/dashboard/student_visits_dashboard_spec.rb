@@ -12,7 +12,7 @@ RSpec.describe "Student visits the dashboard", :default_creates, :js do
 
   context "when looking at the challenges" do
     let!(:challenge_one) { create(:challenge, topic: topic, end_date: 1.hour.from_now) }
-    let!(:challenge_two) { create(:challenge, topic: create(:topic, subject: subject)) }
+    let!(:challenge_two) { create(:challenge, topic: create(:topic, subject: quiz_subject)) }
     let!(:answer) { create(:answer, question: question, correct: true) }
     let(:second_subject) { create(:subject) }
     let(:second_topic) { create(:topic, subject: second_subject) }

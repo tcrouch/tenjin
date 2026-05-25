@@ -3,7 +3,7 @@
 require "rails_helper"
 
 RSpec.describe "Super manages user roles", :default_creates, :js do
-  let!(:subject) { create(:subject) }
+  let!(:quiz_subject) { create(:subject) }
 
   before do
     sign_in super_admin
@@ -24,28 +24,28 @@ RSpec.describe "Super manages user roles", :default_creates, :js do
   end
 
   it "adds a question author role" do
-    select subject.name, from: "user[subject]"
+    select quiz_subject.name, from: "user[subject]"
     select "question_author", from: "user[role]"
     click_button("Add Role")
     within("#question_author-table") { expect(page).to have_content("#{teacher.forename} #{teacher.surname}") }
   end
 
   it "removes a question author role" do
-    teacher.add_role :question_author, subject
+    teacher.add_role :question_author, quiz_subject
     visit(manage_roles_users_path(school: teacher.school))
     click_button("Remove")
     expect(page).to have_no_css("#question_author-table")
   end
 
   it "adds a lesson author role" do
-    select subject.name, from: "user[subject]"
+    select quiz_subject.name, from: "user[subject]"
     select "lesson_author", from: "user[role]"
     click_button("Add Role")
     within("#lesson_author-table") { expect(page).to have_content("#{teacher.forename} #{teacher.surname}") }
   end
 
   it "removes a lesson author role" do
-    teacher.add_role :lesson_author, subject
+    teacher.add_role :lesson_author, quiz_subject
     visit(manage_roles_users_path(school: teacher.school))
     click_button("Remove")
     expect(page).to have_no_css("#lesson_author-table")

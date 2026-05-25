@@ -13,13 +13,13 @@ RSpec.describe "User views an updating leaderboard", :default_creates, :js do
 
   it "does not show the option for a student" do
     sign_in student
-    visit(leaderboard_path(subject.name))
+    visit(leaderboard_path(quiz_subject.name))
     expect(page).to have_no_css("#toggleLive")
   end
 
   it "shows the option for a school_admin" do
     sign_in school_admin
-    visit(leaderboard_path(subject.name))
+    visit(leaderboard_path(quiz_subject.name))
     expect(page).to have_css("#toggleLive")
   end
 
@@ -31,13 +31,13 @@ RSpec.describe "User views an updating leaderboard", :default_creates, :js do
     let!(:enrollment_different_classroom) do
       create(:enrollment,
         user: student_same_school,
-        classroom: create(:classroom, subject: subject, school: school))
+        classroom: create(:classroom, subject: quiz_subject, school: school))
     end
     let(:topic_score_different_classroom) { create(:topic_score, score: 100, topic: topic, user: student_same_school) }
 
     before do
       sign_in teacher
-      visit(leaderboard_path(subject.name))
+      visit(leaderboard_path(quiz_subject.name))
       find(:css, "#leaderboardTable tbody tr:nth-child(10)")
       find(:css, "#toggleLive label", visible: false).click
     end
@@ -80,7 +80,7 @@ RSpec.describe "User views an updating leaderboard", :default_creates, :js do
 
     before do
       sign_in teacher
-      visit(leaderboard_path(subject.name))
+      visit(leaderboard_path(quiz_subject.name))
       find(:css, "#leaderboardTable tbody tr:nth-child(10)")
       find(:css, "#toggleLive label").click
     end

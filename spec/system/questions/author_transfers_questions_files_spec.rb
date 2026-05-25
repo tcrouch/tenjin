@@ -3,8 +3,8 @@
 require "rails_helper"
 
 RSpec.describe "Author transfers question files", :default_creates, :js do
-  let(:author) { create(:question_author, subject: subject) }
-  let!(:topic) { create(:topic, subject: subject) }
+  let(:author) { create(:question_author, subject: quiz_subject) }
+  let!(:topic) { create(:topic, subject: quiz_subject) }
   let!(:question) { create(:question, topic: topic) }
 
   before do

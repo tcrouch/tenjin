@@ -11,11 +11,11 @@ RSpec.describe Challenge::UpdateChallengeProgress, :default_creates do
     let(:progress) { ChallengeProgress.find_by(challenge: challenge, user: student) }
 
     let(:quiz_full_marks) do
-      create(:quiz, subject: subject, topic: topic, num_questions_asked: 10,
+      create(:quiz, subject: quiz_subject, topic: topic, num_questions_asked: 10,
         answered_correct: 10, active: false, user: student)
     end
     let(:quiz_7_out_of_10) do
-      create(:quiz, subject: subject, topic: topic, num_questions_asked: 10,
+      create(:quiz, subject: quiz_subject, topic: topic, num_questions_asked: 10,
         answered_correct: 7, active: false, user: student)
     end
 
@@ -41,7 +41,7 @@ RSpec.describe Challenge::UpdateChallengeProgress, :default_creates do
     end
 
     it "does not update progress for a quiz on a different topic" do
-      challenge_different_topic = create(:challenge, topic: create(:topic, subject: subject),
+      challenge_different_topic = create(:challenge, topic: create(:topic, subject: quiz_subject),
         challenge_type: "number_correct", number_required: 3,
         end_date: 1.hour.from_now)
       expect { described_class.call(quiz_full_marks, "number_correct") }
@@ -64,8 +64,8 @@ RSpec.describe Challenge::UpdateChallengeProgress, :default_creates do
       create(:challenge_progress, challenge: challenge, user: student, completed: true, awarded: true)
     end
 
-    let(:quiz_streak_of_five) { create(:quiz, subject: subject, user: student, topic: topic, streak: 5) }
-    let(:quiz_streak_of_three) { create(:quiz, subject: subject, user: student, topic: topic, streak: 3) }
+    let(:quiz_streak_of_five) { create(:quiz, subject: quiz_subject, user: student, topic: topic, streak: 5) }
+    let(:quiz_streak_of_three) { create(:quiz, subject: quiz_subject, user: student, topic: topic, streak: 3) }
 
     it "marks the challenge as complete when the streak target is reached" do
       described_class.call(quiz_streak_of_five)
@@ -96,9 +96,9 @@ RSpec.describe Challenge::UpdateChallengeProgress, :default_creates do
   end
 
   context "when updating a number of points challenge" do
-    let(:quiz_five_points) { create(:quiz, subject: subject, topic: topic, user: student) }
-    let(:quiz_five_points_lucky_dip) { create(:quiz, subject: subject, topic: nil, user: student) }
-    let(:second_topic) { create(:topic, subject: subject) }
+    let(:quiz_five_points) { create(:quiz, subject: quiz_subject, topic: topic, user: student) }
+    let(:quiz_five_points_lucky_dip) { create(:quiz, subject: quiz_subject, topic: nil, user: student) }
+    let(:second_topic) { create(:topic, subject: quiz_subject) }
 
     context "without a daily flag" do
       let!(:challenge) do
@@ -141,7 +141,7 @@ RSpec.describe Challenge::UpdateChallengeProgress, :default_creates do
       end
 
       it "does not award when the quiz topic does not match the challenge topic" do
-        quiz_other_topic = create(:quiz, subject: subject, topic: second_topic, user: student)
+        quiz_other_topic = create(:quiz, subject: quiz_subject, topic: second_topic, user: student)
         described_class.call(quiz_other_topic, 5)
         expect(progress.reload.awarded).to be(false)
       end

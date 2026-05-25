@@ -3,7 +3,7 @@
 require "rails_helper"
 
 RSpec.describe "Author edits a question", :default_creates, :js do
-  let(:author) { create(:question_author, subject: subject) }
+  let(:author) { create(:question_author, subject: quiz_subject) }
   let(:question) { create(:question, topic: topic) }
   let(:lesson) { create(:lesson, topic: topic) }
   let(:new_topic_name) { FFaker::Lorem.word }
@@ -26,7 +26,7 @@ RSpec.describe "Author edits a question", :default_creates, :js do
     find("button", text: "LOGIN")
     sign_in student
     visit dashboard_path
-    find("h3", text: subject.name.upcase)
+    find("h3", text: quiz_subject.name.upcase)
     visit new_quiz_path(subject: topic.subject.name)
   end
 
@@ -113,7 +113,7 @@ RSpec.describe "Author edits a question", :default_creates, :js do
     it "prevents disabled topics from showing when taking a quiz" do
       visit(topic_questions_path(topic_id: topic))
       page.accept_confirm { click_link("Delete Topic") }
-      find("div", exact_text: subject.name, count: 2)
+      find("div", exact_text: quiz_subject.name, count: 2)
       switch_to_student_account
       expect(page).to have_no_css("option", text: topic.name)
     end

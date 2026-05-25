@@ -1,14 +1,14 @@
 # frozen_string_literal: true
 
 RSpec.shared_context "with default_creates", shared_context: :metadata do
-  let(:subject) { create(:subject) }
-  let(:topic) { create(:topic, subject: subject) }
+  let(:quiz_subject) { create(:subject) }
+  let(:topic) { create(:topic, subject: quiz_subject) }
   let(:school) { create(:school) }
 
   let(:student) { create(:student, school: school) }
   let(:teacher) { create(:teacher, school: school) }
   let(:school_admin) { create(:school_admin, school: school) }
-  let(:classroom) { create(:classroom, school: school, subject: subject) }
+  let(:classroom) { create(:classroom, school: school, subject: quiz_subject) }
   let(:homework) { create(:homework, classroom: classroom, topic: topic) }
 
   let(:question) { create(:question, topic: topic) }

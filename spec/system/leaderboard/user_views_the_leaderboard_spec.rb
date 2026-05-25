@@ -19,7 +19,7 @@ RSpec.describe "User views the leaderboard", :default_creates, :js do
   end
 
   it "displays the current student when they have a score" do
-    visit(leaderboard_path(subject.name))
+    visit(leaderboard_path(quiz_subject.name))
     expect(page).to have_css("td", exact_text: student_name)
   end
 
@@ -27,13 +27,13 @@ RSpec.describe "User views the leaderboard", :default_creates, :js do
     TopicScore.first.update(score: 5)
     student.update(forename: "Aaron") # Ensure first alphabetically
     one_to_ten
-    visit(leaderboard_path(subject.name))
+    visit(leaderboard_path(quiz_subject.name))
     expect(page).to have_css("tr:nth-child(6)", text: student_name)
   end
 
   it "displays others if they have a score" do
     create_list(:topic_score, 8, topic: topic, school: school)
-    visit(leaderboard_path(subject.name))
+    visit(leaderboard_path(quiz_subject.name))
     expect(page).to have_css("td", exact_text: another_name)
   end
 
@@ -41,54 +41,54 @@ RSpec.describe "User views the leaderboard", :default_creates, :js do
     TopicScore.first.update(score: 5)
     student.update(forename: "Aaron") # Ensure first alphabetically
     one_to_ten
-    visit(leaderboard_path(subject.name))
+    visit(leaderboard_path(quiz_subject.name))
     expect(page).to have_css("tr", text: "6 #{student_name}".to_s)
   end
 
   it "does not show students from another school" do
     create(:topic_score, topic: topic)
-    visit(leaderboard_path(subject.name))
+    visit(leaderboard_path(quiz_subject.name))
     expect(page).to have_no_css("td", exact_text: another_name)
   end
 
   it "defaults to show 10 entries" do
     TopicScore.first.update(score: 5)
     one_to_ten
-    visit(leaderboard_path(subject.name))
+    visit(leaderboard_path(quiz_subject.name))
     expect(page).to have_css("table#leaderboardTable tr", count: 11)
   end
 
   it "shows the top 10 when the student has no score" do
     TopicScore.first.destroy
     one_to_ten
-    visit(leaderboard_path(subject.name))
+    visit(leaderboard_path(quiz_subject.name))
     expect(page).to have_css("tr:nth-child(10) td", exact_text: "10")
   end
 
   it "shows the student when at the top of the table" do
     TopicScore.first.update(score: 50)
     one_to_ten
-    visit(leaderboard_path(subject.name))
+    visit(leaderboard_path(quiz_subject.name))
     expect(page).to have_css("table#leaderboardTable tr", count: 11)
   end
 
   it "shows the student when at the bottom of the table" do
     TopicScore.first.update(score: 0)
     one_to_ten
-    visit(leaderboard_path(subject.name))
+    visit(leaderboard_path(quiz_subject.name))
     expect(page).to have_css("tr:nth-child(10) td:nth-child(6)", text: TopicScore.first.score)
   end
 
   it "shows other students when the current student is near the bottom" do # bug
     TopicScore.first.update(score: 3)
     one_to_ten
-    visit(leaderboard_path(subject.name))
+    visit(leaderboard_path(quiz_subject.name))
     expect(page).to have_css("tr:nth-child(8) td:nth-child(3)", text: student.forename)
   end
 
   it "hides schools on a small screen" do
     size = page.driver.browser.manage.window.size
-    visit(leaderboard_path(subject.name))
+    visit(leaderboard_path(quiz_subject.name))
     page.driver.browser.manage.window.resize_to(375, 667)
     expect(page).to have_no_css("td", exact_text: school.name)
     page.driver.browser.manage.window.resize_to(size.width, size.height)
@@ -111,19 +111,19 @@ RSpec.describe "User views the leaderboard", :default_creates, :js do
     end
 
     it "shows the leaderboard icon for a person" do
-      visit(leaderboard_path(subject.name))
+      visit(leaderboard_path(quiz_subject.name))
       expect(page).to have_css("td svg.fa-star", style: "color: blue;")
     end
 
     it "shows a blank space if there is no leaderboard icon" do
-      visit(leaderboard_path(subject.name))
+      visit(leaderboard_path(quiz_subject.name))
       expect(page).to have_css("td")
     end
 
     it "shows different colours of leaderboard icons" do
       ActiveCustomisation.destroy_all
       create(:active_customisation, user: student, customisation: pink_star)
-      visit(leaderboard_path(subject.name))
+      visit(leaderboard_path(quiz_subject.name))
       expect(page).to have_css("td svg.fa-star", style: "color: pink;")
     end
   end
@@ -135,13 +135,13 @@ RSpec.describe "User views the leaderboard", :default_creates, :js do
 
     it "adds up scores from different topics" do
       second_topic_score
-      visit(leaderboard_path(subject.name))
+      visit(leaderboard_path(quiz_subject.name))
       expect(page).to have_css("tr.current-user td:nth-child(4)", exact_text: overall_total)
     end
 
     it "ignores scores from topics of a different subject" do
       second_subject_score
-      visit(leaderboard_path(subject.name))
+      visit(leaderboard_path(quiz_subject.name))
       expect(page).to have_css("tr.current-user td:nth-child(4)", exact_text: TopicScore.first.score)
     end
   end
@@ -159,28 +159,28 @@ RSpec.describe "User views the leaderboard", :default_creates, :js do
     end
 
     it "shows a star for a weekly award" do
-      visit(leaderboard_path(subject.name))
+      visit(leaderboard_path(quiz_subject.name))
       expect(page).to have_css("td svg.fa-star", style: "color: red;")
     end
 
     it "shows a gold star for 5 or more wins" do
       create_list(:leaderboard_award, 5, user: topic_score.user,
         subject: topic_score.subject, school: topic_score.user.school)
-      visit(leaderboard_path(subject.name))
+      visit(leaderboard_path(quiz_subject.name))
       expect(page).to have_css("td svg.fa-star", style: "color: gold;")
     end
 
     it "shows a silver star for 3 or more wins" do
       create_list(:leaderboard_award, 2, user: topic_score.user, subject: topic_score.subject,
         school: topic_score.user.school)
-      visit(leaderboard_path(subject.name))
+      visit(leaderboard_path(quiz_subject.name))
       expect(page).to have_css("td svg.fa-star", style: "color: silver;")
     end
 
     it "shows stars for more than one user" do
       one_to_nine
       second_award
-      visit(leaderboard_path(subject.name))
+      visit(leaderboard_path(quiz_subject.name))
       expect(page).to have_css("td svg.fa-star", style: "color: red;", count: 2)
     end
   end
@@ -188,7 +188,7 @@ RSpec.describe "User views the leaderboard", :default_creates, :js do
   context "when showing weekly winners" do
     it "shows last weeks winner for the classroom" do
       create(:classroom_winner, user: student, classroom: classroom, score: 100)
-      visit(leaderboard_path(subject.name))
+      visit(leaderboard_path(quiz_subject.name))
       click_button("Select Class")
       click_button(classroom.name)
       expect(page).to have_content("#{classroom.name} winner: #{student.forename}")

@@ -16,7 +16,7 @@ RSpec.describe "User views an updating leaderboard", :default_creates, :js do
 
   context "when receiving updates" do
     before do
-      visit(leaderboard_path(subject.name))
+      visit(leaderboard_path(quiz_subject.name))
       find(:css, "#leaderboardTable tbody tr:nth-child(10)")
     end
 
@@ -62,7 +62,7 @@ RSpec.describe "User views an updating leaderboard", :default_creates, :js do
   context "with a school group" do
     before do
       create(:school, school_group: school.school_group)
-      visit(leaderboard_path(subject.name))
+      visit(leaderboard_path(quiz_subject.name))
       find(:css, "#leaderboardTable tbody tr:nth-child(10)")
     end
 
@@ -107,7 +107,7 @@ RSpec.describe "User views an updating leaderboard", :default_creates, :js do
   context "without a school group" do
     before do
       school.update_attribute(:school_group_id, nil)
-      visit(leaderboard_path(subject.name))
+      visit(leaderboard_path(quiz_subject.name))
       find(:css, "#leaderboardTable tbody tr:nth-child(10)")
     end
 
@@ -124,7 +124,7 @@ RSpec.describe "User views an updating leaderboard", :default_creates, :js do
 
   context "when showing for a specific subject" do
     before do
-      visit(leaderboard_path(subject.name))
+      visit(leaderboard_path(quiz_subject.name))
       find(:css, "#leaderboardTable tbody tr:nth-child(10)")
     end
 
@@ -139,11 +139,11 @@ RSpec.describe "User views an updating leaderboard", :default_creates, :js do
 
   context "when viewing a single topic" do
     before do
-      visit(leaderboard_path(subject.name, topic: Topic.first))
+      visit(leaderboard_path(quiz_subject.name, topic: Topic.first))
       find(:css, "#leaderboardTable tbody tr:nth-child(10)")
     end
 
-    let(:different_topic) { create(:topic, subject: subject) }
+    let(:different_topic) { create(:topic, subject: quiz_subject) }
     let(:different_topic_score) { create(:topic_score, school: school, score: 11, topic: different_topic) }
 
     it "updates for the current topic" do

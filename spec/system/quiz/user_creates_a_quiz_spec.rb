@@ -94,7 +94,7 @@ RSpec.describe "User creates a quiz", :default_creates, :js do
   end
 
   describe "selecting a topic" do
-    let(:topic) { create(:topic, subject: subject) }
+    let(:topic) { create(:topic, subject: quiz_subject) }
 
     before do
       setup_subject_database
@@ -103,7 +103,7 @@ RSpec.describe "User creates a quiz", :default_creates, :js do
     end
 
     it "allows selecting a topic" do
-      visit(new_quiz_path(params: {subject: subject.name}))
+      visit(new_quiz_path(params: {subject: quiz_subject.name}))
       find(:xpath, "//select/option[1]")
       expect(page).to have_select("quiz_topic_id", options: ["Lucky Dip", Topic.first.name])
     end
@@ -119,7 +119,7 @@ RSpec.describe "User creates a quiz", :default_creates, :js do
       end
 
       it "has a separator of the correct colour" do
-        visit(new_quiz_path(params: {subject: subject.name}))
+        visit(new_quiz_path(params: {subject: quiz_subject.name}))
         expect(page).to have_css("hr[style*='#{active_customisation.customisation.value}'")
       end
     end

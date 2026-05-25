@@ -3,7 +3,7 @@
 require "rails_helper"
 
 RSpec.describe "Super manages subjects", :default_creates, :js do
-  let!(:subject) { create(:subject) }
+  let!(:quiz_subject) { create(:subject) }
   let(:new_subject_name) { FFaker::Lorem.word }
   let(:ten_questions_for_subject) { create_list(:question, 10, topic: topic) }
   let(:five_asked_questions_this_week) { create_list(:asked_question, 5, question: question) }
@@ -14,7 +14,7 @@ RSpec.describe "Super manages subjects", :default_creates, :js do
 
     it "allows an admin to view subjects" do
       visit(subjects_path)
-      expect(page).to have_content(subject.name)
+      expect(page).to have_content(quiz_subject.name)
     end
 
     it "shows how many questions are in each subject" do
@@ -33,14 +33,14 @@ RSpec.describe "Super manages subjects", :default_creates, :js do
       five_asked_questions_this_week
       seven_asked_questions_previously
       visit(subjects_path)
-      expect(page).to have_css("tr#subject-#{subject.id} td.asked_questions", text: "12")
+      expect(page).to have_css("tr#subject-#{quiz_subject.id} td.asked_questions", text: "12")
     end
 
     it "only counts questions for this week" do
       five_asked_questions_this_week
       seven_asked_questions_previously
       visit(subjects_path)
-      expect(page).to have_css("tr#subject-#{subject.id} td.asked_questions_this_week", text: "5")
+      expect(page).to have_css("tr#subject-#{quiz_subject.id} td.asked_questions_this_week", text: "5")
     end
 
     it "shows how many asked questions there are for each subject overall" do
@@ -60,7 +60,7 @@ RSpec.describe "Super manages subjects", :default_creates, :js do
 
   context "when managing an individual subject" do
     def deactivate_subject
-      visit(subject_path(subject))
+      visit(subject_path(quiz_subject))
       click_link("Deactivate Subject")
       page.accept_alert
       find("table#active-subjects")
@@ -70,12 +70,12 @@ RSpec.describe "Super manages subjects", :default_creates, :js do
 
     it "allows admin to visit a subject page" do
       visit(subjects_path)
-      click_link(subject.name)
-      expect(page).to have_css(".display-4", text: subject.name)
+      click_link(quiz_subject.name)
+      expect(page).to have_css(".display-4", text: quiz_subject.name)
     end
 
     it "allows admin to change name of the subject" do
-      visit(subject_path(subject))
+      visit(subject_path(quiz_subject))
       fill_in("subject[name]", with: new_subject_name)
       click_button("Update")
       expect(page).to have_css("#subject_name", text: new_subject_name)
@@ -83,18 +83,18 @@ RSpec.describe "Super manages subjects", :default_creates, :js do
 
     it "allows an admin to deactivate a subject" do
       deactivate_subject
-      expect(page).to have_css("#deactivated-subjects tr td", text: subject.name)
+      expect(page).to have_css("#deactivated-subjects tr td", text: quiz_subject.name)
     end
 
     context "when deactivating a quiz" do
-      let!(:enrollment) { create(:enrollment, classroom: classroom, user: student, subject: subject) }
+      let!(:enrollment) { create(:enrollment, classroom: classroom, user: student, subject: quiz_subject) }
 
       it "stops students from taking a quiz" do
         deactivate_subject
         sign_out super_admin
         sign_in student
         visit(dashboard_path)
-        expect(page).to have_no_content(subject.name)
+        expect(page).to have_no_content(quiz_subject.name)
       end
 
       it "reassigns classrooms to nil" do
@@ -102,7 +102,7 @@ RSpec.describe "Super manages subjects", :default_creates, :js do
         sign_out super_admin
         sign_in school_admin
         visit(classrooms_path)
-        expect(page).to have_no_content(subject.name)
+        expect(page).to have_no_content(quiz_subject.name)
       end
     end
   end
