@@ -2,10 +2,10 @@
 
 require "rails_helper"
 
-RSpec.describe Admin::ResetYear, :default_creates do
+RSpec.describe Admin::ResetYear do
   let!(:first_enrollment) { create(:enrollment) }
   let!(:second_enrollment) { create(:enrollment) }
-  let(:homework) { create(:homework, classroom: first_enrollment.classroom) }
+  let!(:homework) { create(:homework, classroom: first_enrollment.classroom) }
   let!(:topic_score) { create(:topic_score, subject: first_enrollment.classroom.subject) }
   let!(:all_time_topic_score) { create(:all_time_topic_score, subject: second_enrollment.classroom.subject) }
   let!(:homework_progress) { create(:homework_progress, homework: homework, user: first_enrollment.user) }
@@ -22,42 +22,42 @@ RSpec.describe Admin::ResetYear, :default_creates do
   end
 
   it "removes topic scores" do
-    expect(TopicScore.count).to eq(0)
+    expect(TopicScore.count).to be_zero
   end
 
   it "removes all time topic scores" do
-    expect(AllTimeTopicScore.count).to eq(0)
+    expect(AllTimeTopicScore.count).to be_zero
   end
 
   it "removes homeworks" do
-    expect(Homework.count).to eq(0)
+    expect(Homework.count).to be_zero
   end
 
   it "removes homework progress" do
-    expect(HomeworkProgress.count).to eq(0)
+    expect(HomeworkProgress.count).to be_zero
   end
 
   it "removes enrollments" do
-    expect(Enrollment.count).to eq(0)
+    expect(Enrollment.count).to be_zero
   end
 
   it "removes challenges" do
-    expect(Challenge.count).to eq(0)
+    expect(Challenge.count).to be_zero
   end
 
   it "removes challenge progress" do
-    expect(ChallengeProgress.count).to eq(0)
+    expect(ChallengeProgress.count).to be_zero
   end
 
   it "removes leaderboard awards" do
-    expect(LeaderboardAward.count).to eq(0)
+    expect(LeaderboardAward.count).to be_zero
   end
 
   it "removes classrooms" do
-    expect(Classroom.count).to eq(0)
+    expect(Classroom.count).to be_zero
   end
 
   it "removes classroom winners" do
-    expect(ClassroomWinner.count).to eq(0)
+    expect(ClassroomWinner.count).to be_zero
   end
 end

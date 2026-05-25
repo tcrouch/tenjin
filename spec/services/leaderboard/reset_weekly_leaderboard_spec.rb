@@ -4,23 +4,18 @@ require "rails_helper"
 
 RSpec.describe Leaderboard::ResetWeeklyLeaderboard, :default_creates do
   let(:topic_score) { create(:topic_score) }
-  let(:top_score_same_school) do
-    create(:topic_score, topic: topic_score.topic,
-      school: topic_score.school,
-      score: 10_000_000)
-  end
-  let(:existing_all_time_score) { create(:all_time_topic_score, user: topic_score.user, topic: topic_score.topic) }
 
   context "when resetting topic scores" do
     it "copies the current topic score into the all time topic score" do
       topic_score
       described_class.call
-      expect(AllTimeTopicScore.first.score).to eq(topic_score.score)
+      expect(AllTimeTopicScore.find_by!(user: topic_score.user, topic: topic_score.topic).score)
+        .to eq(topic_score.score)
     end
 
     it "adds on to any existing all time topic score" do
-      existing_all_time_score
-      expect { described_class.call }.to change { AllTimeTopicScore.first.score }.by(topic_score.score)
+      existing = create(:all_time_topic_score, user: topic_score.user, topic: topic_score.topic)
+      expect { described_class.call }.to change { existing.reload.score }.by(topic_score.score)
     end
 
     it "removes existing topic scores" do
@@ -30,12 +25,18 @@ RSpec.describe Leaderboard::ResetWeeklyLeaderboard, :default_creates do
   end
 
   context "when adding weekly rewards" do
+    let(:top_score_same_school) do
+      create(:topic_score, topic: topic_score.topic,
+        school: topic_score.school,
+        score: 10_000_000)
+    end
+
     it "awards the top scorer for a subject" do
       topic_score
       create_list(:topic_score, 20, topic: topic_score.topic, school: topic_score.school)
       top_score_same_school
       described_class.call
-      expect(LeaderboardAward.first.user).to eq(top_score_same_school.user)
+      expect(LeaderboardAward.find_by!(user: top_score_same_school.user)).to be_present
     end
 
     it "adds one award per school" do
@@ -82,13 +83,13 @@ RSpec.describe Leaderboard::ResetWeeklyLeaderboard, :default_creates do
 
     it "awards the classroom winner to the top scorer" do
       described_class.call
-      expect(ClassroomWinner.first.user).to eq(top_score.user)
+      expect(ClassroomWinner.find_by!(classroom: classroom).user).to eq(top_score.user)
     end
 
     it "records the winner's score" do
       create_list(:topic_score, 3, school: school, subject: classroom.subject, score: 100)
       described_class.call
-      expect(ClassroomWinner.first.score).to eq(1000)
+      expect(ClassroomWinner.find_by!(classroom: classroom).score).to eq(1000)
     end
 
     it "awards winners for multiple classrooms" do

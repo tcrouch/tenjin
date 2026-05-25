@@ -28,15 +28,14 @@ RSpec.describe School::AddSchool do
   context "when given updated school data" do
     before do
       create(:school, name: "Not outwood", client_id: "A852030759")
+      sync_school
     end
 
     it "updates the school name", :vcr do
-      sync_school
-      expect(School.first.name).to eq "Outwood Grange Academy 1532082212"
+      expect(School.find_by(client_id: school_id).name).to eq "Outwood Grange Academy 1532082212"
     end
 
     it "does not create a duplicate school", :vcr do
-      sync_school
       expect(School.count).to eq(1)
     end
   end

@@ -13,53 +13,51 @@ RSpec.describe Customisation::BuyCustomisation, :default_creates do
 
   context "when buying a new dashboard style" do
     it "creates a customisation unlock" do
-      described_class.call(student, customisation)
-      expect(CustomisationUnlock.where(customisation: customisation).count).to eq(1)
-    end
-
-    it "sets the new customisation as active" do
-      described_class.call(student, customisation)
-      expect(ActiveCustomisation.where(customisation: customisation).count).to eq(1)
-    end
-
-    it "deactivates the old customisation" do
-      described_class.call(student, customisation)
-      expect(ActiveCustomisation.where(customisation: old_customisation).count).to eq(0)
+      expect { described_class.call(student, customisation) }.to change(CustomisationUnlock, :count).by(1)
     end
 
     it "deducts the correct number of challenge points" do
-      described_class.call(student, customisation)
-      expect(student.reload.challenge_points).to eq(5)
+      expect { described_class.call(student, customisation) }.to change { student.reload.challenge_points }.by(-5)
+    end
+
+    context "after purchase" do
+      before { described_class.call(student, customisation) }
+
+      it "sets the new customisation as active" do
+        expect(ActiveCustomisation.where(customisation: customisation)).not_to be_empty
+      end
+
+      it "deactivates the old customisation" do
+        expect(ActiveCustomisation.where(customisation: old_customisation)).to be_empty
+      end
     end
   end
 
   context "when buying a leaderboard icon" do
     let(:customisation) { create(:customisation, cost: 5, customisation_type: "leaderboard_icon") }
 
-    it "sets the new icon as active" do
-      described_class.call(student, customisation)
-      expect(ActiveCustomisation.where(customisation: customisation).count).to eq(1)
-    end
-
-    it "deactivates the old icon" do
-      described_class.call(student, customisation)
-      expect(ActiveCustomisation.where(customisation: old_customisation).count).to eq(0)
-    end
-
     it "creates a customisation unlock" do
-      described_class.call(student, customisation)
-      expect(CustomisationUnlock.where(customisation: customisation).count).to eq(1)
+      expect { described_class.call(student, customisation) }.to change(CustomisationUnlock, :count).by(1)
+    end
+
+    context "after purchase" do
+      before { described_class.call(student, customisation) }
+
+      it "sets the new icon as active" do
+        expect(ActiveCustomisation.where(customisation: customisation)).not_to be_empty
+      end
+
+      it "deactivates the old icon" do
+        expect(ActiveCustomisation.where(customisation: old_customisation)).to be_empty
+      end
     end
   end
 
   context "when the student has no existing customisation" do
-    before do
-      CustomisationUnlock.destroy_all
-    end
+    before { CustomisationUnlock.destroy_all }
 
     it "creates a customisation unlock" do
-      described_class.call(student, customisation)
-      expect(CustomisationUnlock.where(customisation: customisation).count).to eq(1)
+      expect { described_class.call(student, customisation) }.to change(CustomisationUnlock, :count).by(1)
     end
   end
 
@@ -69,6 +67,10 @@ RSpec.describe Customisation::BuyCustomisation, :default_creates do
     it "returns an insufficient points error" do
       expect(described_class.call(student, customisation).errors).to eq("You do not have enough points")
     end
+
+    it "does not create a customisation unlock" do
+      expect { described_class.call(student, customisation) }.not_to change(CustomisationUnlock, :count)
+    end
   end
 
   context "when buying a previously purchased customisation" do
@@ -77,18 +79,19 @@ RSpec.describe Customisation::BuyCustomisation, :default_creates do
     end
 
     it "does not deduct any points" do
-      described_class.call(student, customisation)
-      expect { student.reload }.not_to change(student, :challenge_points)
+      expect { described_class.call(student, customisation) }.not_to change { student.reload.challenge_points }
     end
 
-    it "sets the customisation as active" do
-      described_class.call(student, customisation)
-      expect(ActiveCustomisation.where(customisation: customisation).count).to eq(1)
-    end
+    context "after re-activating" do
+      before { described_class.call(student, customisation) }
 
-    it "deactivates the previously active customisation" do
-      described_class.call(student, customisation)
-      expect(ActiveCustomisation.where(customisation: old_customisation).count).to eq(0)
+      it "sets the customisation as active" do
+        expect(ActiveCustomisation.where(customisation: customisation)).not_to be_empty
+      end
+
+      it "deactivates the previously active customisation" do
+        expect(ActiveCustomisation.where(customisation: old_customisation)).to be_empty
+      end
     end
   end
 end

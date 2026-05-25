@@ -22,7 +22,12 @@ RSpec.describe Homework::UpdateHomeworkProgress, :default_creates do
 
     it "marks the homework as complete" do
       described_class.call(quiz_full_marks)
-      expect(progress.completed).to be(true)
+      expect(progress.completed).to be true
+    end
+
+    it "does not mark the homework as complete below the required mark" do
+      described_class.call(quiz_7_out_of_10)
+      expect(progress.completed).to be false
     end
 
     it "calculates progress as a percentage of correct answers" do
