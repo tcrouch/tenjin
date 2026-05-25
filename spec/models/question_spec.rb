@@ -24,18 +24,32 @@ RSpec.describe Question, :default_creates do
   context "with a boolean question" do
     let(:boolean_question) { build(:boolean_question) }
 
-    it "accepts boolean answers when true then false, for any case" do
-      boolean_question
-      Answer.first.update_attribute(:text, "TruE")
-      create(:answer, question: question, correct: true, text: "fAlsE")
-      expect(question).to be_valid
+    context "when true answer precedes false" do
+      before do
+        boolean_question
+        boolean_question.answers.first.update!(text: "TruE")
+        create(:answer, question: question, correct: true, text: "fAlsE")
+      end
+
+      it "is valid" do
+        expect(question).to be_valid
+      end
+
+      it "is invalid with non-boolean answer text"
     end
 
-    it "accepts boolean answers when false then true, for any case" do
-      boolean_question
-      Answer.first.update_attribute(:text, "FaLsE")
-      create(:answer, question: question, correct: true, text: "TrUe")
-      expect(question).to be_valid
+    context "when false answer precedes true" do
+      before do
+        boolean_question
+        boolean_question.answers.first.update!(text: "FaLsE")
+        create(:answer, question: question, correct: true, text: "TrUe")
+      end
+
+      it "is valid" do
+        expect(question).to be_valid
+      end
+
+      it "is invalid with non-boolean answer text"
     end
   end
 
@@ -48,37 +62,40 @@ RSpec.describe Question, :default_creates do
     context "when changing a question type to a boolean question" do
       let(:question) { create(:question, question_type: "multiple") }
 
-      it "replaces existing answers with boolean answer choices" do
-        answer
-        expect { question.update_attribute(:question_type, "boolean") }.to change(Answer, :count).by(1)
-      end
+      # update_attribute intentional: update! runs the "two answers" validation before
+      # the check_boolean callback creates them, so validation fires before the callback can run.
+      before { question.update_attribute(:question_type, "boolean") }
 
-      it "automatically creates a false answer" do
-        question.update_attribute(:question_type, "boolean")
-        expect(Answer.first.text).to eq("False")
+      it "replaces all existing answers with exactly two boolean answers" do
+        expect(question.reload.answers).to contain_exactly(
+          have_attributes(text: "False", correct: false),
+          have_attributes(text: "True", correct: false)
+        )
       end
+    end
 
-      it "automatically creates a true answer" do
-        question.update_attribute(:question_type, "boolean")
-        expect(Answer.second.text).to eq("True")
-      end
-
-      it "sets answers as incorrect" do
-        question.update_attribute(:question_type, "boolean")
-        expect(Answer.first.correct).to be(false)
-      end
+    context "when not changing to a boolean question type" do
+      it "does not replace existing answers"
     end
   end
 
   describe ".check_short_answer" do
-    let!(:question) { create(:question, question_type: "multiple") }
-    let!(:answer) { create(:answer, question: question, correct: false) }
+    let(:question) { create(:question, question_type: "multiple") }
+    let(:answer) { create(:answer, question: question, correct: false) }
 
     context "when switching a question to a short answer question" do
-      it "changes all existing answers to be correct" do
-        question.update_attribute(:question_type, "short_answer")
-        expect(Answer.first.correct).to be(true)
+      before do
+        answer
+        question.update!(question_type: "short_answer")
       end
+
+      it "marks all existing answers as correct" do
+        expect(answer.reload.correct).to be(true)
+      end
+    end
+
+    context "when not switching to a short answer question" do
+      it "does not mark existing answers as correct"
     end
   end
 end

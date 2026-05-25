@@ -35,9 +35,15 @@ RSpec.describe Customisation do
     end
   end
 
-  it "sets a retired customisation to be unpurchasable" do
-    customisation = create(:customisation, retired: true,
-      purchasable: true, customisation_type: "leaderboard_icon")
-    expect(customisation.reload.purchasable).to be(false)
+  context "when retired" do
+    let!(:customisation) { create(:customisation, retired: true, purchasable: true, customisation_type: "leaderboard_icon") }
+
+    it "is not purchasable" do
+      expect(customisation.reload).not_to be_purchasable
+    end
+  end
+
+  context "when not retired" do
+    it "is purchasable" # pending — counterpart to "when retired" context
   end
 end
