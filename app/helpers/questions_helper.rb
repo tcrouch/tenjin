@@ -18,6 +18,6 @@ module QuestionsHelper
   end
 
   def times_asked(question)
-    question.question_statistic.present? ? question.question_statistic.number_asked : 0
+    question.question_statistic&.number_asked || 0
   end
 end
