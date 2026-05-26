@@ -114,7 +114,6 @@ group :test do
   gem "rspec-retry"
   gem "selenium-webdriver"
   gem "shoulda-matchers", "~> 5.3"
-  gem "webdrivers"
 
   gem "simplecov", require: false
   gem "rspec_junit_formatter"
