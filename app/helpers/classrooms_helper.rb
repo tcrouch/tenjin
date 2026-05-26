@@ -12,16 +12,23 @@ module ClassroomsHelper
       sync_button
     when "failed", "needed"
       sync_needed_button
-    when @school.sync_status == "syncing" && (Time.current - School.first.updated_at) < 240
-      sync_timeout_button
+    when "syncing"
+      if (Time.current - @school.updated_at) < 240
+        sync_timeout_button
+      else
+        "Refresh the page to see the current sync status"
+      end
     else
       "Refresh the page to see the current sync status"
     end
   end
 
   def report_progress(homework)
-    percent = number_to_percentage(homework.completed_count / homework.count.to_f * 100, precision: 0)
-    "#{homework.completed_count} / #{homework.count} - #{percent}"
+    count = homework.count
+    return "0 / 0 - 0%" if count.zero?
+
+    percent = number_to_percentage(homework.completed_count / count.to_f * 100, precision: 0)
+    "#{homework.completed_count} / #{count} - #{percent}"
   end
 
   def sync_button

@@ -4,6 +4,6 @@ module CustomisationHelper
   def customisation_cost(style, bought_customisations)
     return if bought_customisations.include? style.id
 
-    "<i class='fas fa-star' style='color: yellow'></i>#{style.cost}"
+    "<i class='fas fa-star' style='color: yellow'></i>#{style.cost}".html_safe
   end
 end

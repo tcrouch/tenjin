@@ -21,12 +21,12 @@ module ApplicationHelper
   end
 
   def render_small_separator(style = nil)
-    return "<hr class='small mb-5 primary' style='border-color: #{style.value}'>" unless style.nil?
+    return "<hr class='small mb-5 primary' style='border-color: #{style.value}'>".html_safe unless style.nil?
 
     if @dashboard_style.nil?
-      "<hr class='small mb-5 primary' style='border-color: red'>"
+      "<hr class='small mb-5 primary' style='border-color: red'>".html_safe
     else
-      "<hr class='small mb-5 primary' style='border-color: #{@dashboard_style.value}'>"
+      "<hr class='small mb-5 primary' style='border-color: #{@dashboard_style.value}'>".html_safe
     end
   end
 

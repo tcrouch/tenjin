@@ -18,7 +18,7 @@ module DashboardHelper
   end
 
   def challenge_time_left(challenge)
-    return "Soon" if challenge.end_date.past?
+    return "Ended" if challenge.end_date.past?
 
     distance_of_time_in_words(Time.current, challenge.end_date)
   end
