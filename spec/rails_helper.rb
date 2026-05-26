@@ -22,6 +22,7 @@ VCR.configure do |config|
   config.configure_rspec_metadata!
   config.ignore_hosts "chromedriver.storage.googleapis.com"
   config.ignore_hosts "googlechromelabs.github.io"
+  config.ignore_hosts "storage.googleapis.com"
 end
 
 # Requires supporting ruby files with custom matchers and macros, etc, in
