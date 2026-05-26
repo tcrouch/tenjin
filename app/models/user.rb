@@ -46,10 +46,6 @@ class User < ApplicationRecord
     end
   end
 
-  def set_default_role
-    self.role ||= :student
-  end
-
   def self.from_omniauth(auth, current_user = nil)
     user = find_by(provider: auth["provider"], upi: auth["upi"])
     user = find_by(oauth_provider: auth["provider"], oauth_uid: auth["uid"]) if user.nil?
