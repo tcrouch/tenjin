@@ -101,7 +101,7 @@ RSpec.describe "User takes a quiz", :default_creates, :js do
       context "when the question has already been flagged" do
         let!(:flagged_question) { create(:flagged_question, user: student, question: question) }
 
-        before { visit current_path }
+        before { page.refresh }
 
         it "shows the question is flagged" do
           expect(page).to have_css('svg.fa-flag[data-prefix="fas"]')
