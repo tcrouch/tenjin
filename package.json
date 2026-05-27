@@ -59,6 +59,8 @@
   ],
   "devDependencies": {
     "@babel/eslint-parser": "^7.24.7",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "12",
     "babel-jest": "^30.4.1",
     "eslint": "^9.5.0",
     "eslint-config-prettier": "^9.1.0",
@@ -74,7 +76,9 @@
   },
   "jest": {
     "testEnvironment": "jsdom",
-    "roots": ["<rootDir>/spec/javascript"],
+    "roots": [
+      "<rootDir>/spec/javascript"
+    ],
     "transform": {
       "^.+\\.(js|jsx)$": "babel-jest"
     },
@@ -82,7 +86,9 @@
       "\\.(css|scss|png|jpg|svg)$": "<rootDir>/spec/javascript/__mocks__/fileMock.js",
       "^app/(.*)": "<rootDir>/app/javascript/app/$1"
     },
-    "setupFiles": ["<rootDir>/spec/javascript/setup.js"]
+    "setupFiles": [
+      "<rootDir>/spec/javascript/setup.js"
+    ]
   },
   "packageManager": "yarn@1.22.22",
   "engines": {
