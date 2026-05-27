@@ -32,7 +32,8 @@ class LiveLeaderboardStore extends EventEmitter {
     this.school_group = $(".jsVars[data-school_group-name]").attr(
       "data-school_group-name",
     );
-    this.topic = $(".jsVars[data-topic-id]").attr("data-topic-id");
+    const topicAttr = $(".jsVars[data-topic-id]").attr("data-topic-id");
+    this.topic = topicAttr !== undefined ? parseInt(topicAttr, 10) : undefined;
   }
 
   listenToLeaderboard() {
@@ -85,6 +86,7 @@ class LiveLeaderboardStore extends EventEmitter {
       type: "GET",
       url: path,
       success: (result) => {
+        this.loading = false;
         this.processLeaderboardLoad(result);
         this.processScores();
         this.processFilterLoad(result);
