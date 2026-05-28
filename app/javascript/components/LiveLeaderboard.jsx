@@ -8,9 +8,8 @@ import Filters from './live_leaderboard/Filters'
 import ClassroomWinner from './live_leaderboard/ClassroomWinner'
 
 class LiveLeaderboard extends React.Component {
-  constructor (props) {
-    super(props)
-    this.state = {
+  static getStateFromStore () {
+    return {
       leaderboard: LiveLeaderboardStore.getCurrentLeaderboard(),
       loading: LiveLeaderboardStore.getLoading(),
       filters: LiveLeaderboardStore.getFilters(),
@@ -23,6 +22,11 @@ class LiveLeaderboard extends React.Component {
       winners: LiveLeaderboardStore.getWinners(),
       connected: LiveLeaderboardStore.getConnected()
     }
+  }
+
+  constructor (props) {
+    super(props)
+    this.state = LiveLeaderboard.getStateFromStore()
     this.getLeaderboard = this.getLeaderboard.bind(this)
   }
 
@@ -36,19 +40,7 @@ class LiveLeaderboard extends React.Component {
   }
 
   getLeaderboard () {
-    this.setState({
-      leaderboard: LiveLeaderboardStore.getCurrentLeaderboard(),
-      loading: LiveLeaderboardStore.getLoading(),
-      filters: LiveLeaderboardStore.getFilters(),
-      currentFilters: LiveLeaderboardStore.getCurrentFilters(),
-      user: LiveLeaderboardStore.getUser(),
-      showAll: LiveLeaderboardStore.getShowAll(),
-      allTime: LiveLeaderboardStore.getAllTime(),
-      live: LiveLeaderboardStore.getLive(),
-      name: LiveLeaderboardStore.getName(),
-      winners: LiveLeaderboardStore.getWinners(),
-      connected: LiveLeaderboardStore.getConnected()
-    })
+    this.setState(LiveLeaderboard.getStateFromStore())
   }
 
   toggleLiveLeaderboard () {
@@ -63,9 +55,7 @@ class LiveLeaderboard extends React.Component {
     LiveLeaderboardActions.toggleAllTime()
   }
 
-  // Converts the leaderboard object into a sorted array, sorted by score.
   sortLeaderboard () {
-    // Build the array to be sorted that will contain all the leaderboard information
     let sortedLeaderboard = []
     const leaderboard = this.state.leaderboard
 
@@ -144,7 +134,6 @@ class LiveLeaderboard extends React.Component {
       winnerClassroom = user.classrooms[0]
     }
 
-    // Map every entry in the current leaderboard array into an entry component
     const Entries = leaderboard.map((entry) => {
       return <Entry key={entry.id} currentFilters={currentFilters} user={user} {...entry} />
     })
@@ -187,7 +176,7 @@ class LiveLeaderboard extends React.Component {
         }
 
         <Row className='form-row align-items-center d-flex justify-content-around'>
-          {<Filters filters={filters} currentFilters={currentFilters}/>}
+          <Filters filters={filters} currentFilters={currentFilters}/>
           {!live &&
           <Col>
             <FormGroup className='custom-control custom-switch' id='showAll'>

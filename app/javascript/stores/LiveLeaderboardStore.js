@@ -56,11 +56,8 @@ class LiveLeaderboardStore extends EventEmitter {
         // Called when the subscription has been terminated by the server
 
         received(data) {
-          // Use lb.topic (the store) not this.topic (the subscription object).
-          if (lb.topic === undefined) {
-            lb.leaderboardChange(data, "ALL");
-          } else if (data.topic === lb.topic) {
-            lb.leaderboardChange(data, "TOPIC");
+          if (lb.topic === undefined || data.topic === lb.topic) {
+            lb.leaderboardChange(data);
           }
         },
       },
@@ -256,14 +253,15 @@ class LiveLeaderboardStore extends EventEmitter {
     this.emit("change");
   }
 
-  leaderboardChange(data, type) {
+  leaderboardChange(data) {
     const { id } = data;
 
     this.loading = false;
     if (this.weeklyLeaderboard === undefined) {
       setTimeout(() => {
-        this.leaderboardChange(data, type);
+        this.leaderboardChange(data);
       }, 1000);
+      return;
     }
 
     let score = data.subject_score;
