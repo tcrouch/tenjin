@@ -10,8 +10,8 @@ import Turbolinks from "turbolinks";
 import * as ActiveStorage from "@rails/activestorage";
 import "bootstrap";
 import "@fortawesome/fontawesome-free/js/all";
-import { Application } from "stimulus";
-import { definitionsFromContext } from "stimulus/webpack-helpers";
+import { Application } from "@hotwired/stimulus";
+import { definitionsFromContext } from "@hotwired/stimulus-webpack-helpers";
 
 import flatpickr from "flatpickr";
 import "flatpickr/dist/flatpickr.min.css";
