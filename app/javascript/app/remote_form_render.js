@@ -1,15 +1,12 @@
 // Replaces `turbolinks_render` gem behavior under Turbo.
 // When a `remote: true` form or link responds with HTML:
-// - redirect -> Turbo.visit(responseURL)
+// - redirect -> window.location.assign(responseURL)
 // - inline render (e.g. validation errors) -> swap body, keep URL
 // Also auto-annotates `data-remote="true"` elements with `data-turbo="false"`
-// so Turbo doesn't double-handle submissions that @rails/ujs owns.
+// so Turbo doesn't double-handle submissions that @rails/ujs owns
+// (relevant if Turbo Drive is re-enabled in a later phase).
 //
-// Uses `window.Turbo` (set by `@hotwired/turbo-rails` once it loads — see
-// packs/application.js) rather than a static import, so this file compiles
-// even before Turbo is installed.
-//
-// All retired in Phase 7 alongside the `turbolinks_render` gem.
+// All retired alongside the last `remote: true` consumer.
 
 function handleAjaxSuccess(event) {
   const [data, , xhr] = event.detail;
@@ -26,7 +23,7 @@ function handleAjaxSuccess(event) {
     originalURL && xhr.responseURL && xhr.responseURL !== originalURL;
 
   if (wasRedirect) {
-    window.Turbo.visit(xhr.responseURL);
+    window.location.assign(xhr.responseURL);
   } else {
     const html = typeof data === "string" ? data : xhr.responseText;
     const doc = new DOMParser().parseFromString(html, "text/html");

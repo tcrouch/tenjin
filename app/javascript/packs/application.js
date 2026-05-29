@@ -6,7 +6,12 @@
 import "../styles/application.scss";
 
 import Rails from "@rails/ujs";
-import Turbolinks from "turbolinks";
+import { Turbo } from "@hotwired/turbo-rails";
+// Turbo Drive disabled in Phase 1 — too many UJS-style links/forms in the
+// codebase for Drive to coexist cleanly. The library is loaded so Phase 2
+// can use Turbo Streams over ActionCable for the leaderboard. Drive gets
+// turned back on (per-element or globally) as UJS patterns are migrated.
+Turbo.session.drive = false;
 import * as ActiveStorage from "@rails/activestorage";
 import "bootstrap";
 import "@fortawesome/fontawesome-free/js/all";
@@ -19,7 +24,6 @@ import "flatpickr/dist/flatpickr.min.css";
 import "app";
 
 Rails.start();
-Turbolinks.start();
 ActiveStorage.start();
 
 const images = require.context("../images", true);
@@ -33,12 +37,19 @@ require("datetime-moment");
 require("trix");
 import "@rails/actiontext";
 import "@rails/actioncable";
-import "turbolinks";
 
 // Support component names relative to this directory:
 var componentRequireContext = require.context("components", true);
 var ReactRailsUJS = require("react_ujs");
 ReactRailsUJS.useContext(componentRequireContext);
+
+// react_ujs 3.2 predates Turbo; explicitly bridge turbo:load/before-cache to
+// mount/unmount React components on navigation. Retired in Phase 7 when
+// react-rails goes.
+document.addEventListener("turbo:load", () => ReactRailsUJS.mountComponents());
+document.addEventListener("turbo:before-cache", () =>
+  ReactRailsUJS.unmountComponents(),
+);
 
 // Stimulus
 const application = Application.start();
