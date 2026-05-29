@@ -1,3 +1,4 @@
+import "./turbolinks_compat";
 import "./classroom";
 import "./homework";
 import "./pages";
