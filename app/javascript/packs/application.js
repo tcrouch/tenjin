@@ -44,3 +44,8 @@ ReactRailsUJS.useContext(componentRequireContext);
 const application = Application.start();
 const context = require.context("controllers", true, /\.js$/);
 application.load(definitionsFromContext(context));
+
+// Alpine.js (installed for Phase 2 leaderboard rewrite; not used yet)
+import Alpine from "alpinejs";
+window.Alpine = Alpine;
+Alpine.start();
