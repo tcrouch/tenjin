@@ -1,4 +1,5 @@
 import "./turbolinks_compat";
+import "./remote_form_render";
 import "./classroom";
 import "./homework";
 import "./pages";
