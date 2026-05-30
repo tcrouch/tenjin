@@ -11,8 +11,7 @@
           flagged_questions_path(flagged_question: {user_id: current_user.id, question_id: @question.id }),
           class: 'btn',
           id: 'unfairFlag',
-          data: {method: :post},
-          remote: true
+          data: { controller: 'unfair-flag', action: 'click->unfair-flag#flag' }
 
 -unless @quiz.counts_for_leaderboard
   .row.col-lg-8.mx-auto.alert.alert-warning
