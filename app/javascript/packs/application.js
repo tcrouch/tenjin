@@ -21,7 +21,8 @@ import { definitionsFromContext } from "@hotwired/stimulus-webpack-helpers";
 import flatpickr from "flatpickr";
 import "flatpickr/dist/flatpickr.min.css";
 
-import "app";
+import "../lib/remote_form_render";
+import "../lib/live_leaderboard";
 import "../lib/google_analytics";
 
 Rails.start();
