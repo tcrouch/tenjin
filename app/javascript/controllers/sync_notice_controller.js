@@ -5,6 +5,7 @@ export default class extends Controller {
 
   notify() {
     this.statusTarget.textContent = "Needed";
+    if (!this.hasButtonTarget) return; // sync-status helper renders text instead of a button mid-sync
     this.buttonTarget.classList.remove("btn-primary");
     this.buttonTarget.classList.add("btn-danger");
     this.buttonTarget.textContent =
