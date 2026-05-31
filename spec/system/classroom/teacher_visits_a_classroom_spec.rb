@@ -32,7 +32,7 @@ RSpec.describe "User visits a classroom", :default_creates, :js do
       before { visit(classroom_path(classroom)) }
 
       it "navigates to a homework when clicked" do
-        find("tr[data-controller='homeworks'][data-id='#{homework.id}']").click
+        find("tr.homework-data[data-id='#{homework.id}']").click
         expect(page).to have_current_path(homework_path(homework))
       end
     end

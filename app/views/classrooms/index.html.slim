@@ -1,16 +1,16 @@
 -content_for :title
   title=('Classrooms')
 .container
-  section.page-section.text-center.pt-2#classrooms
+  section.page-section.text-center.pt-2#classrooms data-controller='sync-notice'
     p
       |Current school sync status:
-      b.font-weight-bold#syncStatus #{@school.sync_status.humanize}
+      b.font-weight-bold#syncStatus data-sync-notice-target='status' #{@school.sync_status.humanize}
     ==sync_status_button
     h1.page-section-header.text-uppercase Classrooms
     hr class=("small mb-5 primary-red")
     .row.justify-content-center
-      .col.mx-auto
-        table.table.table-hover#classroom-table
+      .col.mx-auto data-controller='datatable' data-datatable-options-value=({ pageLength: 25, language: { emptyTable: 'No classrooms have been found' } }.to_json)
+        table.table.table-hover#classroom-table data-datatable-target='table'
           thead
             tr
               th Name
@@ -26,4 +26,4 @@
                   include_blank: '',
                   id: ('classroom-' + c.id.to_s),
                   class: 'custom-select',
-                  data: { remote: 'true',  url: classroom_path(c.id), method: 'patch' }
+                  data: { remote: 'true', url: classroom_path(c.id), method: 'patch', action: 'change->sync-notice#notify' }

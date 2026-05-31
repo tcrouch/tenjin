@@ -1,14 +1,4 @@
 import "./turbolinks_compat";
 import "./remote_form_render";
 import "./live_leaderboard";
-import "./classroom";
-import "./homework";
-import "./pages";
-import "./schools";
-import "./student_dashboard";
-import "./teacher_dashboard";
-import "./users";
-import "./lessons";
-import "./questions";
 import "./controller_info";
-import "./google_analytics";

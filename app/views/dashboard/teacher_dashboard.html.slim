@@ -16,7 +16,7 @@ section.page-section.text-center#myClassrooms
               th
           tbody
             - @enrollments.each do |e|
-              tr data-classroom = e.classroom.id
+              tr data-controller='row-link' data-row-link-url-value=classroom_path(e.classroom) data-action='click->row-link#navigate' data-classroom = e.classroom.id
                 td =e.classroom.name
                 td.d-none.d-lg-block =e.classroom.description
                 td =e.subject.name if e.subject.present?
@@ -28,8 +28,8 @@ section.page-section.text-center#myClassrooms
       h1.page-section-header.text-uppercase Other Classrooms
       hr class=("small mb-5 primary-red")
       .row.justify-content-center
-        .table-responsive
-          table.table.table-hover#otherClassroomTable
+        .table-responsive data-controller='datatable' data-datatable-options-value=({ pageLength: 25, language: { emptyTable: 'No other classrooms have been found' } }.to_json)
+          table.table.table-hover#otherClassroomTable data-datatable-target='table'
             thead
               tr
                 th Name
@@ -37,7 +37,7 @@ section.page-section.text-center#myClassrooms
                 th Subject
             tbody
               - @other_classrooms.each do |c|
-                tr data-classroom = c.id
+                tr data-controller='row-link' data-row-link-url-value=classroom_path(c) data-action='click->row-link#navigate' data-classroom = c.id
                   td =c.name
                   td.d-none.d-lg-block =c.description
                   td =c.subject.name if c.subject.present?

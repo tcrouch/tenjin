@@ -42,6 +42,8 @@ module ApplicationHelper
     fields = form.simple_fields_for(association, new_object, child_index: id) do |builder|
       render(association.to_s.singularize, f: builder)
     end
-    link_to(name, "#", class: "add_fields #{args[:class]}", data: {id: id, fields: fields.delete("\n")})
+    link_to(name, "#",
+      class: args[:class].to_s,
+      data: { action: "click->nested-fields#add", id: id, fields: fields.delete("\n") })
   end
 end
