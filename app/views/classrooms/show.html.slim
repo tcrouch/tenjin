@@ -7,7 +7,7 @@
     hr class=("small mb-5 primary-red")
     .row.justify-content-center
       =link_to 'Set Homework', new_homework_path(classroom: {classroom_id: @classroom.id}), class: 'btn btn-block btn-primary'
-      .col.mx-auto data-controller='datatable' data-datatable-options-value=({ paginationSize: 5, placeholder: 'No homeworks have been found', initialSort: [{ column: 'due', dir: 'desc' }], columns: [{ title: 'Topic', field: 'topic' }, { title: 'Completion', field: 'completion' }, { title: 'Due', field: 'due' }] }.to_json)
+      .col.mx-auto data-controller='datatable' data-datatable-options-value=({ paginationSize: 5, placeholder: 'No homeworks have been found', initialSort: [{ column: 'due', dir: 'desc' }], columns: [{ title: 'Topic', field: 'topic' }, { title: 'Completion', field: 'completion' }, { title: 'Due', field: 'due', sorter: 'ukDateTime' }] }.to_json)
         table.table.table-hover#homework-table data-datatable-target='table'
           thead
             tr

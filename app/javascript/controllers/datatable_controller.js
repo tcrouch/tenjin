@@ -1,6 +1,33 @@
 import { Controller } from "@hotwired/stimulus";
 import { TabulatorFull as Tabulator } from "tabulator-tables";
 
+// Custom sorter for UK datetime strings like "DD/MM/YY HH:MM".
+// Tabulator defaults to a string sort which compares char-by-char and
+// breaks across year boundaries.
+const ukDateTimeSorter = (a, b) => {
+  const parse = (s) => {
+    const m = /^(\d{2})\/(\d{2})\/(\d{2}) (\d{2}):(\d{2})$/.exec(s || "");
+    if (!m) return 0;
+    const [, d, mo, y, h, mi] = m;
+    return Date.UTC(
+      2000 + parseInt(y, 10),
+      parseInt(mo, 10) - 1,
+      parseInt(d, 10),
+      parseInt(h, 10),
+      parseInt(mi, 10),
+    );
+  };
+  return parse(a) - parse(b);
+};
+
+const namedSorters = { ukDateTime: ukDateTimeSorter };
+
+// Field name Tabulator will use to store each row's original source-DOM
+// position. Tabulator's HTML importer assigns `item[options.index] = i`
+// for rows that don't already carry a value for the configured index
+// field, which gives us a per-row source index that survives sort/filter.
+const SRC_INDEX_FIELD = "__tabulatorSrcIdx__";
+
 // Stimulus controller wrapping Tabulator. The "datatable" name is
 // retained for markup continuity with existing views.
 // Mount on a wrapping element (not the <table>) with the table as
@@ -20,14 +47,37 @@ export default class extends Controller {
       dataset: { ...tr.dataset },
     }));
 
+    const opts = { ...this.optionsValue };
+    if (Array.isArray(opts.columns)) {
+      opts.columns = opts.columns.map((col) =>
+        typeof col.sorter === "string" && namedSorters[col.sorter]
+          ? { ...col, sorter: namedSorters[col.sorter] }
+          : col,
+      );
+    }
+
     this.tabulator = new Tabulator(this.tableTarget, {
       layout: "fitColumns",
       autoColumns: true,
       pagination: true,
       paginationSize: 10,
       columnDefaults: { formatter: "html" },
-      ...this.optionsValue,
+      index: SRC_INDEX_FIELD,
+      ...opts,
       rowFormatter: (row) => this.reapplyRowAttrs(row),
+    });
+
+    // autoColumns may surface a visible column for the synthetic index
+    // field. Hide it once the table is built (only present on autoColumns
+    // tables; check the columns list first to avoid a noisy "Find Error"
+    // warning when explicit `columns` was supplied).
+    this.tabulator.on("tableBuilt", () => {
+      const hasIdxColumn = this.tabulator
+        .getColumns()
+        .some((c) => c.getField() === SRC_INDEX_FIELD);
+      if (hasIdxColumn) {
+        this.tabulator.getColumn(SRC_INDEX_FIELD).hide();
+      }
     });
   }
 
@@ -62,7 +112,8 @@ export default class extends Controller {
   }
 
   reapplyRowAttrs(row) {
-    const idx = row.getPosition(true) - 1;
+    const idx = row.getData()[SRC_INDEX_FIELD];
+    if (idx == null) return;
     const src = this.sourceRowAttrs[idx];
     if (!src) return;
     const el = row.getElement();

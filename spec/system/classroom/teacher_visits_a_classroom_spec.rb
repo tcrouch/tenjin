@@ -47,7 +47,9 @@ RSpec.describe "User visits a classroom", :default_creates, :js do
       end
 
       it "shows the correct percentage of homeworks completed" do
-        expect(page).to have_content("60%")
+        within "#homework-table" do
+          expect(page).to have_content("60%")
+        end
       end
     end
 
