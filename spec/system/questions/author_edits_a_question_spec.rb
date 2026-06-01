@@ -96,7 +96,9 @@ RSpec.describe "Author edits a question", :default_creates, :js do
     end
 
     it "shows the number of flags a question has" do
-      expect(page).to have_css("tr#question-#{question.id} td.flags", exact_text: "5")
+      within "#question-#{question.id}" do
+        expect(page).to have_css("[tabulator-field='flags']", exact_text: "5")
+      end
     end
   end
 

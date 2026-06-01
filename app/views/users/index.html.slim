@@ -2,7 +2,11 @@ section.page-section.text-center.pt-2#Users
   .container
     h1.page-section-header.text-uppercase Students
     hr class=("small mb-5 primary-red")
-    .col.table-responsive data-controller='datatable' data-datatable-options-value=({ paging: true, dom: "<'row'<'col-sm-12 col-md-4 pt-4'B><'col-sm-12 col-md-4'l><'col-sm-12 col-md-4'f>><'row'<'col-sm-12'tr>><'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>", buttons: ['copyHtml5', 'csvHtml5', 'excelHtml5'], order: [[3, 'asc'], [0, 'asc']] }.to_json)
+    .col.table-responsive data-controller='datatable' data-datatable-options-value=({ paginationSize: 10, initialSort: [{ column: 'reset_password', dir: 'asc' }, { column: 'name', dir: 'asc' }], columns: [{ title: 'Name', field: 'name' }, { title: 'Username', field: 'username' }, { title: 'Classes', field: 'classes' }, { title: 'Reset Password?', field: 'reset_password' }] }.to_json)
+      = render 'shared/table_search'
+      .mb-2
+        button.btn.btn-secondary.btn-sm.mr-2 type='button' data-action='click->datatable#copy' Copy
+        button.btn.btn-secondary.btn-sm type='button' data-action='click->datatable#downloadCsv' CSV
       table.table#students-table data-datatable-target='table'
         thead
           tr

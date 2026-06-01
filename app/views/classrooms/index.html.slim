@@ -9,7 +9,8 @@
     h1.page-section-header.text-uppercase Classrooms
     hr class=("small mb-5 primary-red")
     .row.justify-content-center
-      .col.mx-auto data-controller='datatable' data-datatable-options-value=({ pageLength: 25, language: { emptyTable: 'No classrooms have been found' } }.to_json)
+      .col.mx-auto data-controller='datatable' data-datatable-options-value=({ paginationSize: 25, placeholder: 'No classrooms have been found' }.to_json)
+        = render 'shared/table_search'
         table.table.table-hover#classroom-table data-datatable-target='table'
           thead
             tr

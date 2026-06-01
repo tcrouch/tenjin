@@ -41,7 +41,8 @@
   .row.py-4
     .col
      h3.h3 Users
-    .table-responsive data-controller='datatable' data-datatable-options-value=({ paging: true }.to_json)
+    .table-responsive data-controller='datatable' data-datatable-options-value=({ paginationSize: 10 }.to_json)
+      = render 'shared/table_search'
       table.table#users-table data-datatable-target='table'
         thead
           tr

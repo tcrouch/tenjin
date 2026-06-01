@@ -3684,11 +3684,6 @@ datatables.net@1.13.11, datatables.net@^1.10.15, datatables.net@^1.13.0:
   dependencies:
     jquery "1.8 - 4"
 
-datetime-moment@^1.0.0:
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/datetime-moment/-/datetime-moment-1.0.0.tgz#ace3a0b684986c3ac907bc5206af43b980721186"
-  integrity sha512-AVbNfYMXxY+DtQMf+Ls9JkdhZvNaEvV+2y9nuD6D3hE9NmsNtdXvQrU/qeAPwe+DGhjHHLzhn5Mfi2ltVUrD3g==
-
 debug@2.6.9:
   version "2.6.9"
   resolved "https://registry.yarnpkg.com/debug/-/debug-2.6.9.tgz#5d128515df134ff327e90a4c93f4e077a536341f"
@@ -7565,6 +7560,11 @@ synckit@^0.8.6:
   dependencies:
     "@pkgr/core" "^0.1.0"
     tslib "^2.6.2"
+
+tabulator-tables@^5:
+  version "5.6.1"
+  resolved "https://registry.yarnpkg.com/tabulator-tables/-/tabulator-tables-5.6.1.tgz#ffd9ca7f730f3e7ec58e7dfffc91ee58e2b7fcc9"
+  integrity sha512-DsmaZqEmlQS/NL5ZJbVtoaeYjJgofEFp+2er7+uwKerGwd/E2rZbeQgux4+Ab1dxNJcbptiX7oUiTwogOnUdgQ==
 
 tapable@^2.1.1, tapable@^2.2.0, tapable@^2.3.0, tapable@^2.3.3:
   version "2.3.3"

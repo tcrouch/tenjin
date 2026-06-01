@@ -31,10 +31,7 @@ ActiveStorage.start();
 const images = require.context("../images", true);
 const imagePath = (name) => images(name, true);
 
-import "datatables.net-bs4";
-import "datatables.net-buttons-bs4";
-import "datatables.net-buttons/js/buttons.html5.js";
-require("datetime-moment");
+import "tabulator-tables/dist/css/tabulator_bootstrap4.min.css";
 
 require("trix");
 import "@rails/actiontext";

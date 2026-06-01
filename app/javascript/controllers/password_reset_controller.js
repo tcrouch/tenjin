@@ -10,7 +10,9 @@ export default class extends Controller {
       return;
     }
     const { password } = await response.json();
-    const td = this.element.closest("td");
-    td.innerHTML = `<div class="new-password">${password}</div>`;
+    // Phase 5: Tabulator renders cells as `div.tabulator-cell` rather than
+    // native `<td>`, so accept either container.
+    const cell = this.element.closest("td, .tabulator-cell");
+    cell.innerHTML = `<div class="new-password">${password}</div>`;
   }
 }
