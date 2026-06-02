@@ -219,6 +219,16 @@ h1#branding-text {
   min-height: 66px;
 }
 
+// Overlay below the fixed navbar; don't displace the masthead.
+.fixed-top ~ .alert {
+  position: fixed;
+  top: 66px;
+  left: 0;
+  right: 0;
+  z-index: 1031;
+  margin: 0;
+}
+
 #navbar-btn {
   @include media-breakpoint-up(md) {
     font-size: 2rem;
