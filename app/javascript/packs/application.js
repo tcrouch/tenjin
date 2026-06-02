@@ -38,19 +38,6 @@ require("trix");
 import "@rails/actiontext";
 import "@rails/actioncable";
 
-// Support component names relative to this directory:
-var componentRequireContext = require.context("components", true);
-var ReactRailsUJS = require("react_ujs");
-ReactRailsUJS.useContext(componentRequireContext);
-
-// react_ujs 3.2 predates Turbo; explicitly bridge turbo:load/before-cache to
-// mount/unmount React components on navigation. Retired in Phase 7 when
-// react-rails goes.
-document.addEventListener("turbo:load", () => ReactRailsUJS.mountComponents());
-document.addEventListener("turbo:before-cache", () =>
-  ReactRailsUJS.unmountComponents(),
-);
-
 // Stimulus
 const application = Application.start();
 const context = require.context("controllers", true, /\.js$/);
