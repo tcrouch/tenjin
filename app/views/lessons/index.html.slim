@@ -9,23 +9,24 @@
     -@subjects.each do |s|
       - @subject_author = current_user.has_role? :lesson_author, s if @author
       h1.py-4.h1.subject-title=s.name
-      .card-columns
+      .row.row-cols-1.row-cols-md-2.row-cols-lg-3.g-3
         -@lessons.where(topics: { subject:s } ).each do |l|
           -unless l.no_content?
-            .card
-              .card-body.videoLink src=l.video_url data-bs-toggle="modal" data-bs-target="#videoModal" data-action="click->video-modal#open"
-                h3.h4.lesson-title =l.title
-                p.fw-light =l.topic.name
-                img.img-fluid.card-img-top video_id=l.video_id category=l.category src=l.thumbnail_url data-video-modal-target=("vimeo" if l.vimeo?)
-              -if @subject_author
-                .card-footer
-                  p = 'Questions: ' + l.questions_count.to_s
-                  =link_to 'View Questions', lesson_questions_path(lesson_id: l), class: 'btn btn-primary mx-2'
-                  =link_to 'Edit', edit_lesson_path(l), class: 'btn btn-primary mx-2'
-                  =link_to 'Delete', lesson_path(l), class: 'btn btn-danger', method: :delete, data: { confirm: 'Are you sure?' }
-              -elsif !current_user.student?
-                .card-footer
-                  =link_to 'View Questions', lesson_questions_path(lesson_id: l), class: 'btn btn-primary mx-2'
+            .col
+              .card.h-100
+                .card-body.videoLink src=l.video_url data-bs-toggle="modal" data-bs-target="#videoModal" data-action="click->video-modal#open"
+                  h3.h4.lesson-title =l.title
+                  p.fw-light =l.topic.name
+                  img.img-fluid.card-img-top video_id=l.video_id category=l.category src=l.thumbnail_url data-video-modal-target=("vimeo" if l.vimeo?)
+                -if @subject_author
+                  .card-footer
+                    p = 'Questions: ' + l.questions_count.to_s
+                    =link_to 'View Questions', lesson_questions_path(lesson_id: l), class: 'btn btn-primary mx-2'
+                    =link_to 'Edit', edit_lesson_path(l), class: 'btn btn-primary mx-2'
+                    =link_to 'Delete', lesson_path(l), class: 'btn btn-danger', method: :delete, data: { confirm: 'Are you sure?' }
+                -elsif !current_user.student?
+                  .card-footer
+                    =link_to 'View Questions', lesson_questions_path(lesson_id: l), class: 'btn btn-primary mx-2'
 
       -if @subject_author
         table.table
@@ -73,5 +74,5 @@
       .modal-content
         .modal-body.p-0.p-md-2
           button.btn-close type="button" data-bs-dismiss="modal" aria-label="Close"
-          .embed-responsive.embed-responsive-16by9
-            iframe.embed-responsive-item#video data-video-modal-target='iframe' allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowscriptaccess="always" src="" allowfullscreen
+          .ratio.ratio-16x9
+            iframe#video data-video-modal-target='iframe' allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowscriptaccess="always" src="" allowfullscreen
