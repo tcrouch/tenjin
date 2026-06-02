@@ -14,7 +14,6 @@
 @import url("https://fonts.googleapis.com/css?family=Raleway:300,900,900i");
 @import url("https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,300;0,400;0,900;1,400;1,900&display=swap");
 
-@import "bootstrap";
 @import "~bootstrap/scss/bootstrap";
 @import "@fortawesome/fontawesome-free";
 @import "pages";
@@ -25,7 +24,7 @@
 @import "shepherd";
 
 .navbar-dark .nav-item .nav-link {
-  color: theme-color("light");
+  color: map-get($theme-colors, "light");
 }
 
 a {
@@ -164,7 +163,7 @@ hr.secondary {
 
 .page-section-header {
   font-size: 3rem;
-  @include media-breakpoint-down(sm) {
+  @include media-breakpoint-down(md) {
     font-size: 2rem;
   }
 }

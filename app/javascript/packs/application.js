@@ -31,7 +31,7 @@ ActiveStorage.start();
 const images = require.context("../images", true);
 const imagePath = (name) => images(name, true);
 
-import "tabulator-tables/dist/css/tabulator_bootstrap4.min.css";
+import "tabulator-tables/dist/css/tabulator_bootstrap5.min.css";
 
 require("trix");
 import "@rails/actiontext";
