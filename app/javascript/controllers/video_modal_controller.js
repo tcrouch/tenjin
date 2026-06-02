@@ -6,11 +6,11 @@ export default class extends Controller {
   connect() {
     this.vimeoTargets.forEach((img) => this._loadVimeoThumbnail(img));
     this.modalHandler = () => this._stopVideo();
-    $(this.modalTarget).on("hide.bs.modal", this.modalHandler); // Phase 6
+    this.modalTarget.addEventListener("hide.bs.modal", this.modalHandler);
   }
 
   disconnect() {
-    $(this.modalTarget).off("hide.bs.modal", this.modalHandler); // Phase 6
+    this.modalTarget.removeEventListener("hide.bs.modal", this.modalHandler);
   }
 
   open(event) {
