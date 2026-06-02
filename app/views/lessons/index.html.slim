@@ -13,7 +13,7 @@
         -@lessons.where(topics: { subject:s } ).each do |l|
           -unless l.no_content?
             .card
-              .card-body.videoLink src=l.video_url data-toggle="modal" data-target="#videoModal" data-action="click->video-modal#open"
+              .card-body.videoLink src=l.video_url data-bs-toggle="modal" data-bs-target="#videoModal" data-action="click->video-modal#open"
                 h3.h4.lesson-title =l.title
                 p.font-weight-light =l.topic.name
                 img.img-fluid.card-img-top video_id=l.video_id category=l.category src=l.thumbnail_url data-video-modal-target=("vimeo" if l.vimeo?)
@@ -72,7 +72,7 @@
     .modal-dialog.modal-dialog-centered.modal-lg role="document"
       .modal-content
         .modal-body.p-0.p-md-2
-          button.close type="button" data-dismiss="modal" aria-label="Close"
+          button.close type="button" data-bs-dismiss="modal" aria-label="Close"
             span aria-hidden="true"&times;
           .embed-responsive.embed-responsive-16by9
             iframe.embed-responsive-item#video data-video-modal-target='iframe' allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowscriptaccess="always" src="" allowfullscreen
