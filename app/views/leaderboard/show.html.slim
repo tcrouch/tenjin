@@ -25,13 +25,13 @@
             template x-if="canSeeLiveToggle"
               .row
                 .col
-                  .custom-control.custom-switch#toggleLive
-                    input#liveSwitch.custom-control-input type="checkbox" x-model="live" @change="toggleLive()"
-                    label.custom-control-label for="liveSwitch" Live Leaderboard
+                  .form-check.form-switch#toggleLive
+                    input#liveSwitch.form-check-input type="checkbox" x-model="live" @change="toggleLive()"
+                    label.form-check-label for="liveSwitch" Live Leaderboard
 
-            .row.form-row.align-items-center.d-flex.justify-content-around
+            .row.g-2.align-items-center.d-flex.justify-content-around
               .col.col-6 x-data="{ open: false }" @click.outside="open = false"
-                .form-group
+                .mb-3
                   .dropdown.filter#Class-dropdown
                     button.btn.btn-secondary.dropdown-toggle type="button" @click="open = !open" x-text="selectedFilterText('Class', 'Select Class')"
                     .dropdown-menu :class="open && 'show'"
@@ -40,7 +40,7 @@
 
               template x-if="schoolFilterOptions().length"
                 .col.col-6 x-data="{ open: false }" @click.outside="open = false"
-                  .form-group
+                  .mb-3
                     .dropdown.filter#Schools-dropdown
                       button.btn.btn-secondary.dropdown-toggle type="button" @click="open = !open" x-text="selectedFilterText('Schools', 'Select School')"
                       .dropdown-menu :class="open && 'show'"
@@ -49,15 +49,15 @@
 
               template x-if="!live"
                 .col
-                  .custom-control.custom-switch#showAll
-                    input#showAllSwitch.custom-control-input type="checkbox" x-model="showAll"
-                    label.custom-control-label for="showAllSwitch" Show all
+                  .form-check.form-switch#showAll
+                    input#showAllSwitch.form-check-input type="checkbox" x-model="showAll"
+                    label.form-check-label for="showAllSwitch" Show all
 
               template x-if="!live"
                 .col.col-sm
-                  .custom-control.custom-switch#allTime
-                    input#allTimeSwitch.custom-control-input type="checkbox" x-model="allTime" @change="onAllTimeToggle()"
-                    label.custom-control-label for="allTimeSwitch" All Time
+                  .form-check.form-switch#allTime
+                    input#allTimeSwitch.form-check-input type="checkbox" x-model="allTime" @change="onAllTimeToggle()"
+                    label.form-check-label for="allTimeSwitch" All Time
 
             .row
               table.table#leaderboardTable

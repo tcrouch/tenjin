@@ -36,12 +36,12 @@ section.page-section.pt-2#Users
                       options_from_collection_for_select(@all_subjects, :id, :name),
                       id: "role-select-user-#{e.id}",
                       form: "form-#{e.id}",
-                      class: 'custom-select'
+                      class: 'form-select'
                   td = select_tag 'user[role]',
                     options_for_select([ 'school_admin', 'question_author', 'lesson_author'], e.role),
                     id: "role-select-user-#{e.id}",
                     form: "form-#{e.id}",
-                    class: 'custom-select'
+                    class: 'form-select'
                   td = button_to 'Add Role',
                     set_role_user_path(e.id),
                     id: "add-role-#{e.id}",

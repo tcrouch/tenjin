@@ -30,7 +30,7 @@
                 { include_blank: '',
                 onchange: 'Rails.fire(this.form, "submit")'},
                 id: ('school-group-select-' + school.id.to_s),
-                class: 'custom-select',
+                class: 'form-select',
                 data: { remote: 'true',  url: school_path(school), method: 'patch' }
           td =link_to 'Sync', sync_school_path(school), class: 'btn w-100 btn-primary', method: :patch, remote: true
     -if current_admin.super?

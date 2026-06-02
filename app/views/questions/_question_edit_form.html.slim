@@ -7,7 +7,7 @@
         options_for_select(Question.question_types.to_a.map { |k| [k[0].humanize, k[0]] }, selected: @question.question_type ),
         {},
         id: 'select-question-type',
-        class: 'custom-select reload-page',
+        class: 'form-select reload-page',
         data: { action: 'change->reload-form#reload' } )
   .row.my-2
     .col.justify-content-center
@@ -24,7 +24,7 @@
           options_from_collection_for_select(@question.topic.lessons, :id, :title, selected: @question.lesson_id),
           { include_blank: 'Select Lesson' },
           id: 'select-lesson',
-          class: 'custom-select')
+          class: 'form-select')
   .row.my-2
     .col-sm-3
       =f.label('select-topic', 'Topic:')
@@ -34,7 +34,7 @@
             :id, :name, selected: @question.topic_id),
           {},
           id: 'select-topic',
-          class: 'custom-select reload-page',
+          class: 'form-select reload-page',
           data: { action: 'change->reload-form#reload' })
   table.table#table-answers
     thead
