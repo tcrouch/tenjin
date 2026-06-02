@@ -14,7 +14,7 @@ export default class extends Controller {
     if (svg.dataset.prefix === "far") {
       svg.classList.add("fas");
       svg.dataset.prefix = "fas";
-      $("#feedbackModal").modal("show");
+      bootstrap.Modal.getOrCreateInstance(document.getElementById("feedbackModal")).show();
     } else {
       svg.classList.add("far");
       svg.dataset.prefix = "far";

@@ -13,7 +13,8 @@ import { Turbo } from "@hotwired/turbo-rails";
 // turned back on (per-element or globally) as UJS patterns are migrated.
 Turbo.session.drive = false;
 import * as ActiveStorage from "@rails/activestorage";
-import "bootstrap";
+import * as bootstrap from "bootstrap";
+window.bootstrap = bootstrap;
 import "@fortawesome/fontawesome-free/js/all";
 import { Application } from "@hotwired/stimulus";
 import { definitionsFromContext } from "@hotwired/stimulus-webpack-helpers";

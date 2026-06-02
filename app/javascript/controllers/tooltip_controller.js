@@ -1,11 +1,15 @@
 import { Controller } from "@hotwired/stimulus";
+import { Tooltip } from "bootstrap";
 
 export default class extends Controller {
   connect() {
-    $(this.element).find('[data-toggle="tooltip"]').tooltip();
+    this.tooltips = Array.from(
+      this.element.querySelectorAll('[data-bs-toggle="tooltip"]')
+    ).map((el) => new Tooltip(el));
   }
 
   disconnect() {
-    $(this.element).find('[data-toggle="tooltip"]').tooltip("dispose");
+    this.tooltips?.forEach((t) => t.dispose());
+    this.tooltips = null;
   }
 }
