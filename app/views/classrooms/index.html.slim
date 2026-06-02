@@ -4,7 +4,7 @@
   section.page-section.text-center.pt-2#classrooms data-controller='sync-notice'
     p
       |Current school sync status:
-      b.font-weight-bold#syncStatus data-sync-notice-target='status' #{@school.sync_status.humanize}
+      b.fw-bold#syncStatus data-sync-notice-target='status' #{@school.sync_status.humanize}
     ==sync_status_button
     h1.page-section-header.text-uppercase Classrooms
     hr class=("small mb-5 primary-red")

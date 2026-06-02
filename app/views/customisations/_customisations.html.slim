@@ -22,9 +22,9 @@
                 == customisation_cost(style, bought_customisations)
                 =form_with(model: style, url: buy_customisation_path(style), method: :post, local: true) do |f|
                   -if bought_customisations.include? style.id
-                    =f.submit 'Switch', class: 'btn btn-light-outline float-right buy-btn'
+                    =f.submit 'Switch', class: 'btn btn-light-outline float-end buy-btn'
                   -else
-                    =f.submit 'Buy', class: 'btn btn-light-outline float-right buy-btn'
+                    =f.submit 'Buy', class: 'btn btn-light-outline float-end buy-btn'
 
 - leaderboard_icon_styles = customisations.select { |c| c.leaderboard_icon? }
 - if leaderboard_icon_styles.any?

@@ -47,7 +47,7 @@
   -unless @question.question_type == 'boolean'
     .row.my-2
       .col
-        =link_to_add_row('Add Answer', f, :answers, class: 'btn btn-primary btn-block')
+        =link_to_add_row('Add Answer', f, :answers, class: 'btn btn-primary w-100')
   .row.my-2
     .col
-      =f.submit("Save Question", class: 'btn btn-block btn-success')
+      =f.submit("Save Question", class: 'btn w-100 btn-success')

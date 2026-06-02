@@ -6,7 +6,7 @@
       -else
         p#quiz-name=@question.lesson.title
     .col
-      p.text-right
+      p.text-end
         =link_to flag_icon,
           flagged_questions_path(flagged_question: {user_id: current_user.id, question_id: @question.id }),
           class: 'btn',
@@ -30,7 +30,6 @@
   .modal-dialog.modal-dialog-centered.modal-lg role="document"
     .modal-content
       .modal-body.p-0.p-md-2
-        button.close type="button" data-bs-dismiss="modal" aria-label="Close"
-          span aria-hidden="true"&times;
+        button.btn-close type="button" data-bs-dismiss="modal" aria-label="Close"
         .embed-responsive.embed-responsive-16by9
           iframe.embed-responsive-item#video(allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowscriptaccess="always" src="" allowfullscreen)

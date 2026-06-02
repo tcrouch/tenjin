@@ -5,7 +5,7 @@ section.page-section.text-center.pt-2#Users
     .col.table-responsive data-controller='datatable' data-datatable-options-value=({ paginationSize: 10, initialSort: [{ column: 'reset_password', dir: 'asc' }, { column: 'name', dir: 'asc' }], columns: [{ title: 'Name', field: 'name' }, { title: 'Username', field: 'username' }, { title: 'Classes', field: 'classes' }, { title: 'Reset Password?', field: 'reset_password' }] }.to_json)
       = render 'shared/table_search'
       .mb-2
-        button.btn.btn-secondary.btn-sm.mr-2 type='button' data-action='click->datatable#copy' Copy
+        button.btn.btn-secondary.btn-sm.me-2 type='button' data-action='click->datatable#copy' Copy
         button.btn.btn-secondary.btn-sm type='button' data-action='click->datatable#downloadCsv' CSV
       table.table#students-table data-datatable-target='table'
         thead
@@ -37,7 +37,7 @@ div.modal.fade#resetAllPasswordsModal
         p It should only be used when setting up your school to use Tenjin for the first time.
         p
           | To confirm this action, type the name of your school,
-          strong.font-weight-bold#schoolName data-confirm-text-target='match' #{current_user.school.name}
+          strong.fw-bold#schoolName data-confirm-text-target='match' #{current_user.school.name}
           |  in the box below and click confirm.
         .row.justify-content-center
           input.px-2#confirmAllPasswordResetTextbox data-confirm-text-target='input' data-action='input->confirm-text#check'

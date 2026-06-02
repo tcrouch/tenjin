@@ -20,7 +20,7 @@
         data: { remote: 'true',  url: topic_path(@topic), method: 'patch' })
   .row.my-2
     .col
-      =link_to 'Add Question', new_question_path(question: { topic_id: @topic }), class:'btn btn-primary btn-block'
+      =link_to 'Add Question', new_question_path(question: { topic_id: @topic }), class:'btn btn-primary w-100'
   .row.my-2
     .col
       = render 'question_table'
@@ -28,15 +28,15 @@
     .col
       = link_to 'Download Questions',
           download_topic_questions_path(topic_id: @topic),
-          class:'btn btn-primary btn-block'
+          class:'btn btn-primary w-100'
       = link_to 'Import Questions',
           import_topic_questions_path(topic_id: @topic),
-          class:'btn btn-primary btn-block'
+          class:'btn btn-primary w-100'
 
   .row.my-5
     .col
       =link_to 'Delete Topic',
         topic_path(@topic),
         method: :delete,
-        class: 'btn btn-danger btn-block',
+        class: 'btn btn-danger w-100',
         data: {confirm: 'Are you sure?  This cannot be undone'}
