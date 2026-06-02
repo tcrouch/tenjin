@@ -7,7 +7,7 @@
       b.fw-bold#syncStatus data-sync-notice-target='status' #{@school.sync_status.humanize}
     ==sync_status_button
     h1.page-section-header.text-uppercase Classrooms
-    hr class=("small mb-5 primary-red")
+    ==render_small_separator
     .row.justify-content-center
       .col.mx-auto data-controller='datatable' data-datatable-options-value=({ paginationSize: 25, placeholder: 'No classrooms have been found' }.to_json)
         = render 'shared/table_search'

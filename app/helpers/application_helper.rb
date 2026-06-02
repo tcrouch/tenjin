@@ -20,9 +20,9 @@ module ApplicationHelper
     end
   end
 
-  def render_small_separator(style = nil)
+  def render_small_separator(style = nil, margin: "mb-5")
     color = style&.value || @dashboard_style&.value || "red"
-    content_tag(:hr, nil, class: "small mb-5 primary", style: "border-color: #{color}")
+    content_tag(:div, nil, class: "heading-divider #{margin}", style: "color: #{color}", aria: {hidden: true})
   end
 
   def render_dashboard_style(style)
@@ -44,6 +44,6 @@ module ApplicationHelper
     end
     link_to(name, "#",
       class: args[:class].to_s,
-      data: { action: "click->nested-fields#add", id: id, fields: fields.delete("\n") })
+      data: {action: "click->nested-fields#add", id: id, fields: fields.delete("\n")})
   end
 end

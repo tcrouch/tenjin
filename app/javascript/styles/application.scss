@@ -154,16 +154,13 @@ hr.small {
   margin-right: auto;
 }
 
-%hr.primary-shared {
-  border-top-width: 3px;
-  border-bottom-width: 3px;
-  border-style: solid;
+.heading-divider {
+  max-width: 10rem;
+  box-sizing: content-box;
   height: 0.125rem;
-}
-
-hr.secondary {
-  @extend %hr, .primary-shared;
-  border-color: white;
+  margin: 0 auto;
+  border-top: 3px solid currentColor;
+  border-bottom: 3px solid currentColor;
 }
 
 .page-section {

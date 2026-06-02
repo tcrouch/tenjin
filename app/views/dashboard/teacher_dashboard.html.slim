@@ -3,7 +3,7 @@
 section.page-section.text-center#myClassrooms
   .container
     h1.page-section-header.text-uppercase My Classes
-    hr class=("small mb-5 primary-red")
+    ==render_small_separator
     .row.justify-content-center
       .table-responsive
         table.table.table-hover#classroomTable
@@ -26,7 +26,7 @@ section.page-section.text-center#myClassrooms
   section.page-section.text-center#otherClassrooms
     .container
       h1.page-section-header.text-uppercase Other Classrooms
-      hr class=("small mb-5 primary-red")
+      ==render_small_separator
       .row.justify-content-center
         .table-responsive data-controller='datatable' data-datatable-options-value=({ paginationSize: 25, placeholder: 'No other classrooms have been found' }.to_json)
           = render 'shared/table_search'

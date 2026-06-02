@@ -61,7 +61,7 @@ RSpec.describe "User customises the site", :default_creates, :js do
 
       context "when the student has enough points" do
         it "displays the style" do
-          expect(page).to have_css("hr[style*=#{dashboard_customisation.value}]")
+          expect(page).to have_css(".heading-divider[style*=#{dashboard_customisation.value}]")
         end
 
         it "shows their new points total" do

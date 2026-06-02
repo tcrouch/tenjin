@@ -89,7 +89,7 @@ RSpec.describe "Admin manages customisations", :default_creates, :js do
     it "updates the value" do
       fill_in("Value", with: "blue")
       click_button("Update Customisation")
-      expect(page).to have_css("hr[style*='blue']")
+      expect(page).to have_css(".heading-divider[style*='blue']")
     end
 
     it "updates the picture" do

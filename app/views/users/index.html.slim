@@ -1,7 +1,7 @@
 section.page-section.text-center.pt-2#Users
   .container
     h1.page-section-header.text-uppercase Students
-    hr class=("small mb-5 primary-red")
+    ==render_small_separator
     .col.table-responsive data-controller='datatable' data-datatable-options-value=({ paginationSize: 10, initialSort: [{ column: 'reset_password', dir: 'asc' }, { column: 'name', dir: 'asc' }], columns: [{ title: 'Name', field: 'name' }, { title: 'Username', field: 'username' }, { title: 'Classes', field: 'classes' }, { title: 'Reset Password?', field: 'reset_password' }] }.to_json)
       = render 'shared/table_search'
       .mb-2
@@ -26,7 +26,7 @@ section.page-section.text-center.pt-2#Users
     -if current_user.has_role? :school_admin
       =render('users/employee_table')
     h1.page-section-header.text-uppercase.pt-5 Danger Zone
-    hr class=("small mb-5 primary-red")
+    ==render_small_separator
     button.btn.btn-danger.text-white#resetPrintModalButton data-bs-toggle="modal" data-bs-target='#resetAllPasswordsModal' Reset and print all passwords
 div.modal.fade#resetAllPasswordsModal
   div.modal-dialog role="document"
