@@ -27,6 +27,13 @@
   color: map-get($theme-colors, "light");
 }
 
+// BS5 dropped .btn-block; Phase 6 replaced it with .w-100, which loses
+// the adjacent-sibling top margin that BS4 added between stacked
+// block buttons. Restore exactly that selector against the new class.
+.btn.w-100 + .btn.w-100 {
+  margin-top: 0.5rem;
+}
+
 a {
   color: #212529;
   text-decoration: none;
