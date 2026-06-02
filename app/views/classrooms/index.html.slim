@@ -15,13 +15,13 @@
           thead
             tr
               th Name
-              th.d-none.d-lg-block Number Students
+              th.d-none.d-lg-table-cell Number Students
               th Subject
           tbody
             -@classrooms.each do |c|
               tr
                 td =c.name
-                td.d-none.d-lg-block =c.enrollments.size
+                td.d-none.d-lg-table-cell =c.enrollments.size
                 td =select_tag :subject,
                   options_from_collection_for_select(@subjects, :id, :name, c.subject_id),
                   include_blank: '',

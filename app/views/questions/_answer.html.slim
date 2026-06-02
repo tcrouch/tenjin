@@ -9,7 +9,7 @@ tr
         =f.check_box(:correct,
             onchange: "this.setAttribute('data-params', '#{f.object_name}[correct]=' + this.checked*this.checked)",
             id: "answer-check-#{f.index}",
-            class: 'form-control')
+            class: 'form-check-input')
     -unless @question.boolean?
       td
         - if @question.persisted?
