@@ -113,7 +113,6 @@ Alpine.data(
       this.classrooms = result.classrooms;
 
       this.processScores();
-      setTimeout(() => window.FontAwesome?.dom.i2svg(), 0);
     },
 
     processScores() {
@@ -186,8 +185,6 @@ Alpine.data(
         score,
         lastChanged: true,
       };
-
-      setTimeout(() => window.FontAwesome?.dom.i2svg(), 0);
 
       setTimeout(() => {
         if (this.currentLeaderboard[id]) {

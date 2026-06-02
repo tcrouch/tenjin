@@ -11,16 +11,12 @@ export default class extends Controller {
       return;
     }
 
-    const svg = this.element.querySelector("svg");
-    if (svg.dataset.prefix === "far") {
-      svg.classList.add("fas");
-      svg.dataset.prefix = "fas";
-      bootstrap.Modal.getOrCreateInstance(
-        document.getElementById("feedbackModal"),
-      ).show();
+    const icon = this.element.querySelector("i.fa-flag");
+    if (icon.classList.contains("far")) {
+      icon.classList.replace("far", "fas");
+      Modal.getOrCreateInstance(document.getElementById("feedbackModal")).show();
     } else {
-      svg.classList.add("far");
-      svg.dataset.prefix = "far";
+      icon.classList.replace("fas", "far");
     }
   }
 }
