@@ -366,17 +366,17 @@ Alpine.data(
       let remaining = awardsCount || 0;
       while (remaining >= 5) {
         html +=
-          '<i class="fas fa-star" style="color: gold;" title="Five wins!" data-toggle="tooltip"></i>';
+          '<i class="fas fa-star" style="color: gold;" title="Five wins!"></i>';
         remaining -= 5;
       }
       while (remaining >= 3) {
         html +=
-          '<i class="fas fa-star" style="color: silver;" title="Three wins!" data-toggle="tooltip"></i>';
+          '<i class="fas fa-star" style="color: silver;" title="Three wins!"></i>';
         remaining -= 3;
       }
       while (remaining >= 1) {
         html +=
-          '<i class="fas fa-star" style="color: red;" title="Came top of the leaderboard once!" data-toggle="tooltip"></i>';
+          '<i class="fas fa-star" style="color: red;" title="Came top of the leaderboard once!"></i>';
         remaining -= 1;
       }
       return html;
