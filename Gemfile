@@ -52,9 +52,6 @@ gem "omniauth-rails_csrf_protection"
 gem "pundit"
 gem "rolify"
 
-# React-rails for react components
-gem "react-rails", "~> 2.7"
-
 # Form builder
 gem "simple_form"
 
