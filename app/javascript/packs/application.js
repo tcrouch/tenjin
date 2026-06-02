@@ -15,7 +15,6 @@ Turbo.session.drive = false;
 import * as ActiveStorage from "@rails/activestorage";
 import * as bootstrap from "bootstrap";
 window.bootstrap = bootstrap;
-import "@fortawesome/fontawesome-free/js/all";
 import { Application } from "@hotwired/stimulus";
 import { definitionsFromContext } from "@hotwired/stimulus-webpack-helpers";
 
