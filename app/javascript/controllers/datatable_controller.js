@@ -28,6 +28,14 @@ const namedSorters = { ukDateTime: ukDateTimeSorter };
 // field, which gives us a per-row source index that survives sort/filter.
 const SRC_INDEX_FIELD = "__tabulatorSrcIdx__";
 
+// Tabulator stores cell.innerHTML as the data value; strip tags for export.
+const stripHtml = (value) => {
+  if (typeof value !== "string") return value;
+  const tmp = document.createElement("div");
+  tmp.innerHTML = value;
+  return (tmp.textContent || "").trim();
+};
+
 // Stimulus controller wrapping Tabulator. The "datatable" name is
 // retained for markup continuity with existing views.
 // Mount on a wrapping element (not the <table>) with the table as
@@ -61,7 +69,13 @@ export default class extends Controller {
       autoColumns: true,
       pagination: true,
       paginationSize: 10,
-      columnDefaults: { formatter: "html" },
+      // Tabulator's clipboard module is opt-in; without this `copyToClipboard()` is a no-op.
+      clipboard: true,
+      columnDefaults: {
+        formatter: "html",
+        accessorClipboard: stripHtml,
+        accessorDownload: stripHtml,
+      },
       index: SRC_INDEX_FIELD,
       ...opts,
       rowFormatter: (row) => this.reapplyRowAttrs(row),
