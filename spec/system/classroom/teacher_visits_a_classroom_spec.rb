@@ -75,7 +75,7 @@ RSpec.describe "User visits a classroom", :default_creates, :js do
         end
 
         it "shows the last 5 homeworks" do
-          expect(page).to have_css("[data-id='#{student.id}'] svg.fa-times", count: 5)
+          expect(page).to have_css("[data-id='#{student.id}'] i.fa-times", count: 5)
         end
       end
 
@@ -105,7 +105,7 @@ RSpec.describe "User visits a classroom", :default_creates, :js do
 
         it "shows the completed homework in the correct place" do
           within "[data-id='#{student.id}']" do
-            expect(page).to have_css("svg:nth-child(2).fa-check")
+            expect(page).to have_css("i:nth-child(2).fa-check")
           end
         end
       end
@@ -115,7 +115,7 @@ RSpec.describe "User visits a classroom", :default_creates, :js do
         before { visit(classroom_path(classroom)) }
 
         it "does not show homeworks for another classroom" do
-          expect(page).to have_no_css("svg.fa-times")
+          expect(page).to have_no_css("i.fa-times")
         end
       end
 
