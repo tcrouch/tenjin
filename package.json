@@ -74,10 +74,7 @@
     "moduleNameMapper": {
       "\\.(css|scss|png|jpg|svg)$": "<rootDir>/spec/javascript/__mocks__/fileMock.js",
       "^app/(.*)": "<rootDir>/app/javascript/app/$1"
-    },
-    "setupFiles": [
-      "<rootDir>/spec/javascript/setup.js"
-    ]
+    }
   },
   "packageManager": "yarn@1.22.22",
   "engines": {
