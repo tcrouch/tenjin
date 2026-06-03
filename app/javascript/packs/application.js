@@ -7,10 +7,9 @@ import "../styles/application.scss";
 
 import Rails from "@rails/ujs";
 import { Turbo } from "@hotwired/turbo-rails";
-// Turbo Drive disabled in Phase 1 — too many UJS-style links/forms in the
-// codebase for Drive to coexist cleanly. The library is loaded so Phase 2
-// can use Turbo Streams over ActionCable for the leaderboard. Drive gets
-// turned back on (per-element or globally) as UJS patterns are migrated.
+// Turbo loaded for Streams/ActionCable, but Drive is off: @rails/ujs still
+// owns the app's `remote: true` links/forms and Drive would double-handle
+// them. See `lib/remote_form_render` for the UJS↔Turbo bridge.
 Turbo.session.drive = false;
 import * as ActiveStorage from "@rails/activestorage";
 import "bootstrap";
@@ -41,7 +40,6 @@ const application = Application.start();
 const context = require.context("controllers", true, /\.js$/);
 application.load(definitionsFromContext(context));
 
-// Alpine.js (installed for Phase 2 leaderboard rewrite; not used yet)
 import Alpine from "alpinejs";
 window.Alpine = Alpine;
 Alpine.start();

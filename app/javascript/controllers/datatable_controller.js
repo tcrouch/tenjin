@@ -36,11 +36,8 @@ const stripHtml = (value) => {
   return (tmp.textContent || "").trim();
 };
 
-// Stimulus controller wrapping Tabulator. The "datatable" name is
-// retained for markup continuity with existing views.
-// Mount on a wrapping element (not the <table>) with the table as
-// the `table` target. Optional `search` target binds a filter input;
-// optional `copy`/`downloadCsv` actions back export buttons.
+// Named "datatable" (rather than "tabulator") so existing
+// `data-controller="datatable"` markup keeps working.
 export default class extends Controller {
   static targets = ["table", "search"];
   static values = { options: { type: Object, default: {} } };
