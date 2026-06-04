@@ -19,7 +19,7 @@ WebMock.disable_net_connect!(allow_localhost: true)
 # with Devise session state.
 Warden::Manager.prepend(Module.new do
   def call(env)
-    return @app.call(env) if env["PATH_INFO"] =~ %r{^/cable}
+    return @app.call(env) if %r{^/cable}.match?(env["PATH_INFO"])
     super
   end
 end)

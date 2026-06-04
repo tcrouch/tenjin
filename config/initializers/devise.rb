@@ -271,7 +271,6 @@ Devise.setup do |config|
   config.responder.error_status = :unprocessable_entity # for Rack 3.0 or lower
   config.responder.redirect_status = :see_other
 
-
   # The default HTTP method used to sign out a resource. Default is :delete.
   config.sign_out_via = :delete
 
