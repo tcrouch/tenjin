@@ -8,7 +8,7 @@ RSpec.describe "Author transfers question files", :default_creates, :js do
   let!(:question) { create(:question, topic: topic) }
 
   before do
-    driven_by :selenium_chrome_headless_download
+    driven_by :cuprite_download
     clear_downloads
     sign_in author
     visit topic_questions_path(topic_id: topic.id)

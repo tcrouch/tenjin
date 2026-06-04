@@ -46,22 +46,21 @@ rescue ActiveRecord::PendingMigrationError => e
   exit 1
 end
 
-Capybara.register_driver :selenium_chrome_headless do |app|
-  browser_options = Selenium::WebDriver::Chrome::Options.new
-  browser_options.args << "--headless=new"
-  browser_options.args << "--disable-site-isolation-trials"
-  browser_options.args << "--window-size=1024,768"
-  Capybara::Selenium::Driver.new(app, browser: :chrome, options: browser_options)
+CUPRITE_OPTIONS = {
+  window_size: [1024, 768],
+  headless: "new",
+  process_timeout: 30,
+  timeout: 15,
+  js_errors: true,
+  browser_options: {"disable-site-isolation-trials" => nil}
+}.freeze
+
+Capybara.register_driver :cuprite do |app|
+  Capybara::Cuprite::Driver.new(app, **CUPRITE_OPTIONS)
 end
 
-Capybara.register_driver :selenium_chrome_headless_download do |app|
-  browser_options = Selenium::WebDriver::Chrome::Options.new
-  browser_options.args << "--headless=new"
-  browser_options.args << "--disable-site-isolation-trials"
-  browser_options.args << "--window-size=1024,768"
-  browser_options.add_preference(:download, prompt_for_download: false, default_directory: DownloadHelpers::PATH.to_s)
-  browser_options.add_preference(:browser, set_download_behavior: {behavior: "allow"})
-  Capybara::Selenium::Driver.new(app, browser: :chrome, options: browser_options)
+Capybara.register_driver :cuprite_download do |app|
+  Capybara::Cuprite::Driver.new(app, **CUPRITE_OPTIONS, save_path: DownloadHelpers::PATH.to_s)
 end
 
 RSpec.configure do |config|
@@ -125,7 +124,7 @@ RSpec.configure do |config|
   end
 
   config.before(:each, type: :system) do
-    driven_by :selenium_chrome_headless
+    driven_by :cuprite
   end
 
   if ENV["CI"]
