@@ -15,6 +15,15 @@ require "vcr"
 
 WebMock.disable_net_connect!(allow_localhost: true)
 
+# Prevent ActionCable WebSocket upgrades to /cable from interfering
+# with Devise session state.
+Warden::Manager.prepend(Module.new do
+  def call(env)
+    return @app.call(env) if env["PATH_INFO"] =~ %r{^/cable}
+    super
+  end
+end)
+
 VCR.configure do |config|
   config.cassette_library_dir = "spec/fixtures/vcr_cassettes"
   config.hook_into :webmock
