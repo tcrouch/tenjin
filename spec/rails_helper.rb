@@ -101,27 +101,6 @@ RSpec.configure do |config|
   # Required to use database cleaner with action cable
   # or feature testing will not work
 
-  config.after(:each, type: :system) do
-    next unless page.driver.browser.respond_to?(:logs)
-
-    errors = page.driver.browser.logs.get(:browser)
-    if errors.present?
-      aggregate_failures "javascript errors" do
-        errors.each do |error|
-          # console.error in Chrome is reported as SEVERE, including React deprecation
-          # warnings. Skip those to avoid false positives.
-          next if error.message.include?('"Warning:')
-
-          expect(error.level).not_to eq("SEVERE"), error.message
-          next unless error.level == "WARNING"
-
-          warn "WARN: javascript warning"
-          warn error.message
-        end
-      end
-    end
-  end
-
   config.before(:each, type: :system) do
     driven_by :cuprite
   end
