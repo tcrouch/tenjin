@@ -70,7 +70,7 @@ RSpec.describe "User views the leaderboard", :default_creates, :js do
       end
 
       it "shows the student's position within the school" do
-        expect(page).to have_css("tr", text: "6 #{student_name}")
+        expect(page).to have_css("tr", text: "6 #{student_name}", normalize_ws: true)
       end
     end
 
@@ -213,6 +213,8 @@ RSpec.describe "User views the leaderboard", :default_creates, :js do
           subject: topic_score.subject, school: topic_score.user.school)
       end
 
+      before { visit(leaderboard_path(quiz_subject.name)) }
+
       it "shows a gold star" do
         expect(page).to have_css("td i.fa-star", style: "color: gold;")
       end
@@ -223,6 +225,8 @@ RSpec.describe "User views the leaderboard", :default_creates, :js do
         create_list(:leaderboard_award, 2, user: topic_score.user, subject: topic_score.subject,
           school: topic_score.user.school)
       end
+
+      before { visit(leaderboard_path(quiz_subject.name)) }
 
       it "shows a silver star" do
         expect(page).to have_css("td i.fa-star", style: "color: silver;")
@@ -250,10 +254,11 @@ RSpec.describe "User views the leaderboard", :default_creates, :js do
   end
 
   context "when showing weekly winners" do
+    let!(:classroom_winner) { create(:classroom_winner, user: student, classroom: classroom, score: 100) }
+
     before { visit(leaderboard_path(quiz_subject.name)) }
 
     it "shows last week's winner for the classroom" do
-      create(:classroom_winner, user: student, classroom: classroom, score: 100)
       click_button("Select Class")
       click_button(classroom.name)
       expect(page).to have_content("#{classroom.name} winner: #{student.forename}")
