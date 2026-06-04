@@ -44,11 +44,11 @@ RSpec.describe "User views the leaderboard", :default_creates, :js do
   end
 
   it "hides schools on a small screen" do
-    size = page.driver.browser.manage.window.size
+    original_size = Capybara.current_window.size
     visit(leaderboard_path(quiz_subject.name))
-    page.driver.browser.manage.window.resize_to(375, 667)
+    Capybara.current_window.resize_to(375, 667)
     expect(page).to have_no_css("td", exact_text: school.name)
-    page.driver.browser.manage.window.resize_to(size.width, size.height)
+    Capybara.current_window.resize_to(*original_size)
   end
 
   context "when there are 10 other students" do
