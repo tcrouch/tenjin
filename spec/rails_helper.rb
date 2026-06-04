@@ -51,7 +51,7 @@ CUPRITE_OPTIONS = {
   process_timeout: 30,
   timeout: 15,
   js_errors: true,
-  browser_options: {"headless" => "new", "disable-site-isolation-trials" => nil}
+  browser_options: {"headless" => "new"}
 }.freeze
 
 Capybara.register_driver :cuprite do |app|
