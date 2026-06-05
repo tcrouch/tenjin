@@ -51,7 +51,7 @@ RSpec.describe "Super views a school", :default_creates, :js do
     end
 
     it "notifies users that a setup email has been sent" do
-      click_link "Send Setup Email"
+      click_button "Send Setup Email"
       expect(page).to have_css(".alert-info", text: email_notice, wait: 6)
     end
   end
