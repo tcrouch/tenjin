@@ -35,8 +35,8 @@
 
   .row.my-5
     .col
-      =link_to 'Delete Topic',
+      = button_to 'Delete Topic',
         topic_path(@topic),
         method: :delete,
         class: 'btn btn-danger w-100',
-        data: {confirm: 'Are you sure?  This cannot be undone'}
+        form: { data: { turbo: true, turbo_confirm: 'Are you sure?  This cannot be undone' } }
