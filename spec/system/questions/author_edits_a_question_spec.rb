@@ -109,7 +109,7 @@ RSpec.describe "Author edits a question", :default_creates, :js do
 
     it "creates a topic" do
       click_link("Add Topic")
-      expect(page).to have_content("Delete Topic")
+      expect(page).to have_button("Delete Topic")
     end
 
     it "disables a topic" do
