@@ -14,10 +14,11 @@ RSpec.describe "User attempts a challenge", :default_creates, :js do
     visit(dashboard_path)
   end
 
-  it "flags the challenge complete after the student finishes the quiz" do
-    find("#challenge-table tbody tr:nth-child(1)").click
+  it "marks the challenge complete after a correct answer" do
+    expect(page).to have_no_css("#challenge-table .fa-check")
+    find(".challenge-row").click
     find(".question-button").click
     find(".next-button").click
-    expect(page).to have_css(".fa-check")
+    expect(page).to have_css("#challenge-table .fa-check")
   end
 end
