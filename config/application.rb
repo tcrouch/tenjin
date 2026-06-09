@@ -13,6 +13,7 @@ module Csquiz
     # Initialize configuration defaults for originally generated Rails version.
     config.load_defaults 6.1
     config.action_view.form_with_generates_remote_forms = false
+    config.action_dispatch.cookies_serializer = :json
 
     # Configuration for the application, engines, and railties goes here.
     #
