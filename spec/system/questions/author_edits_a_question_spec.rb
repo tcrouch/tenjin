@@ -241,7 +241,7 @@ RSpec.describe "Author edits a question", :default_creates, :js do
     end
 
     context "when showing a short answer question" do
-      let!(:question) { create(:question, question_type: "short_answer", topic: topic) }
+      let!(:question) { create(:short_answer_question, topic: topic) }
 
       before do
         visit(question_path(question))

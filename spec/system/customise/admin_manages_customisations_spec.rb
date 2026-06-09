@@ -5,6 +5,7 @@ require "rails_helper"
 RSpec.describe "Admin manages customisations", :default_creates, :js do
   let(:available_customisation) { create(:dashboard_customisation, purchasable: true) }
   let(:new_name) { FFaker::Lorem.word }
+  let(:school_group_admin) { create(:school_group_admin) }
 
   before do
     sign_in super_admin

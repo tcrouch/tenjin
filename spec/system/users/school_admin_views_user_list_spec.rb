@@ -3,6 +3,8 @@
 require "rails_helper"
 
 RSpec.describe "School admin views user list", :default_creates, :js do
+  let(:second_school) { create(:school, school_group: school.school_group) }
+
   before do
     setup_subject_database
   end

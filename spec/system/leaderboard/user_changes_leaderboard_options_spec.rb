@@ -3,6 +3,9 @@
 require "rails_helper"
 
 RSpec.describe "User changes leaderboard options", :default_creates, :js do
+  let(:school_without_school_group) { create(:school, school_group: nil) }
+  let(:second_school) { create(:school, school_group: school.school_group) }
+
   before do
     setup_subject_database
     sign_in student

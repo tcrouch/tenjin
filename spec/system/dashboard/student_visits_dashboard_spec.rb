@@ -3,6 +3,8 @@
 require "rails_helper"
 
 RSpec.describe "Student visits the dashboard", :default_creates, :js do
+  let(:question) { create(:question, topic: topic) }
+
   before do
     setup_subject_database
     sign_in student

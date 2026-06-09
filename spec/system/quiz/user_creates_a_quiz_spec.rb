@@ -3,6 +3,8 @@
 require "rails_helper"
 
 RSpec.describe "User creates a quiz", :default_creates, :js do
+  let(:question) { create(:question, topic: topic) }
+
   describe "picking a subject" do
     let(:subject_cs) { create(:computer_science) }
     let(:classroom_cs) { create(:classroom, subject: subject_cs, school: school) }

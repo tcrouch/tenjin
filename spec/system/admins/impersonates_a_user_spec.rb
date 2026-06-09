@@ -3,6 +3,8 @@
 require "rails_helper"
 
 RSpec.describe "Admin impersonates a user", :default_creates, :js do
+  let(:school_group_admin) { create(:school_group_admin) }
+
   shared_examples "an impersonator" do
     context "when impersonating a student" do
       let!(:student) { create(:student, school: school) }

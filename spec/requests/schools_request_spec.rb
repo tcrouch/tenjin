@@ -3,6 +3,8 @@
 require "rails_helper"
 
 RSpec.describe "schools controller", :default_creates do
+  let(:school_group_admin) { create(:school_group_admin) }
+
   describe "GET /schools/:id" do
     before do
       sign_in admin

@@ -4,11 +4,12 @@ require "rails_helper"
 
 RSpec.describe "Employee views a user record", :default_creates, :js do
   context "when visiting a user record" do
+    let!(:student_enrollment) { create(:enrollment, user: student, classroom: classroom) }
+    let!(:teacher_enrollment) { create(:enrollment, user: teacher, classroom: classroom) }
+    let!(:homework) { create(:homework, classroom: classroom, topic: topic) }
+
     before do
       sign_in teacher
-      create(:enrollment, user: student, classroom: classroom)
-      create(:enrollment, user: teacher, classroom: classroom)
-      homework
       visit(user_path(student))
     end
 
@@ -46,6 +47,7 @@ RSpec.describe "Employee views a user record", :default_creates, :js do
     end
 
     context "when resetting passwords" do
+      let(:new_password) { FFaker::Internet.password }
       let(:different_employee) { create(:teacher, school: school) }
 
       it "resets a student password" do

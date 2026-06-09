@@ -4,6 +4,7 @@ require "rails_helper"
 
 RSpec.describe "Super manages subjects", :default_creates, :js do
   let!(:quiz_subject) { create(:subject) }
+  let(:question) { create(:question, topic: topic) }
 
   before do
     sign_in super_admin

@@ -3,6 +3,7 @@
 require "rails_helper"
 
 RSpec.describe "User views an updating leaderboard", :default_creates, :js do
+  let(:second_school) { create(:school, school_group: school.school_group) }
   let(:new_entry) { create(:topic_score, topic: topic, school: school, score: 11) }
   let!(:student_topic_score) { create(:topic_score, user: student, score: 10, topic: topic) }
   let!(:one_to_nine) do
