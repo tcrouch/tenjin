@@ -10,21 +10,12 @@ Bundler.require(*Rails.groups)
 
 module Csquiz
   class Application < Rails::Application
-    # Initialize configuration defaults for originally generated Rails version.
-    config.load_defaults 6.1
-    config.action_view.form_with_generates_remote_forms = false
-    config.action_dispatch.cookies_serializer = :json
+    config.load_defaults 7.0
 
-    # Configuration for the application, engines, and railties goes here.
-    #
-    # These settings can be overridden in specific environments using the files
-    # in config/environments, which are processed later.
-    #
-    # config.time_zone = "Central Time (US & Canada)"
-    # config.eager_load_paths << Rails.root.join("extras")
+    config.active_storage.variant_processor = :mini_magick
+    config.active_support.disable_to_s_conversion = true
 
     config.action_mailer.delivery_method = :ses
-
     config.action_mailer.asset_host = ENV["ASSET_HOST"]
   end
 end
