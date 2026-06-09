@@ -14,6 +14,7 @@ module Csquiz
 
     config.active_storage.variant_processor = :mini_magick
     config.active_support.disable_to_s_conversion = true
+    config.active_support.cache_format_version = 7.0
 
     config.action_mailer.delivery_method = :ses
     config.action_mailer.asset_host = ENV["ASSET_HOST"]
