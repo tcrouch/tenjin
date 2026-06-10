@@ -23,7 +23,10 @@ commands:
           keys:
             - tenjin-bundle-{{ arch }}-{{ checksum "Gemfile.lock" }}
             - tenjin-bundle-{{ arch }}-
-      - run: bundle install --jobs=4 --retry=3 --clean --path vendor/bundle
+      - run: |
+          bundle config set --local path vendor/bundle
+          bundle config set --local clean true
+          bundle install --jobs=4 --retry=3
       - node/install:
           node-version: "22.21.1"
       - save_cache:
