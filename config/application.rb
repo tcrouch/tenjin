@@ -11,10 +11,10 @@ Bundler.require(*Rails.groups)
 module Csquiz
   class Application < Rails::Application
     # Initialize configuration defaults for originally generated Rails version.
-    config.load_defaults 7.1
+    config.load_defaults 7.2
 
     config.active_storage.variant_processor = :mini_magick
-    config.active_support.cache_format_version = 7.1
+    config.yjit = false
 
     config.autoload_lib(ignore: %w[assets tasks gem_ext])
 
