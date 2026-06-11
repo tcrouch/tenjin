@@ -9,6 +9,8 @@ ruby "~> 3.4.9"
 gem "dotenv", groups: [:development, :test]
 gem "recipient_interceptor"
 
+gem "csv"
+
 gem "rails", "~> 7.2.0"
 gem "image_processing"
 
