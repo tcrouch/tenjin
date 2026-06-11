@@ -16,7 +16,7 @@ module Csquiz
     config.active_storage.variant_processor = :mini_magick
     config.active_support.cache_format_version = 7.1
 
-    config.autoload_lib(ignore: %w[assets tasks])
+    config.autoload_lib(ignore: %w[assets tasks gem_ext])
 
     # Rails 7.1: do not add autoloaded paths into $LOAD_PATH.
     config.add_autoload_paths_to_load_path = false
