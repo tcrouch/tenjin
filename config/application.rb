@@ -18,9 +18,6 @@ module Csquiz
 
     config.autoload_lib(ignore: %w[assets tasks gem_ext])
 
-    # Rails 7.1: do not add autoloaded paths into $LOAD_PATH.
-    config.add_autoload_paths_to_load_path = false
-
     config.action_mailer.delivery_method = :ses
     config.action_mailer.asset_host = ENV["ASSET_HOST"]
   end
