@@ -2,17 +2,17 @@
 
 require "rails_helper"
 
-RSpec.describe CustomisationPolicy do
-  subject(:policy) { described_class.new(admin, Customisation.new) }
+RSpec.describe System::CustomisationPolicy do
+  subject(:policy) { described_class.new(actor, Customisation.new) }
 
   shared_examples "permitted only for super admins" do |action|
     context "as a super admin" do
-      let(:admin) { build_stubbed(:super_admin) }
+      let(:actor) { build_stubbed(:super_admin) }
       it { is_expected.to public_send(:"be_#{action}") }
     end
 
     context "as a school group admin" do
-      let(:admin) { build_stubbed(:school_group_admin) }
+      let(:actor) { build_stubbed(:school_group_admin) }
       it { is_expected.not_to public_send(:"be_#{action}") }
     end
   end
@@ -42,17 +42,17 @@ RSpec.describe CustomisationPolicy do
   end
 
   describe "Scope" do
-    subject(:resolved) { described_class::Scope.new(admin, Customisation).resolve }
+    subject(:resolved) { described_class::Scope.new(actor, Customisation).resolve }
 
     let!(:customisation) { create(:customisation) }
 
     context "as a super admin" do
-      let(:admin) { build_stubbed(:super_admin) }
+      let(:actor) { build_stubbed(:super_admin) }
       it { is_expected.to include(customisation) }
     end
 
     context "as a school group admin" do
-      let(:admin) { build_stubbed(:school_group_admin) }
+      let(:actor) { build_stubbed(:school_group_admin) }
       it { is_expected.to be_nil }
     end
   end

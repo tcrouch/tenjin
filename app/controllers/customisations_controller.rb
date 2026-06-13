@@ -5,22 +5,25 @@ class CustomisationsController < ApplicationController
   before_action :authenticate_admin!, only: %i[index new edit create update]
 
   def index
-    authorize current_admin, policy_class: CustomisationPolicy
-    @customisations = policy_scope(Customisation).where(retired: false).with_attached_image
-    @retired_customisations = policy_scope(Customisation).where(retired: true).with_attached_image
+    authorize current_admin, policy_class: System::CustomisationPolicy
+    @customisations = policy_scope([:system, Customisation]).where(retired: false).with_attached_image
+    @retired_customisations = policy_scope([:system, Customisation]).where(retired: true).with_attached_image
   end
 
   def new
-    @customisation = authorize Customisation.new(purchasable: false, retired: false)
+    @customisation = Customisation.new(purchasable: false, retired: false)
+    authorize [:system, @customisation]
     render :edit
   end
 
   def edit
-    @customisation = authorize find_customisation
+    @customisation = find_customisation
+    authorize [:system, @customisation]
   end
 
   def create
-    @customisation = authorize Customisation.new(customisation_params)
+    @customisation = Customisation.new(customisation_params)
+    authorize [:system, @customisation]
 
     if @customisation.save
       redirect_to customisations_path, notice: "Created new customisation #{@customisation.name}"
@@ -30,7 +33,8 @@ class CustomisationsController < ApplicationController
   end
 
   def update
-    customisation = authorize find_customisation
+    customisation = find_customisation
+    authorize [:system, customisation]
     customisation.update(customisation_params)
     redirect_to customisations_path
   end
