@@ -15,6 +15,6 @@ class Admins::InvitationsController < Devise::InvitationsController
   end
 
   def after_accept_path_for(_resource)
-    subjects_path
+    system_subjects_path
   end
 end

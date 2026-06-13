@@ -6,6 +6,7 @@ Rails.application.routes.draw do
 
   namespace :system do
     resources :school_groups
+    resources :subjects
   end
 
   resources :quizzes
@@ -35,7 +36,6 @@ Rails.application.routes.draw do
   end
   resources :answers
   resources :topics
-  resources :subjects
   resources :homeworks
   resources :users, only: %i[show index update] do
     member do

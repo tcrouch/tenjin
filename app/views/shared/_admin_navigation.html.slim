@@ -14,8 +14,8 @@ nav#navbar-main.navbar.navbar-expand-sm.navbar-dark.justify-content-between.bg-d
           a.nav-link href=schools_path Schools
         li.nav-item class=('active' if current_page?(show_stats_schools_path))
           a.nav-link href=show_stats_schools_path Statistics
-        li.nav-item class=('active' if request.path.start_with?(subjects_path))
-          a.nav-link href=subjects_path Subjects
+        li.nav-item class=('active' if request.path.start_with?(system_subjects_path))
+          a.nav-link href=system_subjects_path Subjects
         - if current_admin.super?
           li.nav-item class=('active' if request.path.start_with?(customisations_path))
             a.nav-link href=customisations_path Customisations
