@@ -14,6 +14,17 @@ Rails.application.routes.draw do
         post :reset_year
       end
     end
+    resources :users, only: [] do
+      collection do
+        get :manage_roles
+      end
+      member do
+        patch :set_role
+        delete :remove_role
+        patch :update_email
+        post :send_welcome_email
+      end
+    end
   end
 
   resources :quizzes
@@ -46,15 +57,8 @@ Rails.application.routes.draw do
   resources :homeworks
   resources :users, only: %i[show index update] do
     member do
-      patch "set_role"
       patch "reset_password"
-      patch "update_email"
-      post "send_welcome_email"
-      delete "remove_role"
       delete "unlink_oauth_account"
-    end
-    collection do
-      get "manage_roles"
     end
   end
   resources :flagged_questions, only: [:create]

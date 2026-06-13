@@ -43,7 +43,7 @@ section.page-section.pt-2#Users
                     form: "form-#{e.id}",
                     class: 'form-select'
                   td = button_to 'Add Role',
-                    set_role_user_path(e.id),
+                    set_role_system_user_path(e.id),
                     id: "add-role-#{e.id}",
                     class: 'btn btn-primary add-role-button',
                     form: { id: "form-#{e.id}", data: { turbo: true } },

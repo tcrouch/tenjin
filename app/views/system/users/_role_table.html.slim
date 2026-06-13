@@ -25,7 +25,7 @@ h3.h3 =role.humanize
                 class: 'form-select',
                 form: "form-#{role}-#{r.id}"
           td = button_to 'Remove',
-            remove_role_user_path(id: r.id),
+            remove_role_system_user_path(id: r.id),
             class: 'btn btn-danger',
             method: :delete,
             params: {user: { role: role} },

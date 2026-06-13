@@ -15,7 +15,7 @@ RSpec.describe "schools controller", :default_creates do
       let(:admin) { super_admin }
 
       it "links to role management for the school" do
-        expect(response.body).to include(manage_roles_users_path(school: school))
+        expect(response.body).to include(manage_roles_system_users_path(school: school))
       end
     end
 
@@ -23,7 +23,7 @@ RSpec.describe "schools controller", :default_creates do
       let(:admin) { school_group_admin }
 
       it "does not link to role management" do
-        expect(response.body).not_to include(manage_roles_users_path(school: school))
+        expect(response.body).not_to include(manage_roles_system_users_path(school: school))
       end
     end
   end
