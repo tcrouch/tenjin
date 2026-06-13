@@ -6,7 +6,7 @@ class SchoolsController < ApplicationController
 
   def index
     @schools = policy_scope(School).order(:name)
-    @school_groups = policy_scope(SchoolGroup).order(:name)
+    @school_groups = policy_scope([:system, SchoolGroup]).order(:name)
     school_ids = @schools.pluck(:id)
     @student_counts = User.where(school_id: school_ids, role: :student).group(:school_id).count
     @weekly_questions = UserStatistic.joins(:user)

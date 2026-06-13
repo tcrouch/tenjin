@@ -19,8 +19,8 @@ nav#navbar-main.navbar.navbar-expand-sm.navbar-dark.justify-content-between.bg-d
         - if current_admin.super?
           li.nav-item class=('active' if request.path.start_with?(customisations_path))
             a.nav-link href=customisations_path Customisations
-          li.nav-item class=('active' if request.path.start_with?(school_groups_path))
-            a.nav-link href=school_groups_path School Groups
+          li.nav-item class=('active' if request.path.start_with?(system_school_groups_path))
+            a.nav-link href=system_school_groups_path School Groups
           li.nav-item class=('active' if current_page?(manage_roles_users_path))
             a.nav-link href=manage_roles_users_path Roles
           li.nav-item class=('active' if current_page?(admin_path(current_admin)))

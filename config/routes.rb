@@ -5,7 +5,7 @@ Rails.application.routes.draw do
   devise_for :users, controllers: {omniauth_callbacks: "users/omniauth_callbacks"}
 
   namespace :system do
-    # Resources will be added here phase by phase.
+    resources :school_groups
   end
 
   resources :quizzes
@@ -58,7 +58,6 @@ Rails.application.routes.draw do
   end
 
   resources :flagged_questions, only: [:create]
-  resources :school_groups
   resources :lessons
   resources :customisations do
     collection do
