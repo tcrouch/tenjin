@@ -8,7 +8,7 @@ RSpec.describe "customisations", :default_creates do
   describe "admin navbar" do
     before do
       sign_in admin
-      get schools_path
+      get system_schools_path
     end
 
     context "as a super admin" do

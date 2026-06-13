@@ -28,9 +28,9 @@ RSpec.describe "System::Admins", :default_creates, type: :request do
       }.to have_enqueued_job(ResetYearJob)
     end
 
-    it "redirects to schools_path" do
+    it "redirects to system_schools_path" do
       post reset_year_system_admin_path(super_admin)
-      expect(response).to redirect_to(schools_path)
+      expect(response).to redirect_to(system_schools_path)
     end
   end
 end

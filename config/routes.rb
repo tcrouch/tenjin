@@ -8,6 +8,14 @@ Rails.application.routes.draw do
     resources :school_groups
     resources :subjects
     resources :customisations, except: %i[show destroy]
+    resources :schools do
+      collection do
+        get :stats
+      end
+      member do
+        patch :sync
+      end
+    end
     resources :admins, only: [:show] do
       member do
         post :become
@@ -28,13 +36,10 @@ Rails.application.routes.draw do
   end
 
   resources :quizzes
-  resources :schools do
-    collection do
-      get "show_stats"
-    end
+  resources :schools, only: [] do
     member do
-      patch "reset_all_passwords"
-      patch "sync"
+      patch :sync
+      patch :reset_all_passwords
     end
   end
   resources :leaderboard, only: %i[show index]

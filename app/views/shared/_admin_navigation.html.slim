@@ -1,6 +1,6 @@
 nav#navbar-main.navbar.navbar-expand-sm.navbar-dark.justify-content-between.bg-dark
   .container-fluid
-    a.navbar-brand href=schools_path
+    a.navbar-brand href=system_schools_path
       i.fas.fa-vihara.fa-2x.text-white
       h1#branding-text.navbar-text.text-uppercase.text-white.d-inline-block
         | Tenjin
@@ -10,10 +10,10 @@ nav#navbar-main.navbar.navbar-expand-sm.navbar-dark.justify-content-between.bg-d
 
     div#navbarSupportedContent.collapse.navbar-collapse
       ul.navbar-nav.me-auto
-        li.nav-item class=('active' if request.path.start_with?(schools_path))
-          a.nav-link href=schools_path Schools
-        li.nav-item class=('active' if current_page?(show_stats_schools_path))
-          a.nav-link href=show_stats_schools_path Statistics
+        li.nav-item class=('active' if request.path.start_with?(system_schools_path))
+          a.nav-link href=system_schools_path Schools
+        li.nav-item class=('active' if current_page?(stats_system_schools_path))
+          a.nav-link href=stats_system_schools_path Statistics
         li.nav-item class=('active' if request.path.start_with?(system_subjects_path))
           a.nav-link href=system_subjects_path Subjects
         - if current_admin.super?

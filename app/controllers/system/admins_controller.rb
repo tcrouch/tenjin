@@ -19,7 +19,7 @@ module System
       authorize current_admin
       ResetYearJob.perform_later
       flash[:alert] = "Reset Year Data"
-      redirect_to schools_path
+      redirect_to system_schools_path
     end
 
     private
