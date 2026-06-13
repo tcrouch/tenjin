@@ -27,7 +27,7 @@ class UsersController < ApplicationController
     role = set_user_role_params[:role]
     return if role.blank?
 
-    user = authorize find_user
+    user = authorize find_user, :set_role?, policy_class: System::UserPolicy
 
     User::ChangeUserRole.call(user, role, :add, set_user_role_params[:subject])
     redirect_to manage_roles_users_path(school: user.school)
@@ -37,7 +37,7 @@ class UsersController < ApplicationController
     role = set_user_role_params[:role]
     return if role.blank?
 
-    user = authorize find_user
+    user = authorize find_user, :remove_role?, policy_class: System::UserPolicy
 
     User::ChangeUserRole.call(user, role, :remove, set_user_role_params[:subject])
 
@@ -82,7 +82,7 @@ class UsersController < ApplicationController
   end
 
   def update_email
-    @user = authorize find_user
+    @user = authorize find_user, :update_email?, policy_class: System::UserPolicy
     @user.email = update_email_params[:email]
     @user.save
 
@@ -92,7 +92,7 @@ class UsersController < ApplicationController
   end
 
   def send_welcome_email
-    @user = authorize find_user
+    @user = authorize find_user, :send_welcome_email?, policy_class: System::UserPolicy
     flash.now[:notice] = "Setup email sent to #{@user.forename} #{@user.surname} (#{@user.email})"
 
     UserMailer.with(user: @user).setup_email.deliver_later

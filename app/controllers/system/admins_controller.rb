@@ -4,7 +4,7 @@ module System
   class AdminsController < BaseController
     def become
       user = User.find(become_admin_params)
-      authorize user, policy_class: UserPolicy
+      authorize user
 
       sign_in(:user, user)
       sign_out current_admin
