@@ -60,7 +60,7 @@ class UsersController < ApplicationController
   end
 
   def manage_roles
-    authorize current_admin
+    authorize current_admin, policy_class: System::AdminPolicy
     if manage_roles_params[:school].present?
       @school = School.find(manage_roles_params[:school])
       @employees = User.where(school: @school, role: "employee")

@@ -18,7 +18,7 @@ class SchoolsController < ApplicationController
   end
 
   def show_stats
-    authorize current_admin
+    authorize current_admin, policy_class: System::AdminPolicy
     @school_statistics = School::CompileSchoolStatistics.call
     @customisation_statistics = Customisation.select(:name, :customisation_type, "COUNT(customisations.id)")
       .left_joins(:customisation_unlocks)

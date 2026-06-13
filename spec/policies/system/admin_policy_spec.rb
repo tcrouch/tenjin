@@ -2,7 +2,7 @@
 
 require "rails_helper"
 
-RSpec.describe AdminPolicy do
+RSpec.describe System::AdminPolicy do
   subject(:policy) { described_class.new(admin, admin) }
 
   describe "#show?" do

@@ -13,11 +13,11 @@ class AdminsController < ApplicationController
   end
 
   def show
-    authorize current_admin
+    authorize current_admin, policy_class: System::AdminPolicy
   end
 
   def reset_year
-    authorize current_admin
+    authorize current_admin, policy_class: System::AdminPolicy
     ResetYearJob.perform_later
     flash[:alert] = "Reset Year Data"
     redirect_to schools_path

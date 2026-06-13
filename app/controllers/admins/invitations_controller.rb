@@ -4,7 +4,7 @@ class Admins::InvitationsController < Devise::InvitationsController
   before_action :authenticate_admin!
 
   def new
-    authorize current_admin
+    authorize current_admin, policy_class: System::AdminPolicy
     super
   end
 
