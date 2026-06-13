@@ -5,7 +5,7 @@ class SchoolsController < ApplicationController
   before_action :authenticate_user_or_admin!, only: :sync
 
   def index
-    @schools = policy_scope(School).order(:name)
+    @schools = policy_scope([:system, School]).order(:name)
     @school_groups = policy_scope([:system, SchoolGroup]).order(:name)
     school_ids = @schools.pluck(:id)
     @student_counts = User.where(school_id: school_ids, role: :student).group(:school_id).count
@@ -28,7 +28,7 @@ class SchoolsController < ApplicationController
   end
 
   def show
-    @school = authorize find_school
+    @school = authorize find_school, policy_class: System::SchoolPolicy
     @school_statistics = School::CompileSchoolStatistics.call(@school)
     @school_admins = User.where(school: @school).with_role(:school_admin)
     @users = User.where(school: @school)
@@ -36,12 +36,12 @@ class SchoolsController < ApplicationController
 
   def new
     @school = School.new
-    authorize @school
+    authorize @school, policy_class: System::SchoolPolicy
   end
 
   def create
     @school = School::AddSchool.call(school_params)
-    authorize @school
+    authorize @school, policy_class: System::SchoolPolicy
     if @school.persisted?
       redirect_to @school
       SyncSchoolJob.perform_later @school
@@ -51,13 +51,13 @@ class SchoolsController < ApplicationController
   end
 
   def update
-    school = authorize find_school
+    school = authorize find_school, policy_class: System::SchoolPolicy
     school.update(update_school_params)
     head :no_content
   end
 
   def sync
-    school = authorize find_school
+    school = authorize find_school, policy_class: admin_signed_in? ? System::SchoolPolicy : SchoolPolicy
     school.update_attribute(:sync_status, "queued")
     SyncSchoolJob.perform_later school
     head :no_content
