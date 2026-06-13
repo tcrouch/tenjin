@@ -7,6 +7,12 @@ Rails.application.routes.draw do
   namespace :system do
     resources :school_groups
     resources :subjects
+    resources :admins, only: [:show] do
+      member do
+        post :become
+        post :reset_year
+      end
+    end
   end
 
   resources :quizzes
@@ -50,13 +56,6 @@ Rails.application.routes.draw do
       get "manage_roles"
     end
   end
-  resources :admins, only: [:show] do
-    member do
-      post "become"
-      post "reset_year"
-    end
-  end
-
   resources :flagged_questions, only: [:create]
   resources :lessons
   resources :customisations do
