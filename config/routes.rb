@@ -4,6 +4,10 @@ Rails.application.routes.draw do
   devise_for :admins, controllers: {invitations: "admins/invitations"}
   devise_for :users, controllers: {omniauth_callbacks: "users/omniauth_callbacks"}
 
+  namespace :system do
+    # Resources will be added here phase by phase.
+  end
+
   resources :quizzes
   resources :schools do
     collection do
