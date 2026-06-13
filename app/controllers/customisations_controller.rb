@@ -1,43 +1,7 @@
 # frozen_string_literal: true
 
 class CustomisationsController < ApplicationController
-  before_action :authenticate_user!, only: %i[show_available buy]
-  before_action :authenticate_admin!, only: %i[index new edit create update]
-
-  def index
-    authorize current_admin, policy_class: System::CustomisationPolicy
-    @customisations = policy_scope([:system, Customisation]).where(retired: false).with_attached_image
-    @retired_customisations = policy_scope([:system, Customisation]).where(retired: true).with_attached_image
-  end
-
-  def new
-    @customisation = Customisation.new(purchasable: false, retired: false)
-    authorize [:system, @customisation]
-    render :edit
-  end
-
-  def edit
-    @customisation = find_customisation
-    authorize [:system, @customisation]
-  end
-
-  def create
-    @customisation = Customisation.new(customisation_params)
-    authorize [:system, @customisation]
-
-    if @customisation.save
-      redirect_to customisations_path, notice: "Created new customisation #{@customisation.name}"
-    else
-      render :edit
-    end
-  end
-
-  def update
-    customisation = find_customisation
-    authorize [:system, customisation]
-    customisation.update(customisation_params)
-    redirect_to customisations_path
-  end
+  before_action :authenticate_user!
 
   def show_available
     authorize current_user, :show? # make it so that it checks if the school is permitted?
@@ -60,15 +24,7 @@ class CustomisationsController < ApplicationController
 
   private
 
-  def find_customisation
-    Customisation.find(params[:id])
-  end
-
   def result_message(customisation, result)
     result.success? ? "Congratulations! You have bought #{customisation.name}" : result.errors
-  end
-
-  def customisation_params
-    params.require(:customisation).permit(:name, :value, :purchasable, :sticky, :image, :customisation_type, :cost, :retired)
   end
 end

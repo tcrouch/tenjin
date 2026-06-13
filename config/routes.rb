@@ -7,6 +7,7 @@ Rails.application.routes.draw do
   namespace :system do
     resources :school_groups
     resources :subjects
+    resources :customisations, except: %i[show destroy]
     resources :admins, only: [:show] do
       member do
         post :become
@@ -58,7 +59,7 @@ Rails.application.routes.draw do
   end
   resources :flagged_questions, only: [:create]
   resources :lessons
-  resources :customisations do
+  resources :customisations, only: [] do
     collection do
       get "show_available"
     end
