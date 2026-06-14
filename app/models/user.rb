@@ -61,11 +61,11 @@ class User < ApplicationRecord
   end
 
   def self.save_oauth_user_details(auth, current_user)
-    return if auth["info"].blank?
+    return if auth.info.blank?
 
-    current_user.oauth_uid = auth["uid"]
-    current_user.oauth_provider = auth["provider"]
-    current_user.oauth_email = auth["info"]["email"]
+    current_user.oauth_uid = auth.uid
+    current_user.oauth_provider = auth.provider
+    current_user.oauth_email = auth.info.email
     current_user.save!
     current_user
   end
