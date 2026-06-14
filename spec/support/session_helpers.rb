@@ -7,8 +7,7 @@ module SessionHelpers
     expect(page).to have_content("START A QUIZ")
   end
 
-  def stub_omniauth
-    OmniAuth.config.logger = Rails.logger
+  def stub_wonde_omniauth
     OmniAuth.config.test_mode = true
     OmniAuth.config.mock_auth[:wonde] =
       OmniAuth::AuthHash.new(
