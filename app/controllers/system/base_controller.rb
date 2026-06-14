@@ -22,5 +22,9 @@ module System
     def policy(record)
       super([:system, record])
     end
+
+    def pundit_user
+      current_admin
+    end
   end
 end

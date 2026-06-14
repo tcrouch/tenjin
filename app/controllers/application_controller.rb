@@ -38,6 +38,6 @@ class ApplicationController < ActionController::Base
   end
 
   def pundit_user
-    admin_signed_in? ? current_admin : current_user
+    current_user
   end
 end
