@@ -90,8 +90,6 @@ group :development do
   gem "listen", "~> 3.3"
 
   # Debugging
-  gem "better_errors"
-  gem "binding_of_caller"
   gem "web-console", ">= 3.3.0"
   gem "debug", platforms: %i[mri windows], require: "debug/prelude"
 
@@ -100,6 +98,10 @@ group :development do
 
   # Hunt for n+1
   gem "bullet"
+
+  # Security scanning
+  gem "brakeman", require: false
+  gem "bundler-audit", require: false
 end
 
 group :test do
@@ -109,6 +111,9 @@ group :test do
 
   gem "simplecov", require: false
   gem "rspec_junit_formatter"
+
+  # Readable RSpec diffs
+  gem "super_diff"
 end
 
 # Windows does not include zoneinfo files, so bundle the tzinfo-data gem

@@ -12,6 +12,7 @@ require "rspec/rails"
 require "capybara/rails"
 require "webmock/rspec"
 require "vcr"
+require "super_diff/rspec-rails"
 
 WebMock.disable_net_connect!(allow_localhost: true)
 
