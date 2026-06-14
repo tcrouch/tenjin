@@ -88,15 +88,12 @@ end
 
 group :development do
   gem "listen", "~> 3.3"
-  gem "stringio"
 
   # Debugging
   gem "better_errors"
   gem "binding_of_caller"
   gem "web-console", ">= 3.3.0"
-
-  # Pry for debugging goodness
-  gem "pry-rails"
+  gem "debug", platforms: %i[mri windows], require: "debug/prelude"
 
   # Log messages sent to/from server
   gem "httplog"
@@ -107,7 +104,6 @@ end
 
 group :test do
   gem "capybara"
-  gem "rspec-retry"
   gem "cuprite", require: "capybara/cuprite"
   gem "shoulda-matchers", "~> 7.0"
 
