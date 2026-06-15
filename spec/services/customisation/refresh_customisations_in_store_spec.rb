@@ -3,6 +3,11 @@
 require "rails_helper"
 
 RSpec.describe Customisation::RefreshCustomisationsInStore, :default_creates do
+  it "returns a success result" do
+    result = described_class.call
+    expect(result).to be_success
+  end
+
   context "with retired customisations" do
     let!(:retired) { create(:dashboard_customisation, cost: 5, retired: true) }
 
