@@ -25,6 +25,11 @@ class CustomisationsController < ApplicationController
   private
 
   def result_message(customisation, result)
-    result.success? ? "Congratulations! You have bought #{customisation.name}" : result.errors
+    case result
+    in {success: true}
+      "Congratulations! You have bought #{customisation.name}"
+    in {success: false, error:}
+      error
+    end
   end
 end

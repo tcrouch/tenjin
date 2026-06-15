@@ -64,12 +64,30 @@ RSpec.describe Customisation::BuyCustomisation, :default_creates do
   context "when the student does not have enough points" do
     let(:student) { create(:student, school: school, challenge_points: 3) }
 
-    it "returns an insufficient points error" do
-      expect(described_class.call(student, customisation).errors).to eq("You do not have enough points")
+    it "returns a failure result with the error message" do
+      result = described_class.call(student, customisation)
+      expect(result).to be_failure
+      expect(result.error).to eq "You do not have enough points"
     end
 
     it "does not create a customisation unlock" do
       expect { described_class.call(student, customisation) }.not_to change(CustomisationUnlock, :count)
+    end
+  end
+
+  context "when the customisation is nil" do
+    it "returns a failure result" do
+      result = described_class.call(student, nil)
+      expect(result).to be_failure
+      expect(result.error).to eq "Customisation not found"
+    end
+  end
+
+  context "when the user is nil" do
+    it "returns a failure result" do
+      result = described_class.call(nil, customisation)
+      expect(result).to be_failure
+      expect(result.error).to eq "User not found"
     end
   end
 
