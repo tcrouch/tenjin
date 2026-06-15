@@ -61,6 +61,26 @@ RSpec.describe Leaderboard::ResetWeeklyLeaderboard, :default_creates do
     end
   end
 
+  context "when checking query efficiency" do
+    it "builds each (school, subject) leaderboard only once", :aggregate_failures do
+      school = create(:school)
+      subject = create(:subject, name: "Maths")
+      create_list(:classroom, 3, school: school, subject: subject)
+
+      call_count = 0
+      allow(Leaderboard::Query).to receive(:new).and_wrap_original do |original, *args|
+        call_count += 1
+        original.call(*args)
+      end
+
+      described_class.call
+
+      # Before fix: 3 (classrooms) + 1 (awards) = 4 calls. After fix: 1 per school×subject pair.
+      max_expected = Subject.count * School.count
+      expect(call_count).to be <= max_expected
+    end
+  end
+
   context "when awarding classroom winners" do
     let(:student_enrollment) { create(:enrollment, classroom: classroom, user: student) }
     let(:previous_winner) { create(:classroom_winner, classroom: classroom, user: student) }
