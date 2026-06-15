@@ -44,7 +44,7 @@ gem "shakapacker", "= 10.1.0"
 gem "turbo-rails"
 
 # User authentication
-gem "devise"
+gem "devise", "~> 5.0"
 gem "devise_invitable"
 gem "omniauth"
 gem "omniauth-oauth2"
