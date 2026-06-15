@@ -2,10 +2,14 @@
 
 class Customisation::RefreshCustomisationsInStore < ApplicationCommand
   def call
-    disable_all_customisations
-    make_six_purchasable("dashboard_style")
-    make_six_purchasable("leaderboard_icon")
+    ApplicationRecord.transaction do
+      disable_all_customisations
+      make_six_purchasable("dashboard_style")
+      make_six_purchasable("leaderboard_icon")
+    end
     success
+  rescue ActiveRecord::ActiveRecordError => e
+    failure(e.message)
   end
 
   private
