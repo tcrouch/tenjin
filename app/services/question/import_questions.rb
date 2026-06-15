@@ -9,29 +9,33 @@ class Question::ImportQuestions < ApplicationCommand
   end
 
   def call
-    return failure(@error) unless import_json_questions
-
-    success(number_questions_imported: @questions_to_import.count)
+    if (error = import_json_questions)
+      failure(error)
+    else
+      success(number_questions_imported: @questions_to_import.count)
+    end
   end
 
   private
 
+  # Returns nil on success, an error string on failure.
   def import_json_questions
     @json.each do |question|
       @question = question
-      return false unless validate_question
-      return false unless build_question
+      error = validate_question || build_question
+      return error if error
     end
 
     @questions_to_import.each(&:save)
     @topic.update_attribute(:name, @name)
-    true
+    nil
   end
 
   def build_question
     @question["answers_attributes"] = @question["answers"]
     @question = @question.except("answers")
-    return false unless find_or_create_lesson
+    lesson_error = find_or_create_lesson
+    return lesson_error if lesson_error
 
     question_to_import = Question.new(@question)
     question_to_import.topic = @topic
@@ -39,24 +43,26 @@ class Question::ImportQuestions < ApplicationCommand
 
     if question_to_import.valid?
       @questions_to_import.push(question_to_import)
-    else
-      record_error(question_to_import.errors.full_messages.join(", "))
+      return nil
     end
+
+    format_error(question_to_import.errors.full_messages.join(", "))
   end
 
   def find_or_create_lesson
     @lesson = nil
-    return true if @question["lesson"].nil?
+    return nil if @question["lesson"].nil?
 
     @lesson = Lesson.find_or_create_by(title: @question["lesson"], topic: @topic)
-    return record_error(@lesson.errors.full_messages.join(", ")) unless @lesson.valid?
+    return format_error(@lesson.errors.full_messages.join(", ")) unless @lesson.valid?
 
     @question = @question.except("lesson")
+    nil
   end
 
   def validate_question
     unless %w[question_type answers question_text].all? { |s| @question.key?(s) }
-      return record_error("Question missing key")
+      return format_error("Question missing key")
     end
 
     validate_answers
@@ -64,17 +70,16 @@ class Question::ImportQuestions < ApplicationCommand
 
   def validate_answers
     answers = @question["answers"]
-    return record_error("Answers for question not in array") unless answers.respond_to?(:each)
+    return format_error("Answers for question not in array") unless answers.respond_to?(:each)
 
     answers.each do |a|
-      return record_error("Text key missing for answer") unless a.key?("text")
+      return format_error("Text key missing for answer") unless a.key?("text")
     end
 
-    true
+    nil
   end
 
-  def record_error(error)
-    @error = "#{error}: #{@question}"
-    false
+  def format_error(message)
+    "#{message}: #{@question}"
   end
 end
