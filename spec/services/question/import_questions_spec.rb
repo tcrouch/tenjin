@@ -15,21 +15,21 @@ RSpec.describe Question::ImportQuestions, :default_creates do
   end
 
   it "imports all questions successfully" do
-    expect(import_multiple_lessons.success?).to be true
+    expect(import_multiple_lessons).to be_success
   end
 
   it "imports boolean questions" do
     result = described_class.call(JSON.generate([build(:question_import_hash_boolean)]), topic, topic_filename)
-    expect(result.success?).to be true
+    expect(result).to be_success
   end
 
   it "imports questions with no lesson information" do
     result = described_class.call(JSON.generate(no_lessons), topic, topic_filename)
-    expect(result.success?).to be true
+    expect(result).to be_success
   end
 
   it "reports the number of questions imported" do
-    expect(import_multiple_lessons.number_questions_imported).to eq(multiple_lessons.length)
+    expect(import_multiple_lessons.payload[:number_questions_imported]).to eq(multiple_lessons.length)
   end
 
   it "saves questions to the database" do
@@ -53,7 +53,11 @@ RSpec.describe Question::ImportQuestions, :default_creates do
     before { multiple_lessons[0] = multiple_lessons[0].except("question_type") }
 
     it "fails validation" do
-      expect(import_multiple_lessons.success?).to be false
+      expect(import_multiple_lessons).to be_failure
+    end
+
+    it "returns an error message" do
+      expect(import_multiple_lessons.error).to match(/Question missing key/)
     end
   end
 
@@ -61,7 +65,31 @@ RSpec.describe Question::ImportQuestions, :default_creates do
     before { multiple_lessons[0]["question_text"] = "" }
 
     it "fails validation" do
-      expect(import_multiple_lessons.success?).to be false
+      expect(import_multiple_lessons).to be_failure
+    end
+  end
+
+  context "when answers is not an array" do
+    before { multiple_lessons[0]["answers"] = "not an array" }
+
+    it "fails validation" do
+      expect(import_multiple_lessons).to be_failure
+    end
+
+    it "returns an error message" do
+      expect(import_multiple_lessons.error).to match(/Answers for question not in array/)
+    end
+  end
+
+  context "when an answer is missing the text key" do
+    before { multiple_lessons[0]["answers"][0] = multiple_lessons[0]["answers"][0].except("text") }
+
+    it "fails validation" do
+      expect(import_multiple_lessons).to be_failure
+    end
+
+    it "returns an error message" do
+      expect(import_multiple_lessons.error).to match(/Text key missing for answer/)
     end
   end
 

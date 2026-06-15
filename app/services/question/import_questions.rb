@@ -1,21 +1,17 @@
 # frozen_string_literal: true
 
-class Question::ImportQuestions < ApplicationService
+class Question::ImportQuestions < ApplicationCommand
   def initialize(data, topic, filename)
     @json = JSON.parse(data)
-
     @topic = topic
     @questions_to_import = []
-
     @name = filename.rpartition(".").first
   end
 
   def call
-    if import_json_questions
-      OpenStruct.new(success?: true, number_questions_imported: @questions_to_import.count)
-    else
-      OpenStruct.new(success?: false, error: @error)
-    end
+    return failure(@error) unless import_json_questions
+
+    success(number_questions_imported: @questions_to_import.count)
   end
 
   private
@@ -28,7 +24,6 @@ class Question::ImportQuestions < ApplicationService
     end
 
     @questions_to_import.each(&:save)
-
     @topic.update_attribute(:name, @name)
     true
   end
@@ -45,7 +40,7 @@ class Question::ImportQuestions < ApplicationService
     if question_to_import.valid?
       @questions_to_import.push(question_to_import)
     else
-      raise_error(question_to_import.errors.full_messages.join(", "))
+      record_error(question_to_import.errors.full_messages.join(", "))
     end
   end
 
@@ -54,14 +49,14 @@ class Question::ImportQuestions < ApplicationService
     return true if @question["lesson"].nil?
 
     @lesson = Lesson.find_or_create_by(title: @question["lesson"], topic: @topic)
-    return raise_error(@lesson.errors.full_messages.join(", ")) unless @lesson.valid?
+    return record_error(@lesson.errors.full_messages.join(", ")) unless @lesson.valid?
 
     @question = @question.except("lesson")
   end
 
   def validate_question
-    unless %w[question_type answers question_text].all? { |s| @question.key? s }
-      return raise_error("Question missing key")
+    unless %w[question_type answers question_text].all? { |s| @question.key?(s) }
+      return record_error("Question missing key")
     end
 
     validate_answers
@@ -69,17 +64,17 @@ class Question::ImportQuestions < ApplicationService
 
   def validate_answers
     answers = @question["answers"]
-    return raise_error("Answers for question not in array") unless answers.respond_to? :each
+    return record_error("Answers for question not in array") unless answers.respond_to?(:each)
 
     answers.each do |a|
-      return raise_error("Text key missing for answer") unless a.key?("text")
+      return record_error("Text key missing for answer") unless a.key?("text")
     end
 
     true
   end
 
-  def raise_error(error)
-    @error = error + ": #{@question}"
+  def record_error(error)
+    @error = "#{error}: #{@question}"
     false
   end
 end
