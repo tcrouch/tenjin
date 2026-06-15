@@ -37,10 +37,6 @@ class School::Statistics
     ).count
   end
 
-  def [](key)
-    public_send(key)
-  end
-
   private
 
   def school_scope(relation)

@@ -78,13 +78,6 @@ RSpec.describe School::Statistics, :default_creates do
         expect(stats.customisation_unlocks_weekly).to eq 1
       end
     end
-
-    describe "#[]" do
-      it "delegates bracket access to the named method" do
-        create(:user_statistic, user: create(:student, school: school), questions_answered: 4)
-        expect(stats[:asked_questions]).to eq 4
-      end
-    end
   end
 
   describe "without a school scope" do
