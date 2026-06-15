@@ -17,9 +17,8 @@ class Quiz::CreateQuiz < ApplicationCommand
 
     initialise_quiz
 
-    unless quiz_cooldown_expired?
-      return failure({code: :cooldown, seconds_left: @seconds_left})
-    end
+    @seconds_left = @user.seconds_left_on_cooldown
+    return failure({code: :cooldown, seconds_left: @seconds_left}) if @seconds_left.positive?
 
     initialise_questions
     return failure("No questions are available for this topic") if @quiz.questions.empty?
@@ -102,11 +101,6 @@ class Quiz::CreateQuiz < ApplicationCommand
       .includes(:topic)
       .order(Arel.sql("RANDOM()"))
       .take(10)
-  end
-
-  def quiz_cooldown_expired?
-    @seconds_left = @user.seconds_left_on_cooldown
-    @seconds_left <= 0
   end
 
   def check_if_quiz_counts_for_leaderboard
