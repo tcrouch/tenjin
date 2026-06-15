@@ -36,6 +36,12 @@ port ENV.fetch("PORT", 3000)
 #
 workers ENV.fetch("WEB_CONCURRENCY", 2)
 
+# Preload before forking so workers share the Rails boot via copy-on-write,
+# lowering total RSS. Rails 7.1+ re-establishes Active Record connections across
+# forks automatically, so no `on_worker_boot` hook is needed. Disables Puma's
+# in-process phased restart, which we don't use (restarts happen at the platform).
+preload_app!
+
 # Start Barnes to support Heroku runtime metrics.
 #
 before_fork { Barnes.start }
