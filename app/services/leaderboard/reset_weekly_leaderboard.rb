@@ -25,7 +25,7 @@ class Leaderboard::ResetWeeklyLeaderboard < ApplicationService
   end
 
   def build_leaderboard_for_subject(subject_name, school_id)
-    Leaderboard::BuildLeaderboard.call(nil, id: subject_name, school: school_id).sort_by { |s| -s[:score] }
+    Leaderboard::Query.new(nil, id: subject_name, school: school_id).results.sort_by { |s| -s[:score] }
   end
 
   def filter_by_classroom_name(leaderboard, classroom)
