@@ -166,7 +166,7 @@ GEM
       bigdecimal
       rexml
     crass (1.0.6)
-    css_parser (1.17.1)
+    css_parser (1.22.0)
       addressable
     csv (3.3.2)
     cuprite (0.17)
@@ -584,6 +584,7 @@ DEPENDENCIES
   bullet
   bundler-audit
   capybara
+  css_parser (~> 1.22)
   csv
   cuprite
   debug
