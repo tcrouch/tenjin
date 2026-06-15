@@ -57,10 +57,20 @@ class QuizzesController < ApplicationController
       topic: topic_id,
       subject: subject,
       lesson: quiz_params[:lesson_id])
-    result.success? ? authorize(result.quiz) : authorize(current_user, :show?, policy_class: UserPolicy)
-    return fail_quiz_creation(result) unless result.success?
 
-    redirect_to result.quiz
+    case result
+    in {success: true, payload: {quiz:}}
+      authorize(quiz)
+      redirect_to quiz
+    in {success: false, error: {code: :cooldown, seconds_left:}}
+      authorize(current_user, :show?, policy_class: UserPolicy)
+      flash[:alert] = "You need to wait #{seconds_left} seconds to start another quiz"
+      redirect_to dashboard_path
+    in {success: false, error:}
+      authorize(current_user, :show?, policy_class: UserPolicy)
+      flash[:alert] = error
+      redirect_to dashboard_path
+    end
   end
 
   def update
@@ -77,11 +87,6 @@ class QuizzesController < ApplicationController
     elsif question.topic.default_lesson.present?
       question.topic.default_lesson
     end
-  end
-
-  def fail_quiz_creation(result)
-    flash[:alert] = result.errors
-    redirect_to dashboard_path
   end
 
   def select_quiz_topic(subject)

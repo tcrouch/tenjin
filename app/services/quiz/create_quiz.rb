@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 # Creates a Quiz session object and initialises it appropriately
-class Quiz::CreateQuiz < ApplicationService
+class Quiz::CreateQuiz < ApplicationCommand
   def initialize(params)
     @user = params[:user]
     @topic_id = params[:topic]
@@ -13,25 +13,24 @@ class Quiz::CreateQuiz < ApplicationService
   end
 
   def call
-    return OpenStruct.new(success?: false, user: @user, errors: "User not found") if @user.blank?
+    return failure("User not found") if @user.blank?
 
     initialise_quiz
 
     unless quiz_cooldown_expired?
-      return OpenStruct.new(success?: false, cooldown: @seconds_left,
-        errors: "You need to wait #{@seconds_left} seconds to start another quiz")
+      return failure({code: :cooldown, seconds_left: @seconds_left})
     end
 
     initialise_questions
-    return OpenStruct.new(success?: false, errors: "No questions are available for this topic") if @quiz.questions.empty?
+    return failure("No questions are available for this topic") if @quiz.questions.empty?
 
     @quiz.save!
     @user.time_of_last_quiz = Time.current
     @user.save!
-    OpenStruct.new(success?: true, quiz: @quiz, errors: nil)
+    success(quiz: @quiz)
   end
 
-  protected
+  private
 
   def initialise_quiz
     @quiz.user_id = @user.id
