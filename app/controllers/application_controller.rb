@@ -18,7 +18,7 @@ class ApplicationController < ActionController::Base
   end
 
   def after_sign_in_path_for(resource)
-    resource.is_a?(Admin) ? system_schools_path : dashboard_path
+    resource.is_a?(Admin) ? system_root_path : dashboard_path
   end
 
   private

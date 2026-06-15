@@ -5,6 +5,8 @@ Rails.application.routes.draw do
   devise_for :users, controllers: {omniauth_callbacks: "users/omniauth_callbacks"}
 
   namespace :system do
+    root to: "schools#index"
+
     resources :school_groups
     resources :subjects
     resources :customisations, except: %i[show destroy]
