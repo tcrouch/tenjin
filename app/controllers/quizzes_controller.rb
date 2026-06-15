@@ -77,7 +77,13 @@ class QuizzesController < ApplicationController
   def update
     @quiz = authorize find_quiz
     @question = question_for_quiz(@quiz)
-    render(json: Quiz::CheckAnswer.call(quiz: @quiz, question: @question, answer_given: answer_params))
+
+    case Quiz::CheckAnswer.call(quiz: @quiz, question: @question, answer_given: answer_params)
+    in {success: true, payload: Quiz::CheckAnswerOutcome => outcome}
+      render json: Quiz::AnswerOutcomeSerializer.new(outcome)
+    in {success: false, error: :no_answer_provided}
+      render json: {error: "No answer provided"}, status: :unprocessable_entity
+    end
   end
 
   private
