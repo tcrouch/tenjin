@@ -86,7 +86,7 @@ jobs:
           PGUSER: root
           PGHOST: 127.0.0.1
           RAILS_ENV: test
-      - image: cimg/postgres:13.14
+      - image: cimg/postgres:17.10
         environment:
           POSTGRES_USER: root
 
