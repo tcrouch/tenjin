@@ -1,4 +1,6 @@
-section.page-section.text-center.homework-image id="homework" style=render_dashboard_style(@dashboard_style)
+section.page-section.text-center#homework[
+  class=("homework-image" if @dashboard_style&.image&.attached?)
+  style=render_dashboard_style(@dashboard_style)]
   .container
     h1.page-section-header.text-uppercase Homework
     ==render_small_separator
