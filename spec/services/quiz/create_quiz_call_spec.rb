@@ -32,7 +32,7 @@ RSpec.describe Quiz::CreateQuiz, :default_creates do
     end
 
     it "records the time the quiz was started" do
-      result
+      described_class.call(user: student, topic: "Lucky Dip", subject: quiz_subject)
       expect(student.reload.time_of_last_quiz).to be_within(1.second).of(Time.current)
     end
 
@@ -125,9 +125,10 @@ RSpec.describe Quiz::CreateQuiz, :default_creates do
     end
   end
 
-  context "on success" do
-    it "returns a success result with the quiz in the payload" do
-      create(:question, topic: topic)
+  context "when the topic has at least one question" do
+    before { create(:question, topic: topic) }
+
+    it "returns success with the quiz in the payload" do
       result = described_class.call(user: student, topic: topic.id, subject: quiz_subject)
       expect(result).to be_success
       expect(result.payload[:quiz]).to be_a(Quiz)

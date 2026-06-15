@@ -11,12 +11,10 @@ RSpec.describe Customisation::RefreshCustomisationsInStore, :default_creates do
   context "with retired customisations" do
     let!(:retired) { create(:dashboard_customisation, cost: 5, retired: true) }
 
-    before do
-      described_class.call
-    end
+    before { described_class.call }
 
     it "does not make retired customisations purchasable" do
-      expect(retired.reload.purchasable).to be false
+      expect(retired.reload).not_to be_purchasable
     end
   end
 
@@ -70,25 +68,24 @@ RSpec.describe Customisation::RefreshCustomisationsInStore, :default_creates do
         .and_raise(ActiveRecord::StatementInvalid, error_message)
     end
 
-    it "returns a failure result" do
+    it "returns a failure with the error message" do
       result = instance.call
       expect(result).to be_failure
-    end
-
-    it "includes the error message in the failure" do
-      result = instance.call
       expect(result.error).to eq(error_message)
     end
 
     it "rolls back disable_all_customisations" do
       instance.call
-      expect(purchasable_customisation.reload.purchasable).to be true
+      expect(purchasable_customisation.reload).to be_purchasable
     end
 
-    it "rolls back make_six_purchasable for dashboard_style" do
-      create_list(:dashboard_customisation, 8, purchasable: false)
-      instance.call
-      expect(Customisation.where(purchasable: true, customisation_type: "dashboard_style").count).to eq(1)
+    context "with additional unpurchasable dashboard styles" do
+      before { create_list(:dashboard_customisation, 8, purchasable: false) }
+
+      it "rolls back make_six_purchasable for dashboard_style" do
+        instance.call
+        expect(Customisation.where(purchasable: true, customisation_type: "dashboard_style").count).to eq(1)
+      end
     end
   end
 end

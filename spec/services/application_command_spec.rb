@@ -20,7 +20,7 @@ RSpec.describe ApplicationCommand do
   describe ".call" do
     it "instantiates and invokes call" do
       result = command_class.call(should_succeed: true, payload: 42)
-      expect(result.success?).to be true
+      expect(result).to be_success
       expect(result.payload).to eq 42
     end
   end
@@ -35,14 +35,14 @@ RSpec.describe ApplicationCommand do
   describe ApplicationCommand::Result do
     it "treats success as truthy" do
       result = described_class.new(success: true, payload: :ok, error: nil)
-      expect(result.success?).to be true
-      expect(result.failure?).to be false
+      expect(result).to be_success
+      expect(result).not_to be_failure
     end
 
     it "treats failure as falsy" do
       result = described_class.new(success: false, payload: nil, error: :nope)
-      expect(result.success?).to be false
-      expect(result.failure?).to be true
+      expect(result).not_to be_success
+      expect(result).to be_failure
     end
 
     it "is pattern matchable on success" do

@@ -20,37 +20,24 @@ RSpec.describe Homework::UpdateHomeworkProgress, :default_creates do
         answered_correct: 7, active: false, user: student)
     end
 
-    it "marks the homework as complete" do
-      described_class.call(quiz: quiz_full_marks)
-      expect(progress.reload.completed).to be true
+    it "marks the homework complete and returns success with the flag" do
+      result = described_class.call(quiz: quiz_full_marks)
+      expect(result).to be_success
+      expect(result.payload).to eq(completed: true)
+      expect(progress.reload).to be_completed
     end
 
-    it "does not mark the homework as complete below the required mark" do
-      described_class.call(quiz: quiz_7_out_of_10)
-      expect(progress.reload.completed).to be false
-    end
-
-    it "calculates progress as a percentage of correct answers" do
-      described_class.call(quiz: quiz_7_out_of_10)
-      expect(progress.reload.progress).to eq(70)
+    it "records partial progress and returns success with completed false below the required mark" do
+      result = described_class.call(quiz: quiz_7_out_of_10)
+      expect(result).to be_success
+      expect(result.payload).to eq(completed: false)
+      expect(progress.reload).to have_attributes(completed: false, progress: 70)
     end
 
     it "ignores progress that is less than current progress" do
       described_class.call(quiz: quiz_full_marks)
       described_class.call(quiz: quiz_7_out_of_10)
       expect(progress.reload.progress).to eq(100)
-    end
-
-    it "returns success carrying the completion flag" do
-      result = described_class.call(quiz: quiz_full_marks)
-      expect(result).to be_success
-      expect(result.payload).to eq(completed: true)
-    end
-
-    it "returns success with completed false when below required mark" do
-      result = described_class.call(quiz: quiz_7_out_of_10)
-      expect(result).to be_success
-      expect(result.payload).to eq(completed: false)
     end
   end
 

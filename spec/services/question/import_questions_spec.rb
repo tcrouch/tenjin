@@ -14,8 +14,18 @@ RSpec.describe Question::ImportQuestions, :default_creates do
     described_class.call(data: JSON.generate(multiple_lessons), topic: topic, filename: topic_filename)
   end
 
-  it "imports all questions successfully" do
-    expect(import_multiple_lessons).to be_success
+  it "imports questions, answers, and lessons" do
+    expect { import_multiple_lessons }
+      .to change(Question, :count).by(multiple_lessons.length)
+      .and change(Answer, :count).by(multiple_lessons.length * 4)
+      .and change(Lesson, :count).by(multiple_lessons.length)
+  end
+
+  it "returns success with the imported count and assigns the lesson title from the data" do
+    result = import_multiple_lessons
+    expect(result).to be_success
+    expect(result.payload[:number_questions_imported]).to eq(multiple_lessons.length)
+    expect(Lesson.first.title).to eq(multiple_lessons[0]["lesson"])
   end
 
   it "imports boolean questions" do
@@ -28,36 +38,13 @@ RSpec.describe Question::ImportQuestions, :default_creates do
     expect(result).to be_success
   end
 
-  it "reports the number of questions imported" do
-    expect(import_multiple_lessons.payload[:number_questions_imported]).to eq(multiple_lessons.length)
-  end
-
-  it "saves questions to the database" do
-    expect { import_multiple_lessons }.to change(Question, :count).by(multiple_lessons.length)
-  end
-
-  it "saves four answers per question to the database" do
-    expect { import_multiple_lessons }.to change(Answer, :count).by(multiple_lessons.length * 4)
-  end
-
-  it "creates a lesson for each unique lesson name" do
-    expect { import_multiple_lessons }.to change(Lesson, :count).by(multiple_lessons.length)
-  end
-
-  it "assigns the lesson name from the import data" do
-    import_multiple_lessons
-    expect(Lesson.first.title).to eq(multiple_lessons[0]["lesson"])
-  end
-
   context "when question type is missing" do
     before { multiple_lessons[0] = multiple_lessons[0].except("question_type") }
 
-    it "fails validation" do
-      expect(import_multiple_lessons).to be_failure
-    end
-
-    it "returns an error message" do
-      expect(import_multiple_lessons.error).to match(/Question missing key/)
+    it "fails validation with a missing-key error" do
+      result = import_multiple_lessons
+      expect(result).to be_failure
+      expect(result.error).to match(/Question missing key/)
     end
   end
 
@@ -72,24 +59,20 @@ RSpec.describe Question::ImportQuestions, :default_creates do
   context "when answers is not an array" do
     before { multiple_lessons[0]["answers"] = "not an array" }
 
-    it "fails validation" do
-      expect(import_multiple_lessons).to be_failure
-    end
-
-    it "returns an error message" do
-      expect(import_multiple_lessons.error).to match(/Answers for question not in array/)
+    it "fails validation with an answers-not-array error" do
+      result = import_multiple_lessons
+      expect(result).to be_failure
+      expect(result.error).to match(/Answers for question not in array/)
     end
   end
 
   context "when an answer is missing the text key" do
     before { multiple_lessons[0]["answers"][0] = multiple_lessons[0]["answers"][0].except("text") }
 
-    it "fails validation" do
-      expect(import_multiple_lessons).to be_failure
-    end
-
-    it "returns an error message" do
-      expect(import_multiple_lessons.error).to match(/Text key missing for answer/)
+    it "fails validation with a missing-text error" do
+      result = import_multiple_lessons
+      expect(result).to be_failure
+      expect(result.error).to match(/Text key missing for answer/)
     end
   end
 

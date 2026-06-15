@@ -41,21 +41,27 @@ RSpec.describe User::ChangeUserRole, :default_creates do
     it "adds the school_admin role" do
       result = described_class.call(user: teacher, role: "school_admin", action: :add)
       expect(result).to be_success
-      expect(teacher.has_role?(:school_admin)).to be true
+      expect(teacher).to have_role(:school_admin)
     end
 
-    it "adds a question_author role scoped to a subject" do
-      subject = create(:subject)
-      result = described_class.call(user: teacher, role: "question_author", action: :add, subject: subject.id)
-      expect(result).to be_success
-      expect(teacher.has_role?(:question_author, subject)).to be true
+    context "with a target subject" do
+      let(:subject) { create(:subject) }
+
+      it "adds a question_author role scoped to the subject" do
+        result = described_class.call(user: teacher, role: "question_author", action: :add, subject: subject.id)
+        expect(result).to be_success
+        expect(teacher).to have_role(:question_author, subject)
+      end
     end
 
-    it "removes a previously assigned role" do
-      teacher.add_role(:school_admin)
-      result = described_class.call(user: teacher, role: "school_admin", action: :remove)
-      expect(result).to be_success
-      expect(teacher.has_role?(:school_admin)).to be false
+    context "with a previously assigned role" do
+      before { teacher.add_role(:school_admin) }
+
+      it "removes the role" do
+        result = described_class.call(user: teacher, role: "school_admin", action: :remove)
+        expect(result).to be_success
+        expect(teacher).not_to have_role(:school_admin)
+      end
     end
   end
 end
