@@ -14,6 +14,27 @@ class Quiz < ApplicationRecord
 
   after_create :update_usage_statistics
 
+  scope :for_user, ->(user) { where(user: user) }
+
+  def self.current_for(user)
+    quizzes = for_user(user)
+    return nil if quizzes.empty?
+    return quizzes.first if quizzes.count == 1
+
+    deactivate_stale_for(user)
+    quizzes.where(active: true).first
+  end
+
+  def self.deactivate_stale_for(user)
+    for_user(user).order(created_at: :desc).drop(1).each do |quiz|
+      if quiz.num_questions_asked.zero?
+        quiz.delete
+      else
+        quiz.update(active: false)
+      end
+    end
+  end
+
   private
 
   def update_usage_statistics

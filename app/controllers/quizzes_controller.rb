@@ -6,8 +6,9 @@ class QuizzesController < ApplicationController
   rescue_from Pundit::NotAuthorizedError, with: :quiz_not_authorized
 
   def index
-    quizzes = policy_scope(Quiz)
-    redirect_to Quiz::SelectCorrectQuiz.call(quizzes: quizzes)
+    policy_scope(Quiz)
+    quiz = Quiz.current_for(current_user)
+    redirect_to(quiz || "/quizzes/new")
   end
 
   def show
