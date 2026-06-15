@@ -24,6 +24,17 @@ RSpec.describe Quiz, :default_creates do
       recent_active = create(:quiz, user: user, created_at: 1.minute.ago, active: true)
       expect(Quiz.current_for(user)).to eq recent_active
     end
+
+    it "returns nil when the user's only quiz is already inactive" do
+      create(:quiz, user: user, active: false)
+      expect(Quiz.current_for(user)).to be_nil
+    end
+
+    it "ignores inactive quizzes when picking from multiple" do
+      create(:quiz, user: user, active: false, created_at: 1.day.ago)
+      active = create(:quiz, user: user, active: true, created_at: 1.minute.ago)
+      expect(Quiz.current_for(user)).to eq active
+    end
   end
 
   describe ".deactivate_stale_for" do
