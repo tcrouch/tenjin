@@ -21,7 +21,7 @@ class User::ChangeUserRole < ApplicationCommand
       return failure("Must include a subject with a lesson or question author role")
     end
 
-    return failure("Unrecognised role: #{@role}") unless known_role?
+    return failure("Unrecognised role: #{@role}") unless GLOBAL_ROLES.include?(@role) || SUBJECT_SCOPED_ROLES.include?(@role)
 
     change_user_role
     success
@@ -29,15 +29,11 @@ class User::ChangeUserRole < ApplicationCommand
 
   private
 
-  def known_role?
-    GLOBAL_ROLES.include?(@role) || SUBJECT_SCOPED_ROLES.include?(@role)
-  end
-
   def change_user_role
     method = (@action == :add) ? :add_role : :remove_role
     if GLOBAL_ROLES.include?(@role)
       @user.send(method, @role)
-    else
+    elsif SUBJECT_SCOPED_ROLES.include?(@role)
       @user.send(method, @role, @subject)
     end
   end
