@@ -17,7 +17,7 @@ class CustomisationsController < ApplicationController
   def buy
     authorize current_user, :show?
     customisation = Customisation.find_by(id: params[:id])
-    result = Customisation::BuyCustomisation.call(current_user, customisation)
+    result = Customisation::BuyCustomisation.call(user: current_user, customisation: customisation)
     flash[:notice] = result_message(customisation, result)
     redirect_to dashboard_path
   end

@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 class Question::ImportQuestions < ApplicationCommand
-  def initialize(data, topic, filename)
+  def initialize(data:, topic:, filename:)
     @json = JSON.parse(data)
     @topic = topic
     @questions_to_import = []

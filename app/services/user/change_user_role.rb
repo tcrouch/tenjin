@@ -5,7 +5,7 @@ class User::ChangeUserRole < ApplicationCommand
   SUBJECT_SCOPED_ROLES = %w[lesson_author question_author].freeze
   GLOBAL_ROLES = %w[school_admin].freeze
 
-  def initialize(user, role, action, subject = nil)
+  def initialize(user:, role:, action:, subject: nil)
     @user = user
     @role = role
     @action = action

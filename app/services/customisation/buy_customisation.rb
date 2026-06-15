@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 class Customisation::BuyCustomisation < ApplicationCommand
-  def initialize(user, customisation)
+  def initialize(user:, customisation:)
     @user = user
     @customisation = customisation
   end

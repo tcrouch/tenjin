@@ -1,11 +1,11 @@
 # frozen_string_literal: true
 
 class Quiz::CheckAnswer < ApplicationCommand
-  def initialize(params)
-    @quiz = params[:quiz]
-    @question = params[:question]
+  def initialize(quiz:, question:, answer_given:)
+    @quiz = quiz
+    @question = question
     @asked_question = AskedQuestion.find_by(quiz: @quiz, question: @question)
-    @answer_given = params[:answer_given]
+    @answer_given = answer_given
   end
 
   def call

@@ -122,7 +122,7 @@ class QuestionsController < ApplicationController
     end
 
     data = params[:file].read
-    case Question::ImportQuestions.call(data, @topic, params[:file].original_filename)
+    case Question::ImportQuestions.call(data: data, topic: @topic, filename: params[:file].original_filename)
     in {success: true, payload: {number_questions_imported:}}
       flash[:notice] = "Imported #{number_questions_imported} questions"
     in {success: false, error:}

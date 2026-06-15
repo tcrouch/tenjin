@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 class Homework::UpdateHomeworkProgress < ApplicationCommand
-  def initialize(quiz)
+  def initialize(quiz:)
     @quiz = quiz
   end
 

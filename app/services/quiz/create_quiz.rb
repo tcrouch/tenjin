@@ -2,11 +2,11 @@
 
 # Creates a Quiz session object and initialises it appropriately
 class Quiz::CreateQuiz < ApplicationCommand
-  def initialize(params)
-    @user = params[:user]
-    @topic_id = params[:topic]
-    @subject = params[:subject]
-    @lesson = (Lesson.find(params[:lesson]) if params[:lesson].present?)
+  def initialize(user:, topic:, subject:, lesson: nil)
+    @user = user
+    @topic_id = topic
+    @subject = subject
+    @lesson = (Lesson.find(lesson) if lesson.present?)
     @lucky_dip = @topic_id == Quiz::LUCKY_DIP
     @topic = Topic.find(@topic_id) unless @lucky_dip
     @quiz = Quiz.new

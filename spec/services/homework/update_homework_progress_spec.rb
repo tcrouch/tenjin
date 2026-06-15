@@ -21,34 +21,34 @@ RSpec.describe Homework::UpdateHomeworkProgress, :default_creates do
     end
 
     it "marks the homework as complete" do
-      described_class.call(quiz_full_marks)
+      described_class.call(quiz: quiz_full_marks)
       expect(progress.reload.completed).to be true
     end
 
     it "does not mark the homework as complete below the required mark" do
-      described_class.call(quiz_7_out_of_10)
+      described_class.call(quiz: quiz_7_out_of_10)
       expect(progress.reload.completed).to be false
     end
 
     it "calculates progress as a percentage of correct answers" do
-      described_class.call(quiz_7_out_of_10)
+      described_class.call(quiz: quiz_7_out_of_10)
       expect(progress.reload.progress).to eq(70)
     end
 
     it "ignores progress that is less than current progress" do
-      described_class.call(quiz_full_marks)
-      described_class.call(quiz_7_out_of_10)
+      described_class.call(quiz: quiz_full_marks)
+      described_class.call(quiz: quiz_7_out_of_10)
       expect(progress.reload.progress).to eq(100)
     end
 
     it "returns success carrying the completion flag" do
-      result = described_class.call(quiz_full_marks)
+      result = described_class.call(quiz: quiz_full_marks)
       expect(result).to be_success
       expect(result.payload).to eq(completed: true)
     end
 
     it "returns success with completed false when below required mark" do
-      result = described_class.call(quiz_7_out_of_10)
+      result = described_class.call(quiz: quiz_7_out_of_10)
       expect(result).to be_success
       expect(result.payload).to eq(completed: false)
     end
@@ -63,7 +63,7 @@ RSpec.describe Homework::UpdateHomeworkProgress, :default_creates do
     end
 
     it "truncates fractional percentages to the nearest integer" do
-      described_class.call(quiz_1_out_of_3)
+      described_class.call(quiz: quiz_1_out_of_3)
       expect(progress.reload.progress).to eq(33)
     end
   end
@@ -83,7 +83,7 @@ RSpec.describe Homework::UpdateHomeworkProgress, :default_creates do
     end
 
     it "returns a failure result" do
-      result = described_class.call(quiz_full_marks)
+      result = described_class.call(quiz: quiz_full_marks)
       expect(result).to be_failure
       expect(result.error).to match(/Progress is invalid/)
     end

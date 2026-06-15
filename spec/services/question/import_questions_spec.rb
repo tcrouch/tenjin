@@ -11,7 +11,7 @@ RSpec.describe Question::ImportQuestions, :default_creates do
   let(:topic_filename) { "#{topic.name}.json" }
 
   def import_multiple_lessons
-    described_class.call(JSON.generate(multiple_lessons), topic, topic_filename)
+    described_class.call(data: JSON.generate(multiple_lessons), topic: topic, filename: topic_filename)
   end
 
   it "imports all questions successfully" do
@@ -19,12 +19,12 @@ RSpec.describe Question::ImportQuestions, :default_creates do
   end
 
   it "imports boolean questions" do
-    result = described_class.call(JSON.generate([build(:question_import_hash_boolean)]), topic, topic_filename)
+    result = described_class.call(data: JSON.generate([build(:question_import_hash_boolean)]), topic: topic, filename: topic_filename)
     expect(result).to be_success
   end
 
   it "imports questions with no lesson information" do
-    result = described_class.call(JSON.generate(no_lessons), topic, topic_filename)
+    result = described_class.call(data: JSON.generate(no_lessons), topic: topic, filename: topic_filename)
     expect(result).to be_success
   end
 
@@ -100,13 +100,13 @@ RSpec.describe Question::ImportQuestions, :default_creates do
 
     it "assigns questions to the existing lesson without creating a duplicate" do
       expect {
-        described_class.call(JSON.generate(single_lesson), topic, topic_filename)
+        described_class.call(data: JSON.generate(single_lesson), topic: topic, filename: topic_filename)
       }.not_to change(Lesson, :count)
     end
 
     it "creates questions under the existing lesson" do
       expect {
-        described_class.call(JSON.generate(single_lesson), topic, topic_filename)
+        described_class.call(data: JSON.generate(single_lesson), topic: topic, filename: topic_filename)
       }.to change(Question, :count).by(single_lesson.length)
     end
   end
