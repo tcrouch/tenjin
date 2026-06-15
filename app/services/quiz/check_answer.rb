@@ -27,7 +27,7 @@ class Quiz::CheckAnswer < ApplicationCommand
   private
 
   def blank_answer?
-    @question.short_answer? ? @answer_given[:short_answer].blank? : @answer_given[:id].blank?
+    !@question.short_answer? && @answer_given[:id].blank?
   end
 
   def already_answered?

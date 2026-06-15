@@ -39,4 +39,21 @@ RSpec.describe Quiz::CheckAnswer, :default_creates do
     expect(result).to be_failure
     expect(result.error).to eq :no_answer_provided
   end
+
+  context "with a short-answer question" do
+    let(:short_answer_question) { create(:short_answer_question, topic: topic) }
+    let(:quiz) { create(:quiz, user: user, question_order: [short_answer_question.id], num_questions_asked: 1) }
+
+    before do
+      quiz.questions << short_answer_question
+      create(:asked_question, quiz: quiz, question: short_answer_question)
+    end
+
+    it "treats a blank submission as a wrong answer (success result, streak reset to 0)" do
+      quiz.update(streak: 3)
+      result = described_class.call(quiz: quiz, question: short_answer_question, answer_given: {short_answer: ""})
+      expect(result).to be_success
+      expect(quiz.reload.streak).to eq 0
+    end
+  end
 end
