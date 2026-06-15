@@ -24,10 +24,10 @@ class Customisation::BuyCustomisation < ApplicationCommand
       unlock.save!
     end
 
-    success(user: @user)
+    success
   end
 
-  protected
+  private
 
   def deduct_challenge_points
     @user.challenge_points -= @customisation.cost
