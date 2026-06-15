@@ -42,5 +42,4 @@ RSpec.describe "Teacher visits the dashboard", :default_creates, :js do
       end
     end
   end
-
 end

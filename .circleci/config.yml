@@ -54,16 +54,29 @@ commands:
 
 default_job: &default_job
   working_directory: ~/tenjin
-  steps:
-    - shared_steps
 
 jobs:
-  build:
+  checks:
     <<: *default_job
     docker:
       - image: cimg/ruby:3.4.9-browsers
         environment:
           RAILS_ENV: test
+    steps:
+      - shared_steps
+      - run:
+          name: standardrb (ruby lint)
+          command: bundle exec standardrb
+      - run:
+          name: slim-lint (view lint)
+          command: bundle exec slim-lint app/views
+      - run:
+          name: eslint + prettier (js lint)
+          command: pnpm lint
+      - run:
+          name: jest (js tests)
+          command: pnpm test:js
+
   test:
     <<: *default_job
     parallelism: 2
@@ -113,11 +126,44 @@ jobs:
           path: /home/circleci/tenjin/tmp/screenshots/
           destination: browser-screenshots
 
+  # Runs weekly (see weekly_security workflow), not on every push, so newly
+  # disclosed gem CVEs surface even when the code hasn't changed.
+  security:
+    <<: *default_job
+    docker:
+      - image: cimg/ruby:3.4.9-browsers
+        environment:
+          RAILS_ENV: test
+    steps:
+      - shared_steps
+      # Static analysis is informational: store the report but never fail the
+      # job on a warning (e.g. the standing Rails-EOL notice).
+      - run:
+          name: brakeman (static analysis report)
+          command: |
+            mkdir -p tmp/brakeman
+            bundle exec brakeman -q --no-pager --no-exit-on-warn \
+              -o tmp/brakeman/report.html -o /dev/stdout
+      - store_artifacts:
+          path: tmp/brakeman
+          destination: brakeman
+      # The teeth: fail the job on any known gem vulnerability.
+      - run:
+          name: bundler-audit (gem CVEs)
+          command: bundle exec bundle-audit check --update
+
 workflows:
-  version: 2
   build_and_test:
     jobs:
-      - build
-      - test:
-          requires:
-            - build
+      - checks
+      - test
+
+  weekly_security:
+    triggers:
+      - schedule:
+          cron: "0 6 * * 1"
+          filters:
+            branches:
+              only: master
+    jobs:
+      - security

@@ -82,7 +82,6 @@ RSpec.describe "Student visits the dashboard", :default_creates, :js do
         expect(page).to have_css("p", exact_text: 25)
       end
     end
-
   end
 
   describe "homeworks" do
