@@ -14,6 +14,15 @@ RSpec.describe "System::SchoolGroups", :default_creates, type: :request do
     end
   end
 
+  describe "GET /system/school_groups/:id/edit" do
+    it "renders the edit form" do
+      school_group = create(:school_group, name: "South")
+      get edit_system_school_group_path(school_group)
+      expect(response).to have_http_status(:ok)
+      expect(response.body).to include("South")
+    end
+  end
+
   describe "POST /system/school_groups" do
     it "creates a school group" do
       expect {

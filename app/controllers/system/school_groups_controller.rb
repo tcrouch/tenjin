@@ -6,14 +6,13 @@ module System
       @school_groups = policy_scope(SchoolGroup)
     end
 
-    def show
-      @school_group = authorize find_school_group
-    end
-
     def new
       @school_group = SchoolGroup.new(name: "New Group")
       authorize @school_group
-      render :show
+    end
+
+    def edit
+      @school_group = authorize find_school_group
     end
 
     def create

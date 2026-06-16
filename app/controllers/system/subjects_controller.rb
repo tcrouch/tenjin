@@ -10,7 +10,7 @@ module System
       end
     end
 
-    def show
+    def edit
       @subject = authorize find_subject
     end
 
@@ -24,7 +24,7 @@ module System
       authorize @subject
 
       if @subject.save
-        redirect_to [:system, @subject]
+        redirect_to edit_system_subject_path(@subject)
       else
         render :new
       end
@@ -33,7 +33,7 @@ module System
     def update
       subject = authorize find_subject
       subject.update(subject_params)
-      redirect_to [:system, subject]
+      redirect_to edit_system_subject_path(subject)
     end
 
     def destroy
