@@ -1,0 +1,5 @@
+.container
+  span.display-4 = @school_group.new_record? ? "New School Group" : "Edit School Group"
+  = simple_form_for [:system, @school_group] do |f|
+    = f.input :name
+    = f.submit "Save", class: "btn btn-primary"

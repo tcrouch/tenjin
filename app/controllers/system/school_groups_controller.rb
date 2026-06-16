@@ -6,29 +6,34 @@ module System
       @school_groups = policy_scope(SchoolGroup)
     end
 
-    def show
+    def new
+      @school_group = SchoolGroup.new
+      authorize @school_group
+    end
+
+    def edit
       @school_group = authorize find_school_group
     end
 
-    def new
-      @school_group = SchoolGroup.new(name: "New Group")
-      authorize @school_group
-      render :show
-    end
-
     def create
-      school_group = SchoolGroup.new(school_group_params)
-      authorize school_group
-      school_group.save
+      @school_group = SchoolGroup.new(school_group_params)
+      authorize @school_group
 
-      redirect_to system_school_groups_path
+      if @school_group.save
+        redirect_to system_school_groups_path, notice: "School group created."
+      else
+        render :new, status: :unprocessable_content
+      end
     end
 
     def update
-      school_group = authorize find_school_group
-      school_group.update(school_group_params)
+      @school_group = authorize find_school_group
 
-      redirect_to system_school_groups_path
+      if @school_group.update(school_group_params)
+        redirect_to system_school_groups_path, notice: "School group updated."
+      else
+        render :edit, status: :unprocessable_content
+      end
     end
 
     def destroy

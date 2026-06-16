@@ -14,6 +14,15 @@ RSpec.describe "System::Subjects", :default_creates, type: :request do
     end
   end
 
+  describe "GET /system/subjects/:id/edit" do
+    it "renders the edit form" do
+      subject_record = create(:subject, name: "Chemistry")
+      get edit_system_subject_path(subject_record)
+      expect(response).to have_http_status(:ok)
+      expect(response.body).to include("Chemistry")
+    end
+  end
+
   describe "POST /system/subjects" do
     it "creates a subject" do
       expect {
