@@ -74,15 +74,18 @@
                     label.form-check-label for="allTimeSwitch" All Time
 
             .row
-              table.table#leaderboardTable
-                thead
-                  tr
-                    th #
-                    th
-                    th Name
-                    th
-                    th.d-none.d-lg-table-cell x-text="contextualHeader()"
-                    th Score
-                tbody x-html="sortedEntriesHtml()"
+              .table-responsive
+                table.table#leaderboardTable
+                  thead
+                    tr
+                      th #
+                      th
+                        span.visually-hidden Icon
+                      th Name
+                      th
+                        span.visually-hidden Awards
+                      th.d-none.d-lg-table-cell x-text="contextualHeader()"
+                      th Score
+                  tbody x-html="sortedEntriesHtml()"
 
         span#connected x-show="connected" style="display: none"

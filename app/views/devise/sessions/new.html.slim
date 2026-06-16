@@ -1,8 +1,8 @@
 header.masthead.masthead-container.masthead-full.text-white
-  .container.py-5
-    .row.justify-content-center.align-items-center
-      .col-6.text-center.bg-white.text-dark.rounded
-        h2 Log in
+  .container.min-vh-100.d-flex.flex-column.justify-content-center.py-5
+    .row.justify-content-center
+      .col-md-8.col-lg-6.text-center.bg-white.text-dark.rounded.shadow.p-4.p-md-5
+        h2.mb-4 Log in
         = simple_form_for(resource, as: resource_name, url: session_path(resource_name)) do |f|
           .form-inputs
             - if resource.class.name == 'Admin'
@@ -18,7 +18,7 @@ header.masthead.masthead-container.masthead-full.text-white
             = f.input :password,                               \
               required: false,                                 \
               input_html: { autocomplete: "current-password" }
-            = f.input :remember_me, as: :boolean if devise_mapping.rememberable?
+            = f.input :remember_me, as: :boolean, wrapper_html: { class: 'd-inline-block' } if devise_mapping.rememberable?
           .form-actions
             = f.button :submit, "Log in", class: 'btn btn-primary'
         = render "devise/shared/links"

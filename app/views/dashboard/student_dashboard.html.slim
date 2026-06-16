@@ -5,7 +5,7 @@ section.page-section.text-center#newQuiz
     h1.page-section-header.text-uppercase Start a Quiz
     p.lead Select a subject below
     ==render_small_separator
-    .carousel.slide.col-md-8.col-lg-5.mx-auto#subjectCarousel data-bs-ride="carousel"
+    .carousel.slide.col-md-8.col-lg-5.mx-auto#subjectCarousel data-bs-interval="false"
       ol.carousel-indicators
         - @subjects.each_with_index do |s, i|
           li data-bs-target="#subjectCarousel" data-bs-slide-to=i class=('active' if i.zero?)
@@ -13,7 +13,7 @@ section.page-section.text-center#newQuiz
         - @subjects.each_with_index do |s, i|
             .carousel-item class=('active' if i.zero?)
               a href=new_quiz_path(subject: s.name)
-                = image_pack_tag(subject_image(s), class: 'w-100 subject-carousel-item-image')
+                = image_pack_tag(subject_image(s), class: 'w-100 subject-carousel-item-image', alt: s.name)
                 .carousel-caption
                   h3.text-uppercase = s.name
       a.carousel-control-prev href="#subjectCarousel" role="button" data-bs-slide="prev"
@@ -28,7 +28,7 @@ section#challenges.page-section.text-center
     h1.page-section-header.text-uppercase Challenges
     ==render_small_separator
     .row.justify-content-center
-      .col-lg-10.col.mx-auto
+      .col-lg-10.col.mx-auto.table-responsive
         table.table.table-hover#challenge-table
           thead
             tr
