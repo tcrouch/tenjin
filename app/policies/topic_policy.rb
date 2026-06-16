@@ -5,10 +5,9 @@ class TopicPolicy < ApplicationPolicy
 
   class Scope < Scope
     def resolve
+      # pluck(:id): with_role selects subjects.*, so a subquery would be multi-column.
       scope.where(active: true,
-        subject: Subject.with_role(:question_author, user)
-          .where(active: true)
-          .pluck(:id))
+        subject: Subject.with_role(:question_author, user).where(active: true).pluck(:id))
     end
   end
 

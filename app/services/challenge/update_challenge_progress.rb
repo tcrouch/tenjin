@@ -93,7 +93,7 @@ class Challenge::UpdateChallengeProgress < ApplicationService
     Challenge.joins(:topic)
       .includes(topic: :subject)
       .where(topics: {subject_id: @quiz.subject})
-      .where("end_date > ?", Time.current)
+      .where(end_date: Time.current..)
   end
 
   def complete_challenge(progress)

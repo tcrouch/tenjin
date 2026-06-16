@@ -77,7 +77,7 @@ class Quiz::CreateQuiz < ApplicationCommand
       .includes(:topic).references(:topic)
       .select("questions.topic_id, questions.*")
       .where(topics: {active: true, subject_id: @subject.id})
-      .order("questions.topic_id, random()")
+      .order(Arel.sql("questions.topic_id, random()"))
   end
 
   def topic_questions
@@ -85,7 +85,7 @@ class Quiz::CreateQuiz < ApplicationCommand
       .includes(:topic).references(:topic)
       .select("DISTINCT ON(questions.topic_id) questions.topic_id, questions.*")
       .where(topics: {active: true, subject_id: @subject.id})
-      .order("questions.topic_id, random()")
+      .order(Arel.sql("questions.topic_id, random()"))
   end
 
   def lesson_questions
@@ -115,13 +115,13 @@ class Quiz::CreateQuiz < ApplicationCommand
 
   def check_lesson_attempts
     !UsageStatistic.where(user: @user, topic: @quiz.topic, lesson: @quiz.lesson, date: Date.current.all_day)
-      .where("quizzes_started >= 1")
+      .where(quizzes_started: 1..)
       .exists?
   end
 
   def check_topic_attempts
     !UsageStatistic.where(user: @user, topic: @quiz.topic, date: Date.current.all_day)
-      .where("quizzes_started >= 3")
+      .where(quizzes_started: 3..)
       .exists?
   end
 end
