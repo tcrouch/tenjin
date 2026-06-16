@@ -31,6 +31,21 @@ RSpec.describe "System::Subjects", :default_creates, type: :request do
     end
   end
 
+  describe "PATCH /system/subjects/:id" do
+    it "updates a subject" do
+      subject_record = create(:subject, name: "Physics")
+      patch system_subject_path(subject_record), params: {subject: {name: "Astronomy"}}
+      expect(subject_record.reload.name).to eq("Astronomy")
+    end
+
+    it "does not save an invalid name" do
+      subject_record = create(:subject, name: "Geography")
+      patch system_subject_path(subject_record), params: {subject: {name: ""}}
+      expect(response).to have_http_status(:unprocessable_content)
+      expect(subject_record.reload.name).to eq("Geography")
+    end
+  end
+
   describe "DELETE /system/subjects/:id" do
     it "deactivates the subject" do
       subject_record = create(:subject)
