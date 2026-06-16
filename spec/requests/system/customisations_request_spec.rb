@@ -65,5 +65,14 @@ RSpec.describe "System::Customisations", :default_creates, type: :request do
       }
       expect(customisation.reload.name).to eq("Renamed")
     end
+
+    it "does not save an invalid name" do
+      customisation = create(:customisation, name: "Original")
+      patch system_customisation_path(customisation), params: {
+        customisation: {name: ""}
+      }
+      expect(response).to have_http_status(:unprocessable_content)
+      expect(customisation.reload.name).to eq("Original")
+    end
   end
 end

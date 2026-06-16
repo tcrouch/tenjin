@@ -31,9 +31,13 @@ module System
     end
 
     def update
-      subject = authorize find_subject
-      subject.update(subject_params)
-      redirect_to edit_system_subject_path(subject)
+      @subject = authorize find_subject
+
+      if @subject.update(subject_params)
+        redirect_to edit_system_subject_path(@subject)
+      else
+        render :edit, status: :unprocessable_content
+      end
     end
 
     def destroy

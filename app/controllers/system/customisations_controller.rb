@@ -30,9 +30,13 @@ module System
     end
 
     def update
-      customisation = authorize find_customisation
-      customisation.update(customisation_params)
-      redirect_to system_customisations_path
+      @customisation = authorize find_customisation
+
+      if @customisation.update(customisation_params)
+        redirect_to system_customisations_path
+      else
+        render :edit, status: :unprocessable_content
+      end
     end
 
     private
