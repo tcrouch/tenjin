@@ -80,6 +80,30 @@ RSpec.describe Challenge do
     end
   end
 
+  describe "scopes" do
+    let(:user) { create(:user) }
+    let!(:challenge_with_progress) { create(:challenge) }
+    let!(:challenge_without_progress) { create(:challenge) }
+
+    before { create(:challenge_progress, challenge: challenge_with_progress, user: user) }
+
+    describe ".has_progress" do
+      it "returns challenges the user has progress on" do
+        expect(described_class.has_progress(user)).to contain_exactly(challenge_with_progress)
+      end
+
+      it "ignores progress belonging to another user" do
+        expect(described_class.has_progress(create(:user))).to be_empty
+      end
+    end
+
+    describe ".has_no_progress" do
+      it "returns challenges with no progress" do
+        expect(described_class.has_no_progress).to contain_exactly(challenge_without_progress)
+      end
+    end
+  end
+
   describe "#stringify" do
     before { srand(1) }
 

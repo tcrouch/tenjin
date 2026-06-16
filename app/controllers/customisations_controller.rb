@@ -11,7 +11,7 @@ class CustomisationsController < ApplicationController
     @purchased_styles = Customisation.with_attached_image.where(id: @bought_customisations)
     @available_styles = Customisation.with_attached_image.where(purchasable: true)
       .where.not(id: @bought_customisations)
-      .order("RANDOM()")
+      .order(Arel.sql("RANDOM()"))
   end
 
   def buy
