@@ -14,6 +14,7 @@ section.page-section.text-center#myClassrooms
               th Subject
               th.d-none.d-lg-table-cell # Students
               th
+                span.visually-hidden Actions
           tbody
             - @enrollments.each do |e|
               tr data-classroom=e.classroom.id

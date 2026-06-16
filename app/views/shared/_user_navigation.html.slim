@@ -48,11 +48,9 @@ nav#navbar-main.navbar.navbar-expand-md.navbar-dark.justify-content-between.bg-b
                 | Edit Questions
 
       - if current_user.student?
-        a href=show_available_customisations_path
-          table
-            td
-              i.fas.fa-star.f.text-warning
-            td#challenge-points.text-light = current_user.challenge_points
+        a.d-inline-flex.align-items-center.me-3 href=show_available_customisations_path aria-label="Challenge points"
+          i.fas.fa-star.text-warning.me-1 aria-hidden="true"
+          span#challenge-points.text-light = current_user.challenge_points
       p.m-2#current_user_paragraph
         a#current_user.text-light href=user_path(current_user)
           => current_user.forename

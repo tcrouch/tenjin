@@ -220,7 +220,7 @@ h1#branding-text {
 }
 
 // Overlay below the fixed navbar; don't displace the masthead.
-.fixed-top ~ .alert {
+.fixed-top ~ #flashes .alert {
   position: fixed;
   top: 66px;
   left: 0;
