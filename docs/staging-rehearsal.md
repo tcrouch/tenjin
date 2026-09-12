@@ -22,6 +22,7 @@ bin/staging copy-db
 bin/staging copy-s3
 bin/staging deploy            # master; or a branch: bin/staging deploy fix/schema-foreign-keys
 bin/staging smoke
+bin/staging logins            # prints a student, teacher, school admin and platform admin login
 bin/staging destroy           # when finished
 ```
 
@@ -51,7 +52,7 @@ step can be re-run.
 - [ ] Build: pnpm install and the Shakapacker compile succeed without NODE_OPTIONS
 - [ ] Release phase: migrations run (`heroku releases:output -a ogat-tenjin-staging`)
 - [ ] Memory: `heroku logs -a ogat-tenjin-staging --dyno web | grep memory_total` stays well under 512 MB across a few minutes of use
-- [ ] Student (username and password): dashboard, start a quiz by subject, by topic and by lucky dip, answer through to the end, points and streak update, the live leaderboard updates in a second tab
+- [ ] Student (from `bin/staging logins`): dashboard, start a quiz by subject, by topic and by lucky dip, answer through to the end, points and streak update, the live leaderboard updates in a second tab
 - [ ] Teacher: the classroom page renders the student table and search works, set a homework, homework progress shows, flag a question
 - [ ] Author: edit a question with Trix, edit a lesson and a topic, upload an image (it lands in the scratch bucket) and see it render
 - [ ] School admin: user list, the reset-passwords job enqueues and the worker runs it, the sync button fails cleanly without Wonde credentials

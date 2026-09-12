@@ -7,6 +7,7 @@
 #   bin/staging copy-db         copy the production database into it
 #   bin/staging copy-s3         scratch bucket: policy, CORS, sync from production
 #   bin/staging deploy [ref]    push a git ref (default master), scale web + worker
+#   bin/staging logins          set one password on a student, teacher, school admin and platform admin
 #   bin/staging smoke           automated probes, then the manual checklist
 #   bin/staging status          app, dynos, recent releases
 #   bin/staging destroy         destroy the app; offer to delete the bucket
@@ -85,7 +86,7 @@ cmd_create() {
       jq -e '.[] | select(.addon_service.name == "heroku-postgresql")' >/dev/null; then
     echo "already provisioned"
   else
-    run heroku addons:create "heroku-postgresql:$PG_PLAN" --version "$PG_VERSION" -a "$STAGING_APP"
+    run heroku addons:create -a "$STAGING_APP" "heroku-postgresql:$PG_PLAN" -- --version "$PG_VERSION"
     run heroku pg:wait -a "$STAGING_APP"
   fi
 
@@ -119,7 +120,7 @@ cmd_copy_db() {
   need heroku
   app_exists || die "$STAGING_APP does not exist; run bin/staging create first"
   say "Replacing the $STAGING_APP database with a copy of $PROD_APP's"
-  run heroku pg:copy "$PROD_APP::DATABASE_URL" DATABASE_URL -a "$STAGING_APP" --confirm "$STAGING_APP"
+  run heroku pg:copy "$PROD_APP::DATABASE_URL" DATABASE_URL -a "$STAGING_APP" --confirm DATABASE
 }
 
 cmd_copy_s3() {
@@ -203,6 +204,42 @@ cmd_smoke() {
   sed -n '/^## Checklist/,/^## Deploy day/p' "$CHECKLIST" | sed '1d;$d'
 }
 
+cmd_logins() {
+  need heroku; need openssl
+  app_exists || die "$STAGING_APP does not exist"
+  local password script encoded
+  password=$(openssl rand -base64 15 | tr -d "/+=" | cut -c1-14)
+  # Picks the most recently active account of each kind in the copied
+  # database and gives it the generated password. Staging only.
+  script=$(cat <<RUBY
+pw = "$password"
+pick = ->(scope) { scope.where.not(last_sign_in_at: nil).order(last_sign_in_at: :desc).first }
+accounts = {
+  student: pick.(User.student.where(disabled: [false, nil]).joins(enrollments: {classroom: :homeworks}).distinct),
+  teacher: pick.(User.employee.where(disabled: [false, nil]).joins(:enrollments).distinct),
+  school_admin: pick.(User.with_role(:school_admin)),
+  platform_admin: Admin.order(:id).first
+}
+accounts.each do |label, account|
+  next puts("#{label}: none found") unless account
+  account.password = pw
+  account.password_confirmation = pw
+  account.save!(validate: false)
+  if account.is_a?(User)
+    puts "#{label}: username=#{account.username} school=#{account.school&.name} classrooms=#{account.classrooms.limit(2).pluck(:name).join(' | ')}"
+  else
+    puts "#{label}: email=#{account.email} role=#{account.role} (sign in at /admins/sign_in)"
+  end
+end
+RUBY
+)
+  encoded=$(printf "%s" "$script" | base64 | tr -d "\n")
+  say "Setting one password on four accounts in the $STAGING_APP copy"
+  printf "+ heroku run -a %s -- rails runner <logins script>\n" "$STAGING_APP"
+  [[ -n ${DRY_RUN:-} ]] || heroku run -a "$STAGING_APP" --exit-code -- bash -c "echo $encoded | base64 -d > /tmp/logins.rb && rails runner /tmp/logins.rb" | grep -E "^(student|teacher|school_admin|platform_admin):"
+  echo "password for all of them: $password"
+}
+
 cmd_status() {
   need heroku
   app_exists || die "$STAGING_APP does not exist"
@@ -232,6 +269,7 @@ case ${1:-} in
   copy-s3) cmd_copy_s3 ;;
   deploy) shift; cmd_deploy "$@" ;;
   smoke) cmd_smoke ;;
+  logins) cmd_logins ;;
   status) cmd_status ;;
   destroy) cmd_destroy ;;
   *) usage; exit 1 ;;
