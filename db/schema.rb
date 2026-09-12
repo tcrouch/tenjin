@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_06_08_181350) do
+ActiveRecord::Schema[7.2].define(version: 2026_06_16_120400) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -94,13 +94,13 @@ ActiveRecord::Schema[7.2].define(version: 2026_06_08_181350) do
     t.datetime "created_at", precision: nil, null: false
     t.datetime "updated_at", precision: nil, null: false
     t.index ["topic_id"], name: "index_all_time_topic_scores_on_topic_id"
-    t.index ["user_id"], name: "index_all_time_topic_scores_on_user_id"
+    t.index ["user_id", "topic_id"], name: "index_all_time_topic_scores_on_user_id_and_topic_id", unique: true
   end
 
   create_table "answers", force: :cascade do |t|
     t.bigint "question_id"
     t.string "text"
-    t.boolean "correct"
+    t.boolean "correct", default: false
     t.datetime "created_at", precision: nil, null: false
     t.datetime "updated_at", precision: nil, null: false
     t.integer "external_id"
@@ -138,7 +138,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_06_08_181350) do
     t.bigint "topic_id"
     t.datetime "created_at", precision: nil, null: false
     t.datetime "updated_at", precision: nil, null: false
-    t.boolean "daily"
+    t.boolean "daily", default: false
     t.index ["topic_id"], name: "index_challenges_on_topic_id"
   end
 
@@ -157,12 +157,12 @@ ActiveRecord::Schema[7.2].define(version: 2026_06_08_181350) do
     t.string "name", null: false
     t.string "code"
     t.string "description"
-    t.boolean "disabled"
+    t.boolean "disabled", default: false
     t.bigint "subject_id"
     t.bigint "school_id"
     t.datetime "created_at", precision: nil, null: false
     t.datetime "updated_at", precision: nil, null: false
-    t.integer "enrollments_count"
+    t.integer "enrollments_count", default: 0
     t.index ["school_id"], name: "index_classrooms_on_school_id"
     t.index ["subject_id"], name: "index_classrooms_on_subject_id"
   end
@@ -225,8 +225,8 @@ ActiveRecord::Schema[7.2].define(version: 2026_06_08_181350) do
   create_table "homework_progresses", force: :cascade do |t|
     t.bigint "homework_id"
     t.bigint "user_id"
-    t.integer "progress"
-    t.boolean "completed"
+    t.integer "progress", default: 0
+    t.boolean "completed", default: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["homework_id"], name: "index_homework_progresses_on_homework_id"
@@ -264,7 +264,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_06_08_181350) do
     t.bigint "topic_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.integer "questions_count"
+    t.integer "questions_count", default: 0
     t.index ["topic_id"], name: "index_lessons_on_topic_id"
   end
 
@@ -292,7 +292,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_06_08_181350) do
     t.integer "external_id"
     t.bigint "lesson_id"
     t.boolean "active", default: true
-    t.integer "flagged_questions_count"
+    t.integer "flagged_questions_count", default: 0
     t.index ["lesson_id"], name: "index_questions_on_lesson_id"
     t.index ["topic_id"], name: "index_questions_on_topic_id"
   end
@@ -305,9 +305,9 @@ ActiveRecord::Schema[7.2].define(version: 2026_06_08_181350) do
     t.bigint "user_id"
     t.bigint "subject_id"
     t.bigint "topic_id"
-    t.boolean "active"
+    t.boolean "active", default: false
     t.integer "question_order", array: true
-    t.boolean "counts_for_leaderboard"
+    t.boolean "counts_for_leaderboard", default: false
     t.datetime "created_at", precision: nil, null: false
     t.datetime "updated_at", precision: nil, null: false
     t.bigint "lesson_id"
@@ -372,6 +372,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_06_08_181350) do
     t.integer "external_id"
     t.bigint "default_lesson_id"
     t.boolean "active", default: true
+    t.index ["default_lesson_id"], name: "index_topics_on_default_lesson_id"
     t.index ["subject_id"], name: "index_topics_on_subject_id"
   end
 
@@ -423,7 +424,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_06_08_181350) do
     t.integer "challenge_points"
     t.datetime "time_of_last_quiz", precision: nil
     t.string "username"
-    t.boolean "disabled"
+    t.boolean "disabled", default: false
     t.string "oauth_provider"
     t.string "oauth_uid"
     t.string "oauth_email"
@@ -446,11 +447,15 @@ ActiveRecord::Schema[7.2].define(version: 2026_06_08_181350) do
   add_foreign_key "all_time_topic_scores", "topics"
   add_foreign_key "all_time_topic_scores", "users"
   add_foreign_key "answers", "questions"
+  add_foreign_key "asked_questions", "questions"
+  add_foreign_key "asked_questions", "quizzes"
   add_foreign_key "challenge_progresses", "challenges"
   add_foreign_key "challenge_progresses", "users"
   add_foreign_key "challenges", "topics"
   add_foreign_key "classroom_winners", "classrooms"
   add_foreign_key "classroom_winners", "users"
+  add_foreign_key "classrooms", "schools"
+  add_foreign_key "classrooms", "subjects"
   add_foreign_key "customisation_unlocks", "customisations"
   add_foreign_key "customisation_unlocks", "users"
   add_foreign_key "enrollments", "classrooms"
@@ -465,18 +470,22 @@ ActiveRecord::Schema[7.2].define(version: 2026_06_08_181350) do
   add_foreign_key "leaderboard_awards", "schools"
   add_foreign_key "leaderboard_awards", "subjects"
   add_foreign_key "leaderboard_awards", "users"
+  add_foreign_key "lessons", "topics"
   add_foreign_key "question_statistics", "questions"
   add_foreign_key "questions", "lessons"
   add_foreign_key "questions", "topics"
   add_foreign_key "quizzes", "lessons"
+  add_foreign_key "quizzes", "subjects"
   add_foreign_key "quizzes", "topics"
   add_foreign_key "quizzes", "users"
   add_foreign_key "schools", "school_groups"
   add_foreign_key "topic_scores", "topics"
   add_foreign_key "topic_scores", "users"
+  add_foreign_key "topics", "lessons", column: "default_lesson_id", on_delete: :nullify
   add_foreign_key "topics", "subjects"
   add_foreign_key "usage_statistics", "lessons"
   add_foreign_key "usage_statistics", "topics"
   add_foreign_key "usage_statistics", "users"
   add_foreign_key "user_statistics", "users"
+  add_foreign_key "users", "schools"
 end

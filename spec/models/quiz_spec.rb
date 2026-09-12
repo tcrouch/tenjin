@@ -52,6 +52,13 @@ RSpec.describe Quiz, :default_creates do
       Quiz.deactivate_stale_for(user)
       expect(progressed_old.reload.active).to be false
     end
+
+    it "removes the asked questions of a deleted quiz" do
+      empty_old = create(:quiz, user: user, created_at: 2.days.ago, num_questions_asked: 0)
+      asked = create(:asked_question, quiz: empty_old)
+      create(:quiz, user: user, created_at: 1.minute.ago)
+      expect { Quiz.deactivate_stale_for(user) }.to change { AskedQuestion.exists?(asked.id) }.to(false)
+    end
   end
 
   context "when a quiz is created" do
