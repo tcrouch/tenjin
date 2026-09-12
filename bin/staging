@@ -1,0 +1,238 @@
+#!/usr/bin/env bash
+#
+# A throwaway Heroku app for rehearsing a production deploy of ogat-tenjin on
+# the current stack, against copies of the production database and S3 bucket.
+#
+#   bin/staging create          app, buildpacks, Postgres, config vars
+#   bin/staging copy-db         copy the production database into it
+#   bin/staging copy-s3         scratch bucket: policy, CORS, sync from production
+#   bin/staging deploy [ref]    push a git ref (default master), scale web + worker
+#   bin/staging smoke           automated probes, then the manual checklist
+#   bin/staging status          app, dynos, recent releases
+#   bin/staging destroy         destroy the app; offer to delete the bucket
+#
+# DRY_RUN=1 prints mutating commands instead of running them.
+# docs/staging-rehearsal.md has the checklist and the deploy-day runbook.
+
+set -euo pipefail
+
+PROD_APP=${PROD_APP:-ogat-tenjin}
+STAGING_APP=${STAGING_APP:-ogat-tenjin-staging}
+TEAM=${TEAM:-outwood}
+REGION=${REGION:-eu}
+STACK=${STACK:-heroku-24}
+PG_PLAN=${PG_PLAN:-essential-0}
+PG_VERSION=${PG_VERSION:-16}
+DYNO_SIZE=${DYNO_SIZE:-basic}
+STAGING_BUCKET=${STAGING_BUCKET:-ogat-tenjin-staging}
+
+# Never copied from production: the database URLs (staging must never inherit
+# them), scaling and monitoring tokens that would report against the real app,
+# SSO credentials whose callbacks are registered for the production host only,
+# and the webpack 4 era Node flag the new build must prove it no longer needs.
+DROP_VARS=(
+  DATABASE_URL
+  HIREFIRE_TOKEN
+  SCOUT_KEY SCOUT_MONITOR SCOUT_LOG_LEVEL ROLLBAR_ENDPOINT
+  WONDE_CLIENT_ID WONDE_SECRET GOOGLE_CLIENT_ID GOOGLE_SECRET GOOGLE_ANALYTICS_ID
+  NODE_OPTIONS
+)
+
+# Copied from production but replaced with staging values.
+OVERRIDE_VARS=(DEFAULT_HOST ASSET_HOST CORS_ORIGINS WONDE_CALLBACK AWS_S3_BUCKET SECRET_KEY_BASE)
+
+ROOT=$(cd "$(dirname "$0")/.." && pwd)
+CHECKLIST="$ROOT/docs/staging-rehearsal.md"
+
+say() { printf '\n== %s\n' "$*"; }
+die() { printf 'error: %s\n' "$*" >&2; exit 1; }
+need() { command -v "$1" >/dev/null || die "$1 is required"; }
+
+# Mutating command: always echoed, skipped under DRY_RUN.
+run() {
+  printf '+ %s\n' "$*"
+  [[ -n ${DRY_RUN:-} ]] || "$@"
+}
+
+app_exists() { heroku apps:info -a "$STAGING_APP" >/dev/null 2>&1; }
+
+staging_host() {
+  heroku apps:info -a "$STAGING_APP" --json | jq -r '.app.web_url' | sed -E 's#^https?://##; s#/$##'
+}
+
+prod_var() { heroku config:get "$1" -a "$PROD_APP"; }
+
+usage() { sed -n '3,/^$/p' "$0" | sed 's/^# \{0,1\}//'; }
+
+cmd_create() {
+  need heroku; need jq; need openssl
+
+  if app_exists; then
+    say "$STAGING_APP exists; refreshing buildpacks and config only"
+  else
+    say "Creating $STAGING_APP ($STACK, region $REGION, team $TEAM)"
+    run heroku apps:create "$STAGING_APP" --team "$TEAM" --region "$REGION" --stack "$STACK" --no-remote
+  fi
+
+  say "Buildpacks, in production's order"
+  run heroku buildpacks:clear -a "$STAGING_APP"
+  run heroku buildpacks:add heroku/nodejs -a "$STAGING_APP"
+  run heroku buildpacks:add heroku/ruby -a "$STAGING_APP"
+  run heroku buildpacks:add heroku/metrics -a "$STAGING_APP"
+
+  say "Postgres $PG_VERSION on $PG_PLAN"
+  if heroku addons -a "$STAGING_APP" --json 2>/dev/null |
+      jq -e '.[] | select(.addon_service.name == "heroku-postgresql")' >/dev/null; then
+    echo "already provisioned"
+  else
+    run heroku addons:create "heroku-postgresql:$PG_PLAN" --version "$PG_VERSION" -a "$STAGING_APP"
+    run heroku pg:wait -a "$STAGING_APP"
+  fi
+
+  say "Config vars: production's, minus ${DROP_VARS[*]} and HEROKU_POSTGRESQL_*"
+  local host drop_json
+  host=$(staging_host 2>/dev/null || echo "$STAGING_APP.herokuapp.com")
+  drop_json=$(printf '%s\n' "${DROP_VARS[@]}" "${OVERRIDE_VARS[@]}" | jq -R . | jq -s .)
+  local -a pairs=()
+  while IFS= read -r line; do pairs+=("$line"); done < <(
+    heroku config -a "$PROD_APP" --json |
+      jq -r --argjson drop "$drop_json" '
+        to_entries
+        | map(select((.key | IN($drop[]) | not) and (.key | test("^HEROKU_POSTGRESQL_") | not)))
+        | .[] | "\(.key)=\(.value)"'
+  )
+  pairs+=(
+    "DEFAULT_HOST=$host"
+    "ASSET_HOST=https://$host"
+    "CORS_ORIGINS=https://$host"
+    "WONDE_CALLBACK=https://$host/users/auth/wonde/callback"
+    "AWS_S3_BUCKET=$STAGING_BUCKET"
+    "SECRET_KEY_BASE=$(openssl rand -hex 64)"
+  )
+  printf 'setting %d vars:' "${#pairs[@]}"; printf ' %s' "${pairs[@]%%=*}"; echo
+  [[ -n ${DRY_RUN:-} ]] || heroku config:set -a "$STAGING_APP" "${pairs[@]}" >/dev/null
+
+  say "Next: bin/staging copy-db && bin/staging copy-s3 && bin/staging deploy"
+}
+
+cmd_copy_db() {
+  need heroku
+  app_exists || die "$STAGING_APP does not exist; run bin/staging create first"
+  say "Replacing the $STAGING_APP database with a copy of $PROD_APP's"
+  run heroku pg:copy "$PROD_APP::DATABASE_URL" DATABASE_URL -a "$STAGING_APP" --confirm "$STAGING_APP"
+}
+
+cmd_copy_s3() {
+  need aws; need heroku; need jq
+  app_exists || die "$STAGING_APP does not exist; run bin/staging create first"
+  local prod_bucket region app_key app_user app_arn policy cors host
+  prod_bucket=$(prod_var AWS_S3_BUCKET)
+  region=$(prod_var AWS_REGION)
+  [[ -n $prod_bucket && -n $region ]] || die "AWS_S3_BUCKET and AWS_REGION must be set on $PROD_APP"
+  [[ $STAGING_BUCKET != "$prod_bucket" ]] || die "STAGING_BUCKET must differ from the production bucket"
+
+  say "Scratch bucket s3://$STAGING_BUCKET in $region"
+  if aws s3api head-bucket --bucket "$STAGING_BUCKET" 2>/dev/null; then
+    echo "already exists"
+  else
+    run aws s3 mb "s3://$STAGING_BUCKET" --region "$region"
+  fi
+
+  say "Bucket policy: the app's IAM user gets full access to the scratch bucket"
+  app_key=$(prod_var AWS_ACCESS_KEY_ID)
+  app_user=$(aws iam get-access-key-last-used --access-key-id "$app_key" --query UserName --output text) ||
+    die "cannot resolve the IAM user behind the app's key; grant it access to s3://$STAGING_BUCKET by hand"
+  app_arn=$(aws iam get-user --user-name "$app_user" --query User.Arn --output text)
+  policy=$(jq -n --arg arn "$app_arn" --arg bucket "$STAGING_BUCKET" '{
+    Version: "2012-10-17",
+    Statement: [{
+      Effect: "Allow", Principal: {AWS: $arn}, Action: "s3:*",
+      Resource: ["arn:aws:s3:::\($bucket)", "arn:aws:s3:::\($bucket)/*"]
+    }]
+  }')
+  echo "principal: $app_arn"
+  run aws s3api put-bucket-policy --bucket "$STAGING_BUCKET" --policy "$policy"
+
+  say "CORS: production's rules with the app origin rewritten to staging"
+  host=$(staging_host)
+  cors=$(aws s3api get-bucket-cors --bucket "$prod_bucket" --output json |
+    jq --arg origin "https://$host" '{CORSRules: [.CORSRules[] |
+      if (.AllowedOrigins | index("*")) then . else .AllowedOrigins = [$origin] end]}')
+  run aws s3api put-bucket-cors --bucket "$STAGING_BUCKET" --cors-configuration "$cors"
+
+  say "Syncing s3://$prod_bucket -> s3://$STAGING_BUCKET"
+  run aws s3 sync "s3://$prod_bucket" "s3://$STAGING_BUCKET"
+}
+
+cmd_deploy() {
+  need heroku; need git
+  local ref=${1:-master}
+  app_exists || die "$STAGING_APP does not exist; run bin/staging create first"
+
+  say "Pushing $ref to $STAGING_APP: build, then the release phase runs migrations"
+  run git push --force "https://git.heroku.com/$STAGING_APP.git" "$ref:master"
+
+  say "Formation: one web and one worker on $DYNO_SIZE dynos (HireFire is not on staging)"
+  run heroku ps:scale "web=1:$DYNO_SIZE" "worker=1:$DYNO_SIZE" -a "$STAGING_APP"
+
+  say "Open https://$(staging_host)/ then run bin/staging smoke"
+}
+
+cmd_smoke() {
+  need heroku; need curl
+  app_exists || die "$STAGING_APP does not exist"
+  local host path
+  host=$(staging_host)
+
+  say "HTTP status"
+  for path in / /users/sign_in /admins/sign_in; do
+    printf '%-18s %s\n' "$path" "$(curl -sS -o /dev/null -w '%{http_code}' "https://$host$path")"
+  done
+
+  say "Dynos"
+  heroku ps -a "$STAGING_APP"
+
+  say "Schema, row counts and a blob lookup against the scratch bucket (one-off dyno)"
+  heroku run -a "$STAGING_APP" --exit-code -- rails runner \
+    'puts "schema=#{ActiveRecord::Base.connection.select_value("select max(version) from schema_migrations")} users=#{User.count} quizzes=#{Quiz.count} jobs=#{Delayed::Job.count}"; b = ActiveStorage::Blob.first; puts(b ? "blob #{b.key} exists=#{b.service.exist?(b.key)}" : "no blobs")'
+
+  say "Errors in the last 1000 log lines"
+  heroku logs -a "$STAGING_APP" -n 1000 | grep -iE 'error|fatal|exception' | tail -20 || echo "none"
+
+  say "Manual checklist ($CHECKLIST)"
+  sed -n '/^## Checklist/,/^## Deploy day/p' "$CHECKLIST" | sed '1d;$d'
+}
+
+cmd_status() {
+  need heroku
+  app_exists || die "$STAGING_APP does not exist"
+  heroku apps:info -a "$STAGING_APP"
+  heroku ps -a "$STAGING_APP"
+  heroku releases -a "$STAGING_APP" -n 5
+}
+
+cmd_destroy() {
+  need heroku
+  if app_exists; then
+    say "Destroying $STAGING_APP"
+    run heroku apps:destroy -a "$STAGING_APP" --confirm "$STAGING_APP"
+  else
+    echo "$STAGING_APP does not exist"
+  fi
+  if command -v aws >/dev/null && aws s3api head-bucket --bucket "$STAGING_BUCKET" 2>/dev/null; then
+    local answer
+    read -r -p "Delete s3://$STAGING_BUCKET and everything in it? [y/N] " answer
+    [[ $answer == [yY] ]] && run aws s3 rb "s3://$STAGING_BUCKET" --force
+  fi
+}
+
+case ${1:-} in
+  create) cmd_create ;;
+  copy-db) cmd_copy_db ;;
+  copy-s3) cmd_copy_s3 ;;
+  deploy) shift; cmd_deploy "$@" ;;
+  smoke) cmd_smoke ;;
+  status) cmd_status ;;
+  destroy) cmd_destroy ;;
+  *) usage; exit 1 ;;
+esac
