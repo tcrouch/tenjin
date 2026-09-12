@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_06_16_120400) do
+ActiveRecord::Schema[7.2].define(version: 2026_06_16_120500) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -89,8 +89,8 @@ ActiveRecord::Schema[7.2].define(version: 2026_06_16_120400) do
 
   create_table "all_time_topic_scores", force: :cascade do |t|
     t.integer "score"
-    t.bigint "user_id"
-    t.bigint "topic_id"
+    t.bigint "user_id", null: false
+    t.bigint "topic_id", null: false
     t.datetime "created_at", precision: nil, null: false
     t.datetime "updated_at", precision: nil, null: false
     t.index ["topic_id"], name: "index_all_time_topic_scores_on_topic_id"
@@ -98,9 +98,9 @@ ActiveRecord::Schema[7.2].define(version: 2026_06_16_120400) do
   end
 
   create_table "answers", force: :cascade do |t|
-    t.bigint "question_id"
+    t.bigint "question_id", null: false
     t.string "text"
-    t.boolean "correct", default: false
+    t.boolean "correct", default: false, null: false
     t.datetime "created_at", precision: nil, null: false
     t.datetime "updated_at", precision: nil, null: false
     t.integer "external_id"
@@ -108,8 +108,8 @@ ActiveRecord::Schema[7.2].define(version: 2026_06_16_120400) do
   end
 
   create_table "asked_questions", force: :cascade do |t|
-    t.bigint "question_id"
-    t.bigint "quiz_id"
+    t.bigint "question_id", null: false
+    t.bigint "quiz_id", null: false
     t.boolean "correct"
     t.datetime "created_at", precision: nil, null: false
     t.datetime "updated_at", precision: nil, null: false
@@ -135,16 +135,16 @@ ActiveRecord::Schema[7.2].define(version: 2026_06_16_120400) do
     t.datetime "end_date", precision: nil
     t.integer "number_required"
     t.integer "points"
-    t.bigint "topic_id"
+    t.bigint "topic_id", null: false
     t.datetime "created_at", precision: nil, null: false
     t.datetime "updated_at", precision: nil, null: false
-    t.boolean "daily", default: false
+    t.boolean "daily", default: false, null: false
     t.index ["topic_id"], name: "index_challenges_on_topic_id"
   end
 
   create_table "classroom_winners", force: :cascade do |t|
-    t.bigint "user_id"
-    t.bigint "classroom_id"
+    t.bigint "user_id", null: false
+    t.bigint "classroom_id", null: false
     t.integer "score"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
@@ -157,12 +157,12 @@ ActiveRecord::Schema[7.2].define(version: 2026_06_16_120400) do
     t.string "name", null: false
     t.string "code"
     t.string "description"
-    t.boolean "disabled", default: false
+    t.boolean "disabled", default: false, null: false
     t.bigint "subject_id"
-    t.bigint "school_id"
+    t.bigint "school_id", null: false
     t.datetime "created_at", precision: nil, null: false
     t.datetime "updated_at", precision: nil, null: false
-    t.integer "enrollments_count", default: 0
+    t.integer "enrollments_count", default: 0, null: false
     t.index ["school_id"], name: "index_classrooms_on_school_id"
     t.index ["subject_id"], name: "index_classrooms_on_subject_id"
   end
@@ -204,8 +204,8 @@ ActiveRecord::Schema[7.2].define(version: 2026_06_16_120400) do
   end
 
   create_table "enrollments", force: :cascade do |t|
-    t.bigint "user_id"
-    t.bigint "classroom_id"
+    t.bigint "user_id", null: false
+    t.bigint "classroom_id", null: false
     t.datetime "created_at", precision: nil, null: false
     t.datetime "updated_at", precision: nil, null: false
     t.index ["classroom_id", "user_id"], name: "index_enrollments_on_classroom_id_and_user_id", unique: true
@@ -223,10 +223,10 @@ ActiveRecord::Schema[7.2].define(version: 2026_06_16_120400) do
   end
 
   create_table "homework_progresses", force: :cascade do |t|
-    t.bigint "homework_id"
-    t.bigint "user_id"
-    t.integer "progress", default: 0
-    t.boolean "completed", default: false
+    t.bigint "homework_id", null: false
+    t.bigint "user_id", null: false
+    t.integer "progress", default: 0, null: false
+    t.boolean "completed", default: false, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["homework_id"], name: "index_homework_progresses_on_homework_id"
@@ -234,8 +234,8 @@ ActiveRecord::Schema[7.2].define(version: 2026_06_16_120400) do
   end
 
   create_table "homeworks", force: :cascade do |t|
-    t.bigint "classroom_id"
-    t.bigint "topic_id"
+    t.bigint "classroom_id", null: false
+    t.bigint "topic_id", null: false
     t.datetime "due_date", precision: nil
     t.integer "required"
     t.datetime "created_at", null: false
@@ -247,9 +247,9 @@ ActiveRecord::Schema[7.2].define(version: 2026_06_16_120400) do
   end
 
   create_table "leaderboard_awards", force: :cascade do |t|
-    t.bigint "subject_id"
-    t.bigint "user_id"
-    t.bigint "school_id"
+    t.bigint "subject_id", null: false
+    t.bigint "user_id", null: false
+    t.bigint "school_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["school_id"], name: "index_leaderboard_awards_on_school_id"
@@ -261,10 +261,10 @@ ActiveRecord::Schema[7.2].define(version: 2026_06_16_120400) do
     t.string "title"
     t.integer "category"
     t.string "video_id"
-    t.bigint "topic_id"
+    t.bigint "topic_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.integer "questions_count", default: 0
+    t.integer "questions_count", default: 0, null: false
     t.index ["topic_id"], name: "index_lessons_on_topic_id"
   end
 
@@ -285,14 +285,14 @@ ActiveRecord::Schema[7.2].define(version: 2026_06_16_120400) do
   end
 
   create_table "questions", force: :cascade do |t|
-    t.bigint "topic_id"
+    t.bigint "topic_id", null: false
     t.integer "question_type"
     t.datetime "created_at", precision: nil, null: false
     t.datetime "updated_at", precision: nil, null: false
     t.integer "external_id"
     t.bigint "lesson_id"
     t.boolean "active", default: true
-    t.integer "flagged_questions_count", default: 0
+    t.integer "flagged_questions_count", default: 0, null: false
     t.index ["lesson_id"], name: "index_questions_on_lesson_id"
     t.index ["topic_id"], name: "index_questions_on_topic_id"
   end
@@ -302,12 +302,12 @@ ActiveRecord::Schema[7.2].define(version: 2026_06_16_120400) do
     t.integer "streak"
     t.integer "answered_correct"
     t.integer "num_questions_asked"
-    t.bigint "user_id"
-    t.bigint "subject_id"
+    t.bigint "user_id", null: false
+    t.bigint "subject_id", null: false
     t.bigint "topic_id"
-    t.boolean "active", default: false
+    t.boolean "active", default: false, null: false
     t.integer "question_order", array: true
-    t.boolean "counts_for_leaderboard", default: false
+    t.boolean "counts_for_leaderboard", default: false, null: false
     t.datetime "created_at", precision: nil, null: false
     t.datetime "updated_at", precision: nil, null: false
     t.bigint "lesson_id"
@@ -366,7 +366,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_06_16_120400) do
 
   create_table "topics", force: :cascade do |t|
     t.string "name", null: false
-    t.bigint "subject_id"
+    t.bigint "subject_id", null: false
     t.datetime "created_at", precision: nil, null: false
     t.datetime "updated_at", precision: nil, null: false
     t.integer "external_id"
@@ -413,7 +413,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_06_16_120400) do
     t.inet "last_sign_in_ip"
     t.datetime "created_at", precision: nil, null: false
     t.datetime "updated_at", precision: nil, null: false
-    t.bigint "school_id"
+    t.bigint "school_id", null: false
     t.integer "role", null: false
     t.string "provider"
     t.string "upi"
@@ -424,7 +424,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_06_16_120400) do
     t.integer "challenge_points"
     t.datetime "time_of_last_quiz", precision: nil
     t.string "username"
-    t.boolean "disabled", default: false
+    t.boolean "disabled", default: false, null: false
     t.string "oauth_provider"
     t.string "oauth_uid"
     t.string "oauth_email"

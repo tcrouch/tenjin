@@ -50,7 +50,7 @@ RSpec.describe Question, :default_creates do
     end
 
     context "with non-boolean answer text" do
-      before { boolean_question.answers.first.update!(text: "Maybe") }
+      before { boolean_question.answers.first.text = "Maybe" }
 
       it "is invalid" do
         expect(boolean_question).not_to be_valid

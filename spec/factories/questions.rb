@@ -15,8 +15,8 @@ FactoryBot.define do
     factory :boolean_question do
       question_type { "boolean" }
       after(:build) do |q|
-        q.answers.first.update!(text: "true")
-        q.answers << create(:answer, question: q, text: "false")
+        q.answers.first.text = "true"
+        q.answers << build(:answer, question: q, text: "false")
       end
     end
 
@@ -24,6 +24,6 @@ FactoryBot.define do
       lesson
     end
 
-    after(:build) { |question| question.answers << create(:answer, question: question, correct: true) }
+    after(:build) { |question| question.answers << build(:answer, question: question, correct: true) }
   end
 end
