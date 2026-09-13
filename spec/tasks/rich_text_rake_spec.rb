@@ -21,6 +21,10 @@ RSpec.describe "rich_text rake tasks" do
     it "runs with the current secret when OLD_SECRET_KEY_BASE is unset" do
       expect { run_task("rich_text:resign_attachment_sgids") }.to output(/re-signed 0/).to_stdout
     end
+
+    it "reports the urls it rewrote" do
+      expect { run_task("rich_text:resign_attachment_sgids") }.to output(/urls rewritten 0/).to_stdout
+    end
   end
 
   describe "rich_text:downgrade_attachment_sgids" do

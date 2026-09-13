@@ -23,8 +23,9 @@ RSpec.describe RichText::ResignAttachmentSgids do
   # The Marshal token Rails 6.1 wrote, not the JSON envelope SignedGlobalID.create writes
   def sha1_sgid(record, secret: Rails.application.secret_key_base) = sha1_signer(secret).call(record)
 
-  def attachment_tag(sgid)
-    %(<action-text-attachment sgid="#{sgid}" content-type="image/jpeg" filename="game-pieces.jpg"></action-text-attachment>)
+  def attachment_tag(sgid, url: nil)
+    url_attribute = url ? %( url="#{url}") : ""
+    %(<action-text-attachment sgid="#{sgid}"#{url_attribute} content-type="image/jpeg" filename="game-pieces.jpg"></action-text-attachment>)
   end
 
   def store_body(html)
@@ -32,11 +33,22 @@ RSpec.describe RichText::ResignAttachmentSgids do
     rich_text.reload
   end
 
-  def store_attachment(sgid) = store_body(attachment_tag(sgid))
+  def store_attachment(sgid, url: nil) = store_body(attachment_tag(sgid, url: url))
 
-  def stored_sgid
-    rich_text.reload.body.fragment.find_all("action-text-attachment").first["sgid"]
-  end
+  def stored_attachment = rich_text.reload.body.fragment.find_all("action-text-attachment").first
+
+  def stored_sgid = stored_attachment["sgid"]
+
+  def stored_url = stored_attachment["url"]
+
+  # The path the upload template hands Trix, host stripped
+  def blob_path(blob) = Rails.application.routes.url_helpers.rails_service_blob_path(blob.signed_id, blob.filename)
+
+  # The blob a stored url's signed id resolves to under the current verifier
+  def blob_from(url) = ActiveStorage::Blob.find_signed(url.to_s[%r{/blobs/redirect/([^/]+)/}, 1].to_s)
+
+  # As Trix stored it under the previous release, host and signature included
+  let(:previous_release_url) { "https://tenjin.outwood.com/rails/active_storage/blobs/previous-signed-id/game-pieces.jpg" }
 
   context "with an attachment signed under SHA1" do
     before { store_attachment(sha1_sgid(blob)) }
@@ -63,6 +75,30 @@ RSpec.describe RichText::ResignAttachmentSgids do
 
     it "reports the count" do
       expect(described_class.call).to have_attributes(success?: true, payload: include(resigned: 1, unverifiable: 0))
+    end
+
+    it "gives the editor this release's blob path" do
+      described_class.call
+      expect(stored_url).to eq(blob_path(blob))
+    end
+
+    it "changes nothing on a second run" do
+      described_class.call
+      expect { described_class.call }.not_to change { rich_text.reload.body.to_html }
+      expect(described_class.call.payload).to include(resigned: 0, urls_rewritten: 0)
+    end
+  end
+
+  context "with an attachment whose url the previous release issued" do
+    before { store_attachment(sha1_sgid(blob), url: previous_release_url) }
+
+    it "replaces it with this release's blob path" do
+      described_class.call
+      expect(stored_url).to eq(blob_path(blob))
+    end
+
+    it "counts the url" do
+      expect(described_class.call.payload).to include(urls_rewritten: 1)
     end
   end
 
@@ -110,15 +146,29 @@ RSpec.describe RichText::ResignAttachmentSgids do
     end
   end
 
-  context "with an attachment that already verifies" do
-    before { store_attachment(blob.attachable_sgid) }
+  context "with an attachment that already verifies and carries this release's url" do
+    before { store_attachment(blob.attachable_sgid, url: blob_path(blob)) }
 
     it "leaves the body untouched" do
       expect { described_class.call }.not_to change { rich_text.reload.body.to_html }
     end
 
     it "counts it as already in the target form" do
-      expect(described_class.call.payload).to include(already_target: 1, resigned: 0)
+      expect(described_class.call.payload).to include(already_target: 1, resigned: 0, urls_rewritten: 0)
+    end
+  end
+
+  context "with an attachment that already verifies but carries the previous release's url" do
+    before { store_attachment(blob.attachable_sgid, url: previous_release_url) }
+
+    it "rewrites the url and nothing else" do
+      expect { described_class.call }
+        .to change { stored_url }.to(blob_path(blob))
+        .and not_change { stored_sgid }
+    end
+
+    it "counts the url beside the untouched id" do
+      expect(described_class.call.payload).to include(already_target: 1, resigned: 0, urls_rewritten: 1)
     end
   end
 
@@ -152,7 +202,7 @@ RSpec.describe RichText::ResignAttachmentSgids do
     end
 
     context "with an attachment signed by the current verifier" do
-      before { store_attachment(blob.attachable_sgid) }
+      before { store_attachment(blob.attachable_sgid, url: blob_path(blob)) }
 
       it "keeps the blob attached as an embed and schedules no purge" do
         rich_text.update!(body: rich_text.body)
@@ -182,7 +232,23 @@ RSpec.describe RichText::ResignAttachmentSgids do
       end
 
       it "reports the count" do
-        expect(downgrade).to have_attributes(success?: true, payload: include(resigned: 1, unverifiable: 0))
+        expect(downgrade).to have_attributes(success?: true, payload: include(resigned: 1, unverifiable: 0, urls_rewritten: 1))
+      end
+
+      it "writes a url the previous release can serve" do
+        downgrade
+        signed_id = stored_url[%r{\A/rails/active_storage/blobs/redirect/([^/]+)/game-pieces\.jpg\z}, 1]
+        payload, digest = signed_id.split("--")
+        key = ActiveSupport::KeyGenerator.new(Rails.application.secret_key_base, iterations: 1000, hash_digest_class: OpenSSL::Digest::SHA1)
+          .generate_key("ActiveStorage")
+        expect(digest).to eq(OpenSSL::HMAC.hexdigest("SHA1", key, payload))
+        expect(JSON.parse(Base64.strict_decode64(payload)))
+          .to eq("_rails" => {"message" => Base64.strict_encode64(Marshal.dump(blob.id)), "exp" => nil, "pur" => "blob_id"})
+      end
+
+      it "no longer resolves the url under the current verifier" do
+        downgrade
+        expect(blob_from(stored_url)).to be_nil
       end
     end
 
@@ -197,12 +263,15 @@ RSpec.describe RichText::ResignAttachmentSgids do
       end
     end
 
-    context "with an attachment already signed under SHA1" do
-      before { store_attachment(sha1_sgid(blob)) }
+    context "with an attachment already signed under SHA1, url included" do
+      before do
+        signed_id = sha1_signer.blob_signed_id(blob)
+        store_attachment(sha1_sgid(blob), url: Rails.application.routes.url_helpers.rails_service_blob_path(signed_id, blob.filename))
+      end
 
       it "leaves the body untouched and counts it as already in the target form" do
         expect { downgrade }.not_to change { rich_text.reload.body.to_html }
-        expect(downgrade.payload).to include(already_target: 1, resigned: 0)
+        expect(downgrade.payload).to include(already_target: 1, resigned: 0, urls_rewritten: 0)
       end
     end
 
@@ -221,6 +290,15 @@ RSpec.describe RichText::ResignAttachmentSgids do
       described_class.call(direction: :downgrade)
       described_class.call
       expect(rich_text.reload.body.attachables).to eq([blob])
+      expect(blob_from(stored_url)).to eq(blob)
+    end
+
+    it "reproduces the blob id of a production url" do
+      # The payload half of the signed id in a real production url for blob
+      # 720, which does not depend on the secret
+      production_payload = "eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaHBBdEFDIiwiZXhwIjpudWxsLCJwdXIiOiJibG9iX2lkIn19"
+      signed_id = described_class::Sha1Signer.new("any secret").blob_signed_id(ActiveStorage::Blob.new(id: 720))
+      expect(signed_id.split("--").first).to eq(production_payload)
     end
 
     it "reproduces the payload of a production token" do

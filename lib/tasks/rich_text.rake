@@ -7,7 +7,8 @@ namespace :rich_text do
     counts = result.payload
     already = (direction == :upgrade) ? "current" : "SHA1"
     puts "re-signed #{counts[:resigned]}, already #{already} #{counts[:already_target]}, " \
-      "record missing #{counts[:missing]}, unverifiable #{counts[:unverifiable]}"
+      "record missing #{counts[:missing]}, unverifiable #{counts[:unverifiable]}, " \
+      "urls rewritten #{counts[:urls_rewritten]}"
 
     case result
     in {success: false}
