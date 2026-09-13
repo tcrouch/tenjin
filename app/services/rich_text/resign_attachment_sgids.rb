@@ -2,28 +2,22 @@
 
 # Re-signs the signed global ids inside stored Action Text attachments.
 #
-# Rails 7.0 derives the signed-global-id key with SHA256 instead of SHA1, so
-# ids signed before the upgrade no longer verify and every embedded image
-# renders as a missing attachment (☒). Upgrading verifies each tag with the
-# old derivation, resolves it, and re-signs it with the current verifier.
-# Downgrading does the reverse, writing the pre-Rails 7 token so a rolled
-# back release can still resolve the attachments. Pass the secret the other
-# release runs with as old_secret when SECRET_KEY_BASE differs between them.
+# The SHA256 key derivation that load_defaults 7.0 and later select does not
+# verify ids signed under SHA1, so every embedded image renders as a missing
+# attachment (☒). Upgrading re-signs SHA1 ids with the current verifier;
+# downgrading does the reverse, so a rolled-back release can resolve them.
 #
-# Rerunnable: ids already in the target form are skipped and ids whose record
-# is gone are left alone. Ids that verify under neither key are left alone
-# too and reported as a failure, so a wrong old_secret shows up instead of
-# passing silently; rerun with the right one for the remainder.
+# Rerunnable: ids already in the target form, and ids whose record is gone,
+# are left alone. Ids that verify under neither key fail the run, so a wrong
+# old_secret shows up instead of passing silently.
 class RichText::ResignAttachmentSgids < ApplicationCommand
   PURPOSE = ActionText::Attachable::LOCATOR_NAME
-  OUTCOMES = %i[resigned current missing unverifiable].freeze
+  OUTCOMES = %i[resigned already_target missing unverifiable].freeze
   DIRECTIONS = %i[upgrade downgrade].freeze
 
-  # The verifier Rails built before 7.0 (a SHA1-derived key) and the token
-  # globalid wrote with it: a self-validated Marshal hash, byte-identical to
-  # what production stores, down to the `?expires_in` the old gem left on the
-  # gid when Action Text asked for a non-expiring id.
-  class LegacySigner
+  # Signs and verifies sgids as Rails 6.1 wrote them: a SHA1-derived key, a
+  # Marshal payload, and a gid suffixed `?expires_in` for a non-expiring id.
+  class Sha1Signer
     attr_reader :verifier
 
     def initialize(secret)
@@ -39,13 +33,14 @@ class RichText::ResignAttachmentSgids < ApplicationCommand
     end
   end
 
+  # old_secret keys the SHA1 side: the secret the Rails 6.1 release runs with
   def initialize(old_secret: Rails.application.secret_key_base, direction: :upgrade)
     unless DIRECTIONS.include?(direction)
       raise ArgumentError, "direction must be one of #{DIRECTIONS.join(", ")}, got #{direction.inspect}"
     end
 
     @direction = direction
-    @legacy = LegacySigner.new(old_secret)
+    @sha1 = Sha1Signer.new(old_secret)
     @counts = OUTCOMES.index_with(0)
   end
 
@@ -74,15 +69,14 @@ class RichText::ResignAttachmentSgids < ApplicationCommand
       end
       node
     end
-    # Written without callbacks: Action Text's before_save recomputes the
-    # embeds from the attachables, which do not resolve under the current
-    # verifier after a downgrade, and detaching them purges the blobs.
+    # Skips callbacks: before_save rebuilds the embeds from the attachables,
+    # which a downgraded id cannot resolve, and purges the blobs it detaches.
     rich_text.update_column(:body, ActionText::Content.new(fragment).to_html) if changed
   end
 
-  # [outcome, new_sgid_or_nil]. :current means already in the target form.
+  # [outcome, new_sgid_or_nil]
   def resign(sgid)
-    return [:current, nil] if parse(sgid, target_verifier)
+    return [:already_target, nil] if parse(sgid, target_verifier)
 
     source = parse(sgid, source_verifier)
     return [:unverifiable, nil] unless source
@@ -98,9 +92,9 @@ class RichText::ResignAttachmentSgids < ApplicationCommand
 
   def upgrade? = @direction == :upgrade
 
-  def target_verifier = upgrade? ? SignedGlobalID.verifier : @legacy.verifier
+  def target_verifier = upgrade? ? SignedGlobalID.verifier : @sha1.verifier
 
-  def source_verifier = upgrade? ? @legacy.verifier : SignedGlobalID.verifier
+  def source_verifier = upgrade? ? @sha1.verifier : SignedGlobalID.verifier
 
-  def sign(record) = upgrade? ? record.attachable_sgid : @legacy.call(record)
+  def sign(record) = upgrade? ? record.attachable_sgid : @sha1.call(record)
 end

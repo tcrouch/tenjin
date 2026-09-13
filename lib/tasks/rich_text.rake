@@ -5,8 +5,8 @@ namespace :rich_text do
     old_secret = ENV["OLD_SECRET_KEY_BASE"].presence || Rails.application.secret_key_base
     result = RichText::ResignAttachmentSgids.call(old_secret: old_secret, direction: direction)
     counts = result.payload
-    already = (direction == :upgrade) ? "current" : "legacy"
-    puts "re-signed #{counts[:resigned]}, already #{already} #{counts[:current]}, " \
+    already = (direction == :upgrade) ? "current" : "SHA1"
+    puts "re-signed #{counts[:resigned]}, already #{already} #{counts[:already_target]}, " \
       "record missing #{counts[:missing]}, unverifiable #{counts[:unverifiable]}"
 
     case result
@@ -18,9 +18,9 @@ namespace :rich_text do
     end
   end
 
-  desc "Re-sign Action Text attachment sgids after the Rails 7 key change; set OLD_SECRET_KEY_BASE if the secret was rotated"
+  desc "Re-sign SHA1-signed Action Text attachment sgids with the current verifier; set OLD_SECRET_KEY_BASE if the secret was rotated"
   task(resign_attachment_sgids: :environment) { resign.call(:upgrade) }
 
-  desc "Sign Action Text attachment sgids the pre-Rails 7 way before a rollback; set OLD_SECRET_KEY_BASE if the rolled-back release runs with a different secret"
+  desc "Sign Action Text attachment sgids under SHA1 before a rollback; set OLD_SECRET_KEY_BASE if the rolled-back release runs with a different secret"
   task(downgrade_attachment_sgids: :environment) { resign.call(:downgrade) }
 end

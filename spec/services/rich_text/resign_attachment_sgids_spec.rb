@@ -18,10 +18,10 @@ RSpec.describe RichText::ResignAttachmentSgids do
     )
   end
 
-  def legacy_signer(secret = Rails.application.secret_key_base) = described_class::LegacySigner.new(secret)
+  def sha1_signer(secret = Rails.application.secret_key_base) = described_class::Sha1Signer.new(secret)
 
-  # The token production stores, not the JSON envelope SignedGlobalID.create writes today
-  def legacy_sgid(record, secret: Rails.application.secret_key_base) = legacy_signer(secret).call(record)
+  # The Marshal token Rails 6.1 wrote, not the JSON envelope SignedGlobalID.create writes
+  def sha1_sgid(record, secret: Rails.application.secret_key_base) = sha1_signer(secret).call(record)
 
   def attachment_tag(sgid)
     %(<action-text-attachment sgid="#{sgid}" content-type="image/jpeg" filename="game-pieces.jpg"></action-text-attachment>)
@@ -38,8 +38,8 @@ RSpec.describe RichText::ResignAttachmentSgids do
     rich_text.reload.body.fragment.find_all("action-text-attachment").first["sgid"]
   end
 
-  context "with an attachment signed under the pre-Rails 7 key derivation" do
-    before { store_attachment(legacy_sgid(blob)) }
+  context "with an attachment signed under SHA1" do
+    before { store_attachment(sha1_sgid(blob)) }
 
     it "does not resolve beforehand" do
       expect(rich_text.body.attachables).to all(be_a(ActionText::Attachables::MissingAttachable))
@@ -69,7 +69,7 @@ RSpec.describe RichText::ResignAttachmentSgids do
   context "with an attachment signed under a previous secret" do
     let(:previous_secret) { "previous-secret-key-base" }
 
-    before { store_attachment(legacy_sgid(blob, secret: previous_secret)) }
+    before { store_attachment(sha1_sgid(blob, secret: previous_secret)) }
 
     it "verifies with that secret and resolves again" do
       described_class.call(old_secret: previous_secret)
@@ -84,7 +84,7 @@ RSpec.describe RichText::ResignAttachmentSgids do
   context "with a remote image beside an attachment to re-sign" do
     let(:remote_image) { %(<action-text-attachment content-type="image/png" url="https://example.com/diagram.png"></action-text-attachment>) }
 
-    before { store_body(attachment_tag(legacy_sgid(blob)) + remote_image) }
+    before { store_body(attachment_tag(sha1_sgid(blob)) + remote_image) }
 
     it "re-signs the attachment and leaves the remote image alone" do
       expect(described_class.call).to have_attributes(success?: true, payload: include(resigned: 1, unverifiable: 0))
@@ -96,12 +96,12 @@ RSpec.describe RichText::ResignAttachmentSgids do
     let(:other_blob) { upload_blob }
 
     before do
-      store_attachment(legacy_sgid(blob))
+      store_attachment(sha1_sgid(blob))
       batch_copy = ActionText::RichText.find(rich_text.id)
       relation = ActionText::RichText.where("body LIKE ?", "%sgid=%")
       allow(ActionText::RichText).to receive(:where).and_return(relation)
       allow(relation).to receive(:find_each).and_yield(batch_copy)
-      store_attachment(legacy_sgid(other_blob))
+      store_attachment(sha1_sgid(other_blob))
     end
 
     it "rewrites the row as stored, not the batch copy" do
@@ -117,14 +117,14 @@ RSpec.describe RichText::ResignAttachmentSgids do
       expect { described_class.call }.not_to change { rich_text.reload.body.to_html }
     end
 
-    it "counts it as current" do
-      expect(described_class.call.payload).to include(current: 1, resigned: 0)
+    it "counts it as already in the target form" do
+      expect(described_class.call.payload).to include(already_target: 1, resigned: 0)
     end
   end
 
   context "with an attachment whose record no longer exists" do
     before do
-      sgid = legacy_sgid(blob)
+      sgid = sha1_sgid(blob)
       blob.purge
       store_attachment(sgid)
     end
@@ -147,8 +147,8 @@ RSpec.describe RichText::ResignAttachmentSgids do
   describe "downgrade" do
     subject(:downgrade) { described_class.call(direction: :downgrade) }
 
-    def legacy_parse(sgid, secret: Rails.application.secret_key_base)
-      SignedGlobalID.parse(sgid, for: "attachable", verifier: legacy_signer(secret).verifier)
+    def sha1_parse(sgid, secret: Rails.application.secret_key_base)
+      SignedGlobalID.parse(sgid, for: "attachable", verifier: sha1_signer(secret).verifier)
     end
 
     context "with an attachment signed by the current verifier" do
@@ -165,9 +165,9 @@ RSpec.describe RichText::ResignAttachmentSgids do
         expect(rich_text.reload.embeds.blobs).to eq([blob])
       end
 
-      it "resolves under the pre-Rails 7 derivation afterwards" do
+      it "resolves under SHA1 afterwards" do
         downgrade
-        expect(legacy_parse(stored_sgid)&.find).to eq(blob)
+        expect(sha1_parse(stored_sgid)&.find).to eq(blob)
       end
 
       it "no longer verifies under the current verifier" do
@@ -175,7 +175,7 @@ RSpec.describe RichText::ResignAttachmentSgids do
         expect(SignedGlobalID.parse(stored_sgid, for: "attachable")).to be_nil
       end
 
-      it "writes the legacy self-validated Marshal payload" do
+      it "writes a self-validated Marshal payload" do
         downgrade
         payload = Marshal.load(Base64.urlsafe_decode64(stored_sgid.split("--").first))
         expect(payload).to eq("gid" => "#{blob.to_gid}?expires_in", "purpose" => "attachable", "expires_at" => nil)
@@ -193,16 +193,16 @@ RSpec.describe RichText::ResignAttachmentSgids do
 
       it "signs with that secret's derivation" do
         described_class.call(direction: :downgrade, old_secret: previous_secret)
-        expect(legacy_parse(stored_sgid, secret: previous_secret)&.find).to eq(blob)
+        expect(sha1_parse(stored_sgid, secret: previous_secret)&.find).to eq(blob)
       end
     end
 
-    context "with an attachment already in the legacy format" do
-      before { store_attachment(legacy_sgid(blob)) }
+    context "with an attachment already signed under SHA1" do
+      before { store_attachment(sha1_sgid(blob)) }
 
-      it "leaves the body untouched and counts it as current" do
+      it "leaves the body untouched and counts it as already in the target form" do
         expect { downgrade }.not_to change { rich_text.reload.body.to_html }
-        expect(downgrade.payload).to include(current: 1, resigned: 0)
+        expect(downgrade.payload).to include(already_target: 1, resigned: 0)
       end
     end
 
@@ -216,18 +216,18 @@ RSpec.describe RichText::ResignAttachmentSgids do
     end
 
     it "round-trips through upgrade and back" do
-      store_attachment(legacy_sgid(blob))
+      store_attachment(sha1_sgid(blob))
       described_class.call
       described_class.call(direction: :downgrade)
       described_class.call
       expect(rich_text.reload.body.attachables).to eq([blob])
     end
 
-    it "reproduces the token format production stores" do
+    it "reproduces the payload of a production token" do
       # The payload half of a real production token for blob 89, which does not
-      # depend on the secret. The app name is part of the gid.
+      # depend on the secret. Its gid embeds the app name from `module Csquiz`.
       production_payload = "BAh7CEkiCGdpZAY6BkVUSSIzZ2lkOi8vY3NxdWl6L0FjdGl2ZVN0b3JhZ2U6OkJsb2IvODk_ZXhwaXJlc19pbgY7AFRJIgxwdXJwb3NlBjsAVEkiD2F0dGFjaGFibGUGOwBUSSIPZXhwaXJlc19hdAY7AFQw"
-      token = described_class::LegacySigner.new("any secret").call(ActiveStorage::Blob.new(id: 89))
+      token = described_class::Sha1Signer.new("any secret").call(ActiveStorage::Blob.new(id: 89))
       expect(token.split("--").first).to eq(production_payload)
     end
   end
