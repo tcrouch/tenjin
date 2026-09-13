@@ -89,9 +89,20 @@ database maintenance window, Fridays 22:30 to Saturdays 02:30 UTC.
    Expect `re-signed 666` or thereabouts and `unverifiable 0`; a non-zero
    unverifiable count means the old secret is wrong, and the task refuses to
    guess. Embedded images show as ☒ until this runs.
-8. `heroku config:unset OLD_SECRET_KEY_BASE -a ogat-tenjin`
+8. `heroku config:unset OLD_SECRET_KEY_BASE -a ogat-tenjin`, keeping the old value in the
+   team password store until the rollback window has passed
 9. Verify on production: an embedded question image renders, Wonde sign-in, Google sign-in, HireFire scales a worker when a job is queued, Scout receives data, and the scheduler jobs still name existing rake tasks
-10. If anything is wrong: `heroku rollback -a ogat-tenjin`. It restores the previous slug and its heroku-20 stack. The one schema migration in this deploy relaxes a NOT NULL on Active Storage blobs, which the old code tolerates. Re-signed attachments cannot verify under the old code whatever the secret, so a rollback after step 7 also means restoring the step 1 backup with `heroku pg:backups:restore`, or accepting ☒ on embedded images until rolling forward.
+10. If anything is wrong, roll back in this order. The schema migration in this
+    deploy relaxes a NOT NULL on Active Storage blobs, which the old code
+    tolerates, but re-signed attachments do not verify under the old code, so
+    they are signed back first, while the new slug can still run the task:
+    1. `heroku config:set OLD_SECRET_KEY_BASE=<pre-rotation secret> -a ogat-tenjin >/dev/null`, wait for that release, confirm the length as in step 4
+    2. `heroku run rake rich_text:downgrade_attachment_sgids -a ogat-tenjin`, expect `re-signed 666` or thereabouts and `unverifiable 0`
+    3. `heroku rollback -a ogat-tenjin`, which restores the previous slug and its heroku-20 stack
+    4. `heroku config:set SECRET_KEY_BASE=<pre-rotation secret> -a ogat-tenjin >/dev/null`, then `heroku config:unset OLD_SECRET_KEY_BASE -a ogat-tenjin`
+
+    If the new slug cannot run a one-off dyno, restore the step 1 backup with
+    `heroku pg:backups:restore` instead of the first two steps.
 
 A few days after a clean deploy, the schema-hardening series follows in two
 releases, `fix/schema-foreign-keys` then `fix/schema-not-null`, with
