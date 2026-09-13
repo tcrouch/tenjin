@@ -16,8 +16,14 @@
   color: white;
 }
 
+// Bootstrap paints --bs-table-bg over every cell, which would hide the tint
 .homework-table {
-  background-color: rgba(0, 0, 0, 0.3);
+  --bs-table-bg: transparent;
+  --bs-table-color: white;
+  --bs-table-hover-color: white;
+  background-color: rgba(0, 0, 0, 0.6);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
 }
 
 #newQuiz {
