@@ -72,12 +72,16 @@ database maintenance window, Fridays 22:30 to Saturdays 02:30 UTC.
 1. `heroku pg:backups:capture -a ogat-tenjin`
 2. `heroku stack:set heroku-24 -a ogat-tenjin`
 3. Bring production's config in line with staging's:
-   - `heroku config:unset NODE_OPTIONS -a ogat-tenjin`, if staging built without it
+   - `heroku config:unset NODE_OPTIONS -a ogat-tenjin`; staging built without it
    - `heroku config:set MALLOC_ARENA_MAX=2 -a ogat-tenjin`. The Ruby buildpack
      defaults this only on apps created since September 2019, so staging has
      it and production does not; without it glibc allows 64 arenas, 8 per
      CPU, and memory can exceed what staging measured.
-4. Rotate the secret, keeping the old one for the re-sign step. Every release,
+4. `heroku maintenance:on -a ogat-tenjin`. From here until the re-sign in
+   step 8 no slug resolves the stored attachments: the old one loses them at
+   the rotation in step 5, the new one cannot read SHA1 ids at all, and a
+   question saved while its images show as ☒ purges their blobs.
+5. Rotate the secret, keeping the old one for the re-sign step. Every release,
    including a config change, runs the release phase, so this is harmless on
    the old slug:
    `heroku config:set OLD_SECRET_KEY_BASE="$(heroku config:get SECRET_KEY_BASE -a ogat-tenjin)" SECRET_KEY_BASE="$(openssl rand -hex 64)" -a ogat-tenjin >/dev/null`
@@ -87,10 +91,9 @@ database maintenance window, Fridays 22:30 to Saturdays 02:30 UTC.
    `heroku config:get OLD_SECRET_KEY_BASE -a ogat-tenjin | wc -c` must print 129.
    Running the re-sign step before that point sees the previous environment
    and fails with every id unverifiable.
-5. `heroku maintenance:on -a ogat-tenjin`. From here until the re-sign in
-   step 8 the new slug cannot resolve the stored attachments, and a question
-   saved while its images show as ☒ purges their blobs.
-6. `git push https://git.heroku.com/ogat-tenjin.git master:master`
+6. `git push https://git.heroku.com/ogat-tenjin.git master:master`, with
+   `fix/actiontext-sgids` merged first: step 8 runs its task, and master plus
+   that branch is the tree staging rehearsed.
 7. Watch `heroku releases:output -a ogat-tenjin` and `heroku logs --tail -a ogat-tenjin`
 8. Re-sign the Action Text attachments, which stop resolving under the Rails 7
    key derivation, and point their editor previews at the new release:
@@ -106,8 +109,8 @@ database maintenance window, Fridays 22:30 to Saturdays 02:30 UTC.
     deploy relaxes a NOT NULL on Active Storage blobs, which the old code
     tolerates, but re-signed attachments do not verify under the old code, so
     they are signed back first, while the new slug can still run the task:
-    1. `heroku config:set OLD_SECRET_KEY_BASE=<pre-rotation secret> -a ogat-tenjin >/dev/null`, wait for that release, confirm the length as in step 4
-    2. `heroku maintenance:on -a ogat-tenjin`, for the reason in step 5: once the tags are signed back, a question saved on the new slug purges its blobs
+    1. `heroku config:set OLD_SECRET_KEY_BASE=<pre-rotation secret> -a ogat-tenjin >/dev/null`, wait for that release, confirm the length as in step 5
+    2. `heroku maintenance:on -a ogat-tenjin`, for the reason in step 4: once the tags are signed back, a question saved on the new slug purges its blobs
     3. `heroku run rake rich_text:downgrade_attachment_sgids -a ogat-tenjin`, expect `re-signed 666` and `urls rewritten 666` or thereabouts and `unverifiable 0`
     4. `heroku rollback -a ogat-tenjin`, which restores the previous slug and its heroku-20 stack
     5. `heroku config:set SECRET_KEY_BASE=<pre-rotation secret> -a ogat-tenjin >/dev/null`, then `heroku config:unset OLD_SECRET_KEY_BASE -a ogat-tenjin`, and wait for that release
