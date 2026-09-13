@@ -35,11 +35,11 @@ commands:
           paths:
             - vendor/bundle
 
+      # Corepack runs bin/pnpm.cjs, which pnpm 12 no longer ships
       - run:
-          name: Enable pnpm via corepack
+          name: Install pnpm
           command: |
-            sudo corepack enable
-            corepack prepare --activate
+            npm install -g "$(node -p 'require("./package.json").packageManager.split("+")[0]')"
       - restore_cache:
           name: Restore pnpm store
           keys:
