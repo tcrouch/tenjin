@@ -105,7 +105,12 @@ RSpec.configure do |config|
   # Required to use database cleaner with action cable
   # or feature testing will not work
 
+  # Only specs tagged :js pay for a browser
   config.before(:each, type: :system) do
+    driven_by :rack_test
+  end
+
+  config.before(:each, type: :system, js: true) do
     driven_by :cuprite
   end
 end
