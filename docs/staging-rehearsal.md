@@ -51,7 +51,7 @@ step can be re-run.
 
 - [ ] Build: pnpm install and the Shakapacker compile succeed without NODE_OPTIONS
 - [ ] Release phase: migrations run (`heroku releases:output -a ogat-tenjin-staging`)
-- [ ] Memory: `heroku logs -a ogat-tenjin-staging --dyno web | grep memory_total` stays well under 512 MB across a few minutes of use
+- [ ] Memory: `heroku logs -a ogat-tenjin-staging --dyno web | grep memory_total` stays well under 512 MB across a few minutes of use (staging runs with `MALLOC_ARENA_MAX=2`, which deploy day step 3 sets on production)
 - [ ] Student (from `bin/staging logins`): dashboard, start a quiz by subject, by topic and by lucky dip, answer through to the end, points and streak update, the live leaderboard updates in a second tab
 - [ ] Teacher: the classroom page renders the student table and search works, set a homework, homework progress shows, flag a question
 - [ ] Author: edit a question with Trix, edit a lesson and a topic, upload an image (it lands in the scratch bucket) and see it render
@@ -71,7 +71,12 @@ database maintenance window, Fridays 22:30 to Saturdays 02:30 UTC.
 
 1. `heroku pg:backups:capture -a ogat-tenjin`
 2. `heroku stack:set heroku-24 -a ogat-tenjin`
-3. `heroku config:unset NODE_OPTIONS -a ogat-tenjin`, if staging built without it
+3. Bring production's config in line with staging's:
+   - `heroku config:unset NODE_OPTIONS -a ogat-tenjin`, if staging built without it
+   - `heroku config:set MALLOC_ARENA_MAX=2 -a ogat-tenjin`. The Ruby buildpack
+     defaults this only on apps created since September 2019, so staging has
+     it and production does not; without it glibc allows 64 arenas, 8 per
+     CPU, and memory can exceed what staging measured.
 4. Rotate the secret, keeping the old one for the re-sign step. Every release,
    including a config change, runs the release phase, so this is harmless on
    the old slug:
