@@ -72,10 +72,26 @@ database maintenance window, Fridays 22:30 to Saturdays 02:30 UTC.
 1. `heroku pg:backups:capture -a ogat-tenjin`
 2. `heroku stack:set heroku-24 -a ogat-tenjin`
 3. `heroku config:unset NODE_OPTIONS -a ogat-tenjin`, if staging built without it
-4. `git push https://git.heroku.com/ogat-tenjin.git master:master`
-5. Watch `heroku releases:output -a ogat-tenjin` and `heroku logs --tail -a ogat-tenjin`
-6. Verify on production: Wonde sign-in, Google sign-in, HireFire scales a worker when a job is queued, Scout receives data, and the scheduler jobs still name existing rake tasks
-7. If anything is wrong: `heroku rollback -a ogat-tenjin`. It restores the previous slug and its heroku-20 stack. The one migration in this deploy relaxes a NOT NULL on Active Storage blobs, which the old code tolerates.
+4. Rotate the secret, keeping the old one for the re-sign step. Every release,
+   including a config change, runs the release phase, so this is harmless on
+   the old slug:
+   `heroku config:set OLD_SECRET_KEY_BASE="$(heroku config:get SECRET_KEY_BASE -a ogat-tenjin)" SECRET_KEY_BASE="$(openssl rand -hex 64)" -a ogat-tenjin >/dev/null`
+   A config change is not visible until the release phase it triggers has
+   finished, so wait for `heroku releases -a ogat-tenjin` to show that release
+   succeeded, then confirm the value took:
+   `heroku config:get OLD_SECRET_KEY_BASE -a ogat-tenjin | wc -c` must print 129.
+   Running the re-sign step before that point sees the previous environment
+   and fails with every id unverifiable.
+5. `git push https://git.heroku.com/ogat-tenjin.git master:master`
+6. Watch `heroku releases:output -a ogat-tenjin` and `heroku logs --tail -a ogat-tenjin`
+7. Re-sign the Action Text attachments, which stop resolving under the Rails 7
+   key derivation: `heroku run rake rich_text:resign_attachment_sgids -a ogat-tenjin`.
+   Expect `re-signed 666` or thereabouts and `unverifiable 0`; a non-zero
+   unverifiable count means the old secret is wrong, and the task refuses to
+   guess. Embedded images show as ☒ until this runs.
+8. `heroku config:unset OLD_SECRET_KEY_BASE -a ogat-tenjin`
+9. Verify on production: an embedded question image renders, Wonde sign-in, Google sign-in, HireFire scales a worker when a job is queued, Scout receives data, and the scheduler jobs still name existing rake tasks
+10. If anything is wrong: `heroku rollback -a ogat-tenjin`. It restores the previous slug and its heroku-20 stack. The one schema migration in this deploy relaxes a NOT NULL on Active Storage blobs, which the old code tolerates. Re-signed attachments cannot verify under the old code whatever the secret, so a rollback after step 7 also means restoring the step 1 backup with `heroku pg:backups:restore`, or accepting ☒ on embedded images until rolling forward.
 
 A few days after a clean deploy, the schema-hardening series follows in two
 releases, `fix/schema-foreign-keys` then `fix/schema-not-null`, with
