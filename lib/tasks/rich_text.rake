@@ -21,6 +21,6 @@ namespace :rich_text do
   desc "Re-sign Action Text attachment sgids after the Rails 7 key change; set OLD_SECRET_KEY_BASE if the secret was rotated"
   task(resign_attachment_sgids: :environment) { resign.call(:upgrade) }
 
-  desc "Sign Action Text attachment sgids the pre-Rails 7 way before a rollback; set OLD_SECRET_KEY_BASE to the secret the old release runs with"
+  desc "Sign Action Text attachment sgids the pre-Rails 7 way before a rollback; set OLD_SECRET_KEY_BASE if the rolled-back release runs with a different secret"
   task(downgrade_attachment_sgids: :environment) { resign.call(:downgrade) }
 end

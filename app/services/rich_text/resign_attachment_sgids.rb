@@ -51,7 +51,8 @@ class RichText::ResignAttachmentSgids < ApplicationCommand
 
   def call
     ActionText::RichText.where("body LIKE ?", "%sgid=%").find_each do |rich_text|
-      resign_attachments(rich_text)
+      # Reloaded under lock: the batch copy may be stale by the time its row is reached
+      rich_text.with_lock { resign_attachments(rich_text) }
     end
 
     return failure(:unverifiable_sgids, payload: @counts) if @counts[:unverifiable].positive?
@@ -64,6 +65,7 @@ class RichText::ResignAttachmentSgids < ApplicationCommand
   def resign_attachments(rich_text)
     changed = false
     fragment = rich_text.body.fragment.replace(ActionText::Attachment.tag_name) do |node|
+      next node if node["sgid"].blank? # a remote image, located by url
       outcome, sgid = resign(node["sgid"])
       @counts[outcome] += 1
       if sgid
