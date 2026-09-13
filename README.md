@@ -1,9 +1,5 @@
 # Tenjin
 
-[![CircleCI](https://circleci.com/gh/Hinbin/tenjin.svg?style=svg)](https://circleci.com/gh/Hinbin/tenjin)
-[![Maintainability](https://api.codeclimate.com/v1/badges/5ae5ee384434b20e2789/maintainability)](https://codeclimate.com/github/Hinbin/tenjin/maintainability)
-[![Test Coverage](https://api.codeclimate.com/v1/badges/5ae5ee384434b20e2789/test_coverage)](https://codeclimate.com/github/Hinbin/tenjin/test_coverage)
-
 Tenjin is an online quiz platform for schools. Students answer questions, earn rewards, and compete on leaderboards while teachers manage homework and classrooms.
 
 ## Features
@@ -16,13 +12,20 @@ Tenjin is an online quiz platform for schools. Students answer questions, earn r
 
 ```bash
 bin/setup
+pnpm install
 ```
 
-This installs gem and JavaScript dependencies, creates the database, and prepares the app to run.
+`bin/setup` installs gem dependencies, creates the database, and prepares the app to run; `pnpm install` installs the JavaScript dependencies.
 
 Copy `.env.example` to `.env` and fill in the required values (database credentials, AWS keys, Wonde API tokens, OAuth credentials).
 
-Run the app in two terminals:
+Run the Rails server and the Shakapacker watcher together:
+
+```bash
+bin/dev
+```
+
+Or run them in two terminals:
 
 ```bash
 bin/rails server
