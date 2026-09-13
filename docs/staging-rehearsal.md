@@ -82,27 +82,33 @@ database maintenance window, Fridays 22:30 to Saturdays 02:30 UTC.
    `heroku config:get OLD_SECRET_KEY_BASE -a ogat-tenjin | wc -c` must print 129.
    Running the re-sign step before that point sees the previous environment
    and fails with every id unverifiable.
-5. `git push https://git.heroku.com/ogat-tenjin.git master:master`
-6. Watch `heroku releases:output -a ogat-tenjin` and `heroku logs --tail -a ogat-tenjin`
-7. Re-sign the Action Text attachments, which stop resolving under the Rails 7
+5. `heroku maintenance:on -a ogat-tenjin`. From here until the re-sign in
+   step 8 the new slug cannot resolve the stored attachments, and a question
+   saved while its images show as ☒ purges their blobs.
+6. `git push https://git.heroku.com/ogat-tenjin.git master:master`
+7. Watch `heroku releases:output -a ogat-tenjin` and `heroku logs --tail -a ogat-tenjin`
+8. Re-sign the Action Text attachments, which stop resolving under the Rails 7
    key derivation: `heroku run rake rich_text:resign_attachment_sgids -a ogat-tenjin`.
    Expect `re-signed 666` or thereabouts and `unverifiable 0`; a non-zero
    unverifiable count means the old secret is wrong, and the task refuses to
-   guess. Embedded images show as ☒ until this runs.
-8. `heroku config:unset OLD_SECRET_KEY_BASE -a ogat-tenjin`, keeping the old value in the
-   team password store until the rollback window has passed
-9. Verify on production: an embedded question image renders, Wonde sign-in, Google sign-in, HireFire scales a worker when a job is queued, Scout receives data, and the scheduler jobs still name existing rake tasks
-10. If anything is wrong, roll back in this order. The schema migration in this
+   guess.
+9. `heroku maintenance:off -a ogat-tenjin`
+10. `heroku config:unset OLD_SECRET_KEY_BASE -a ogat-tenjin`, keeping the old value in the
+    team password store until the rollback window has passed
+11. Verify on production: an embedded question image renders, Wonde sign-in, Google sign-in, HireFire scales a worker when a job is queued, Scout receives data, and the scheduler jobs still name existing rake tasks
+12. If anything is wrong, roll back in this order. The schema migration in this
     deploy relaxes a NOT NULL on Active Storage blobs, which the old code
     tolerates, but re-signed attachments do not verify under the old code, so
     they are signed back first, while the new slug can still run the task:
     1. `heroku config:set OLD_SECRET_KEY_BASE=<pre-rotation secret> -a ogat-tenjin >/dev/null`, wait for that release, confirm the length as in step 4
-    2. `heroku run rake rich_text:downgrade_attachment_sgids -a ogat-tenjin`, expect `re-signed 666` or thereabouts and `unverifiable 0`
-    3. `heroku rollback -a ogat-tenjin`, which restores the previous slug and its heroku-20 stack
-    4. `heroku config:set SECRET_KEY_BASE=<pre-rotation secret> -a ogat-tenjin >/dev/null`, then `heroku config:unset OLD_SECRET_KEY_BASE -a ogat-tenjin`
+    2. `heroku maintenance:on -a ogat-tenjin`, for the reason in step 5: once the tags are signed back, a question saved on the new slug purges its blobs
+    3. `heroku run rake rich_text:downgrade_attachment_sgids -a ogat-tenjin`, expect `re-signed 666` or thereabouts and `unverifiable 0`
+    4. `heroku rollback -a ogat-tenjin`, which restores the previous slug and its heroku-20 stack
+    5. `heroku config:set SECRET_KEY_BASE=<pre-rotation secret> -a ogat-tenjin >/dev/null`, then `heroku config:unset OLD_SECRET_KEY_BASE -a ogat-tenjin`, and wait for that release
+    6. `heroku maintenance:off -a ogat-tenjin`
 
     If the new slug cannot run a one-off dyno, restore the step 1 backup with
-    `heroku pg:backups:restore` instead of the first two steps.
+    `heroku pg:backups:restore` instead of the downgrade.
 
 A few days after a clean deploy, the schema-hardening series follows in two
 releases, `fix/schema-foreign-keys` then `fix/schema-not-null`, with
