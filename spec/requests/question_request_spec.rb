@@ -182,6 +182,17 @@ RSpec.describe "questions controller", :default_creates do
         .to change { question.reload.flagged_questions_count }.from(1).to(0)
       expect(response).to redirect_to(question)
     end
+
+    context "when not authorized for the question's subject" do
+      let(:author) { create(:question_author, subject: create(:subject)) }
+
+      it "keeps the flags and redirects with an alert" do
+        expect { patch reset_flags_question_path(question) }.not_to change(FlaggedQuestion, :count)
+        expect(response).to redirect_to(root_path)
+        follow_redirect!
+        expect(response.body).to include("You are not authorized to perform this action.")
+      end
+    end
   end
 
   describe "GET /questions/download_topic" do
