@@ -38,8 +38,13 @@ module System
 
     def destroy
       school_group = authorize find_school_group
-      school_group.destroy
-      redirect_to system_school_groups_path
+
+      if school_group.destroy
+        redirect_to system_school_groups_path, notice: "School group deleted."
+      else
+        flash.now[:alert] = school_group.errors.full_messages.to_sentence
+        render template: "shared/flash", status: :unprocessable_content
+      end
     end
 
     private

@@ -47,4 +47,30 @@ RSpec.describe "System::SchoolGroups", :default_creates, type: :request do
       expect(school_group.reload.name).to eq("West")
     end
   end
+
+  describe "DELETE /system/school_groups/:id" do
+    let(:turbo_headers) { {"Accept" => "text/vnd.turbo-stream.html, text/html"} }
+    let!(:school_group) { create(:school_group) }
+
+    context "with no schools" do
+      it "deletes the group" do
+        expect {
+          delete system_school_group_path(school_group), headers: turbo_headers
+        }.to change(SchoolGroup, :count).by(-1)
+        expect(response).to redirect_to(system_school_groups_path)
+      end
+    end
+
+    context "with a school in the group" do
+      before { create(:school, school_group: school_group) }
+
+      it "keeps the group and explains why" do
+        expect {
+          delete system_school_group_path(school_group), headers: turbo_headers
+        }.not_to change(SchoolGroup, :count)
+        expect(response).to have_http_status(:unprocessable_content)
+        expect(response.body).to include("still has schools")
+      end
+    end
+  end
 end
