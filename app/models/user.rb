@@ -1,9 +1,6 @@
 # frozen_string_literal: true
 
 class User < ApplicationRecord
-  # Unused; ignored before they are dropped so mid-deploy dynos never INSERT them
-  self.ignored_columns += %w[type photo]
-
   rolify
   # Include default devise modules. Others available are:
   # :confirmable, :lockable, :timeoutable and :omniauthable
