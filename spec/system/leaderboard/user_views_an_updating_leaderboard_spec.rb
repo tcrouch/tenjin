@@ -67,7 +67,7 @@ RSpec.describe "User views an updating leaderboard", :default_creates, :js do
 
   context "with a school group" do
     let!(:second_school) { create(:school, school_group: school.school_group) }
-    let(:topic_score_same_school_group) { create(:topic_score, topic: topic, school: second_school) }
+    let(:topic_score_same_school_group) { create(:topic_score, topic: topic, school: second_school, score: 11) }
 
     before do
       visit(leaderboard_path(quiz_subject.name))
@@ -100,12 +100,23 @@ RSpec.describe "User views an updating leaderboard", :default_creates, :js do
       expect(page).to have_no_css("td", exact_text: name)
     end
 
-    it "updates if score is from the same school group" do
-      click_button("Select School")
-      click_button("All")
-      Leaderboard::BroadcastLeaderboardPoint.new(topic_score_same_school_group.topic,
-        topic_score_same_school_group.user).call
-      expect(page).to have_css("tr.score-changed")
+    context "when all schools in the group are selected" do
+      let!(:topic_score_same_school_group) { super() }
+
+      # Selecting "All" reloads the table from the server, and that reload
+      # overwrites any flash a broadcast set before it landed. Wait for the
+      # other school's row (score 11 keeps it inside the ten-row window)
+      # so the broadcast arrives after the reload.
+      before do
+        click_button("Select School")
+        click_button("All")
+        expect(page).to have_css("tr#row-#{topic_score_same_school_group.user_id}")
+      end
+
+      it "flashes an update from another school in the group" do
+        Leaderboard::BroadcastLeaderboardPoint.new(topic, topic_score_same_school_group.user).call
+        expect(page).to have_css("tr#row-#{topic_score_same_school_group.user_id}.score-changed")
+      end
     end
   end
 
