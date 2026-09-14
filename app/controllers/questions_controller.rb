@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 class QuestionsController < ApplicationController
+  BOOLEAN_LABELS = %w[False True].freeze
+
   before_action :authenticate_user!
 
   def index
@@ -161,10 +163,18 @@ class QuestionsController < ApplicationController
   def setup_boolean_question(question)
     question.answers.build until question.answers.length >= 2
     question.answers = question.answers.slice(0..1) if question.answers.length > 2
-    return if question.valid?
+    label_boolean_answers(question.answers)
+    # Puts any remaining errors in front of the author in the editor
+    question.valid?
+  end
 
-    question.answers.second.text = "True"
-    question.answers.first.text = "False"
+  # Labels by meaning, so each answer keeps its correct flag; only answers
+  # with no True/False meaning are labelled by position
+  def label_boolean_answers(answers)
+    labels = answers.map { |answer| BOOLEAN_LABELS.find { |label| label.casecmp?(answer.text.to_s.strip) } }
+    labels = labels.map { nil } if labels.compact.uniq.size < labels.compact.size
+    unused = BOOLEAN_LABELS - labels
+    answers.zip(labels).each { |answer, label| answer.text = label || unused.shift }
   end
 
   def check_answers(question)
