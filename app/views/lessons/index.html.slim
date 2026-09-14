@@ -4,13 +4,13 @@
   section.page-section.text-center.pt-2#newLesson
     h1.page-section-header.text-uppercase Lessons
     ==render_small_separator(margin: "mb-2")
-    - if @lessons.count.zero?
+    - if @lessons.empty?
       p.lead No lessons yet!
     - @subjects.each do |s|
-      - @subject_author = current_user.has_role? :lesson_author, s if @author
+      - @subject_author = @author && @editable_subjects.include?(s)
       h1.py-4.h1.subject-title = s.name
       .row.row-cols-1.row-cols-md-2.row-cols-lg-3.g-3
-        - @lessons.where(topics: { subject:s } ).each do |l|
+        - @lessons_by_subject[s.id].each do |l|
           - unless l.no_content?
             .col
               .card.h-100
@@ -47,10 +47,10 @@
               th
               th
           tbody
-            - @lessons.where(topics: { subject:s }, category: 'no_content').each do |l|
+            - @lessons_by_subject[s.id].select(&:no_content?).each do |l|
               tr
                 td = l.title
-                td = Question.where(lesson: l, active: true).count
+                td = @active_question_counts.fetch(l.id, 0)
                 td = link_to 'View Questions', lesson_questions_path(lesson_id: l), class: 'btn btn-primary'
                 td = link_to 'Edit', edit_lesson_path(l), class: 'btn btn-primary'
                 td = button_to 'Delete', lesson_path(l),
@@ -65,10 +65,10 @@
               th Questions
               th
           tbody
-            - @lessons.where(topics: { subject:s }, category: 'no_content').each do |l|
+            - @lessons_by_subject[s.id].select(&:no_content?).each do |l|
               tr
                 td = l.title
-                td = Question.where(lesson: l, active: true).count
+                td = @active_question_counts.fetch(l.id, 0)
                 td = link_to 'View Questions', lesson_questions_path(lesson_id: l), class: 'btn btn-primary mx-2'
 
   - if @author

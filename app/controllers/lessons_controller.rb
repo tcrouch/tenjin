@@ -8,7 +8,11 @@ class LessonsController < ApplicationController
 
     set_permitted_lessons_and_subjects
 
-    @subjects = Subject.joins(topics: :lessons).where(lessons: @lessons).distinct
+    @lessons_by_subject = @lessons.group_by { |lesson| lesson.topic.subject_id }
+    @subjects = Subject.where(id: @lessons_by_subject.keys)
+    # Active questions only: lessons.questions_count counts every question
+    @active_question_counts = Question.where(lesson: @lessons.select(&:no_content?), active: true)
+      .group(:lesson_id).count
   end
 
   def new
@@ -80,7 +84,8 @@ class LessonsController < ApplicationController
 
   def set_permitted_lessons_and_subjects
     if @author
-      @editable_subjects = Subject.with_role(:lesson_author, current_user)
+      # Loaded so the index can check each subject against it without a query
+      @editable_subjects = Subject.with_role(:lesson_author, current_user).load
       @lessons = policy_scope(Lesson)
         .or(Lesson
                   .includes(:topic)
