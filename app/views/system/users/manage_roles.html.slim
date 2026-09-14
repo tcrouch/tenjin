@@ -34,7 +34,7 @@ section.page-section.pt-2#Users
                   td
                     = select_tag 'user[subject]',
                       options_from_collection_for_select(@all_subjects, :id, :name),
-                      id: "role-select-user-#{e.id}",
+                      id: "subject-select-user-#{e.id}",
                       form: "form-#{e.id}",
                       class: 'form-select'
                   td = select_tag 'user[role]',

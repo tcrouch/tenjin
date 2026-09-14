@@ -10,6 +10,17 @@ RSpec.describe "System::Users", :default_creates, type: :request do
       get manage_roles_system_users_path
       expect(response).to have_http_status(:ok)
     end
+
+    context "with a school selected" do
+      let!(:teacher) { super() }
+
+      before { get manage_roles_system_users_path(school: school) }
+
+      it "renders every id once" do
+        ids = Capybara.string(response.body).all("[id]").map { |element| element[:id] }
+        expect(ids.tally.select { |_id, count| count > 1 }).to be_empty
+      end
+    end
   end
 
   describe "PATCH /system/users/:id/set_role" do
