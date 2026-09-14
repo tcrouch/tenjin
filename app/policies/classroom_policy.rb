@@ -2,7 +2,7 @@
 
 class ClassroomPolicy < ApplicationPolicy
   def show?
-    user.employee?
+    user.employee? && @record.school == user.school
   end
 
   def update?
