@@ -59,6 +59,30 @@ RSpec.describe "lessons controller", :default_creates do
             .and have_no_css("#createLessons h3", text: other_subject.name)
         end
       end
+
+      context "with lessons that have no video" do
+        let!(:revision_lesson) do
+          create(:lesson, title: "Pythagoras revision", topic: topic, category: "no_content", video_id: nil)
+        end
+        let!(:unused_lesson) do
+          create(:lesson, title: "Circle theorems", topic: topic, category: "no_content", video_id: nil)
+        end
+
+        before do
+          create_list(:question, 2, topic: topic, lesson: revision_lesson)
+          create(:question, topic: topic, lesson: revision_lesson, active: false)
+          get lessons_path
+        end
+
+        it "counts each lesson's active questions" do
+          expect(Capybara.string(response.body)).to have_table(
+            with_rows: [
+              {"Lesson Title" => revision_lesson.title, "Questions" => "2"},
+              {"Lesson Title" => unused_lesson.title, "Questions" => "0"}
+            ]
+          )
+        end
+      end
     end
   end
 
