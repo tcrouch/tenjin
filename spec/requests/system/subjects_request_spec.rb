@@ -29,6 +29,18 @@ RSpec.describe "System::Subjects", :default_creates, type: :request do
         post system_subjects_path, params: {subject: {name: "Biology"}}
       }.to change(Subject, :count).by(1)
     end
+
+    it "redirects to the new subject's edit page" do
+      post system_subjects_path, params: {subject: {name: "Botany"}}
+      expect(response).to redirect_to(edit_system_subject_path(Subject.find_by!(name: "Botany")))
+    end
+
+    it "does not create a subject with a blank name" do
+      expect {
+        post system_subjects_path, params: {subject: {name: ""}}
+      }.not_to change(Subject, :count)
+      expect(Capybara.string(response.body)).to have_css(".invalid-feedback", text: "can't be blank")
+    end
   end
 
   describe "PATCH /system/subjects/:id" do
@@ -36,6 +48,11 @@ RSpec.describe "System::Subjects", :default_creates, type: :request do
       subject_record = create(:subject, name: "Physics")
       patch system_subject_path(subject_record), params: {subject: {name: "Astronomy"}}
       expect(subject_record.reload.name).to eq("Astronomy")
+    end
+
+    it "redirects to the subject's edit page" do
+      patch system_subject_path(quiz_subject), params: {subject: {name: "Astronomy"}}
+      expect(response).to redirect_to(edit_system_subject_path(quiz_subject))
     end
 
     it "does not save an invalid name" do
@@ -51,6 +68,25 @@ RSpec.describe "System::Subjects", :default_creates, type: :request do
       subject_record = create(:subject)
       delete system_subject_path(subject_record)
       expect(subject_record.reload.active).to be(false)
+    end
+
+    it "redirects to the subjects index" do
+      delete system_subject_path(quiz_subject)
+      expect(response).to redirect_to(system_subjects_path)
+    end
+
+    it "detaches the subject from its classrooms" do
+      expect { delete system_subject_path(quiz_subject) }
+        .to change { classroom.reload.subject }.from(quiz_subject).to(nil)
+    end
+
+    context "with a student enrolled in the subject" do
+      let!(:enrollment) { create(:enrollment, classroom: classroom, user: student) }
+
+      it "destroys the enrollment" do
+        expect { delete system_subject_path(quiz_subject) }
+          .to change { classroom.enrollments.count }.from(1).to(0)
+      end
     end
   end
 end
