@@ -14,4 +14,14 @@ RSpec.describe Topic do
 
     it { is_expected.to validate_presence_of(:name) }
   end
+
+  describe "#destroy" do
+    it "succeeds when the default lesson is one of its own lessons" do
+      topic = create(:topic)
+      lesson = create(:lesson, topic: topic)
+      topic.update!(default_lesson: lesson)
+
+      expect { topic.destroy! }.to change(Lesson, :count).by(-1)
+    end
+  end
 end

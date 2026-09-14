@@ -170,4 +170,14 @@ RSpec.describe Lesson do
       it { is_expected.to be_nil }
     end
   end
+
+  describe "#destroy" do
+    it "clears the pointer of a topic that uses it as the default lesson" do
+      topic = create(:topic)
+      lesson = create(:lesson, topic: topic)
+      topic.update!(default_lesson: lesson)
+
+      expect { lesson.destroy! }.to change { topic.reload.default_lesson_id }.from(lesson.id).to(nil)
+    end
+  end
 end

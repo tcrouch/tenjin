@@ -8,7 +8,7 @@ class Quiz < ApplicationRecord
   belongs_to :topic, optional: true
   belongs_to :lesson, optional: true
 
-  has_many :asked_questions
+  has_many :asked_questions, dependent: :destroy
   has_many :questions, through: :asked_questions
   attr_accessor :picked_subject
 
@@ -28,7 +28,7 @@ class Quiz < ApplicationRecord
   def self.deactivate_stale_for(user)
     for_user(user).where(active: true).order(created_at: :desc).drop(1).each do |quiz|
       if quiz.num_questions_asked.zero?
-        quiz.delete
+        quiz.destroy
       else
         quiz.update(active: false)
       end
