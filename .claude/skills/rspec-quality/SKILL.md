@@ -128,8 +128,8 @@ so they never receive them.
 **Pass 1 — decide what survives, and where it lives.** Work only the
 removal and relocation rules first: **16, 16a, 16b, 17, 18**. Delete dead
 and signal-free tests; relocate coverage to its cheapest correct layer.
-Consult Rule **11**'s positive/negative symmetry before deleting — don't
-drop the only counterpart to an assertion made elsewhere.
+Consult Rule **11**'s positive/negative symmetry before deleting — don't drop the only counterpart to an assertion made elsewhere in the
+file.
 
 **Pass 2 — refine what's left.** Apply the remaining rules — **1–15, then
 19, 20, 21, 22** — to the survivors *and* to the request/model specs Pass 1
@@ -185,8 +185,8 @@ judgment rules a linter can't check: 11, 14, 16 / 16a / 16b, 17, 19, 21,
 
 ### Rule 3: Move visit into before blocks — [system]
 
-- `visit(path)` in a test body is setup, not behaviour. Move it into a
-  `before` block.
+- `visit(path)` in a test body, or in a helper method a test body calls,
+  is setup, not behaviour. Move it into a `before` block.
 - **Timing constraint**: RSpec runs before blocks from outermost to
   innermost, and `let!` is implemented as a before hook in its own
   context. This means a `before { visit }` in an *outer* context runs
@@ -471,6 +471,9 @@ click_button "Submit"
 expect(page).to have_css(".success-banner")
 ```
 
+A bare `find` whose result is discarded is a hand-rolled wait of the
+same shape; delete it and let the next matcher wait.
+
 A `wait:` argument longer than the default (`have_css(".x", wait: 6)`)
 is the same shape of smell. A Capybara matcher is already in play, but
 the default wait isn't enough — usually because the work the assertion
@@ -681,7 +684,8 @@ the tag and runs under rack_test; only then apply the split below.
 Judge the tag at the level where it is unearned: drop it from the file
 and re-tag only the describe blocks or examples whose steps need a
 browser, so a file that mixes both ends up with a bare top-level
-`describe` and `:js` on the JS-dependent groups. A
+`describe` and `:js` on the JS-dependent groups. If every surviving
+group needs a browser, the tag goes back on the file. A
 genuinely JS-dependent step keeps the tag and is out of scope here: a
 Stimulus controller, a Flatpickr date field, Trix rich text, a
 `turbo_confirm` dialog, or a Turbo-driven form (`data: { turbo: true }`)
@@ -711,7 +715,8 @@ So neither delete-by-default nor keep-by-default. **Split the spec:**
 2. **Decide the system spec's fate by one observable predicate: does the
    form drive an association or choice input?** — a `select` of an
    association or enum mapping to a `*_id` or `role` param, or nested
-   `answers_attributes` rows.
+   `answers_attributes` rows. A boolean checkbox or a text field is a scalar,
+   whatever widget renders it.
    - **Yes → keep exactly one trimmed rack_test fill-and-submit happy
      path** as the wiring smoke: fill the real form, assert the visible
      success signal — the flash, or the created record on the page it
@@ -721,8 +726,9 @@ So neither delete-by-default nor keep-by-default. **Split the spec:**
      Annotate it with a comment pointing to the request spec that now owns
      the state assertions.
    - **No — only scalar `fill_in` fields on a RESTful route → relocate and
-     delete.** Author-written params plus the existing invalid-submit
-     branch already pin everything that can break.
+     delete.** Author-written params plus the invalid-submit
+     example — existing, or written under Rule 17 — already pin
+     everything that can break.
 
 "It's a genuine end-to-end flow" / "keep the happy path" does **not**, by
 itself, justify keeping the spec, and never justifies a `:js` boot — only a
@@ -766,7 +772,9 @@ Rails-default presence — still padding. The "borderline keep" allowance
 above does **not** license these: a `new`/`edit` action always has an
 invalid-submit branch to test, and that example is the coverage to
 write. Once it exists the page is covered by a request spec and the
-allowance no longer applies.
+allowance no longer applies. That example asserts that nothing persisted and
+that the re-rendered form carries the error message; assert
+`:unprocessable_content` only where the action sets it.
 
 ### Rule 18: Delete stale pending tests
 
@@ -780,7 +788,8 @@ describe block. Two failure modes to delete:
    this file that do not exist. It misleads readers. Delete it.
 2. **Files that are nothing but pendings.** A spec file with three
    `it "TBD"` strings, no setup, no factories, no ticket reference, is
-   a TODO list pretending to be tests. Delete the file. If the work is
+   a TODO list pretending to be tests. Delete the file. An empty
+   `describe` with no examples at all is the same rot. If the work is
    tracked elsewhere, that's where the TODO belongs.
 
 A pending is acceptable when it has either (a) a clear counterpart in
@@ -994,7 +1003,9 @@ For each file:
    a fresh `shared_examples` block, removing inflated `wait:` args,
    dropping a `:js` tag, or replacing `update_attribute` with `update!`.
    Don't stack changes across files unverified; green the file you just
-   touched before opening the next one.
+   touched before opening the next one. A `Ferrum::PendingConnectionsError` on
+   the first browser example of a run is pack compilation on first boot,
+   not a spec failure; rerun before acting on it.
 6. When applying Rule 16, also run the new spec you created in the
    cheapest correct layer. The whole point is that the moved assertion
    still holds — confirm it does.
@@ -1046,7 +1057,8 @@ git grep -l 'accept_confirm\|accept_alert' spec/system
 ```
 
 This must return **exactly one survivor per distinct confirm mechanism**
-(here the `turbo_confirm` delete dialog is the only one). **Empty** = the
+(here the `turbo_confirm` dialog is the only one, whichever action it
+guards). **Empty** = the
 pass deleted the last representative — restore one trimmed `:js` smoke
 (Rule 16a). **Several for the same mechanism** = consolidate to one,
 pushing the rest's server-side assertions down to request specs.
