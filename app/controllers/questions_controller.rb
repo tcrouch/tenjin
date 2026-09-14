@@ -50,9 +50,8 @@ class QuestionsController < ApplicationController
   end
 
   def show
-    @question = find_question
-    @question.assign_attributes(question_params) if params[:question].present?
-    authorize @question
+    @question = authorize find_question
+    assign_question_params(@question) if params[:question].present?
     check_answers(@question)
   end
 
@@ -78,9 +77,8 @@ class QuestionsController < ApplicationController
   end
 
   def update
-    @question = find_question
-    @question.assign_attributes(question_params)
-    authorize @question
+    @question = authorize find_question
+    assign_question_params(@question)
     check_answers(@question)
 
     if @question.save
@@ -152,6 +150,12 @@ class QuestionsController < ApplicationController
 
   def find_question
     Question.find(params[:id])
+  end
+
+  # Re-authorizes because the params can move the question to another topic
+  def assign_question_params(question)
+    question.assign_attributes(question_params)
+    authorize question
   end
 
   def setup_boolean_question(question)
