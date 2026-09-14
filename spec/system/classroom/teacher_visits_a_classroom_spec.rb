@@ -61,7 +61,9 @@ RSpec.describe "Teacher visits a classroom", :default_creates, :js do
       end
 
       it "shows the completed homework in the correct place" do
-        within "[data-id='#{student.id}']" do
+        # Homework rows carry a data-id too, so a homework sharing the
+        # student's id would make the bare attribute selector ambiguous.
+        within "#students .student-data[data-id='#{student.id}']" do
           expect(page).to have_css("i:nth-child(2).fa-check")
         end
       end
@@ -86,7 +88,7 @@ RSpec.describe "Teacher visits a classroom", :default_creates, :js do
 
       it "paginates 5 homeworks per page" do
         expect(page).to have_css(".homework-data", count: 5)
-          .and have_css("[data-id='#{student.id}'] i.fa-times", count: 5)
+          .and have_css("#students .student-data[data-id='#{student.id}'] i.fa-times", count: 5)
       end
     end
   end
