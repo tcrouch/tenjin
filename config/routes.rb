@@ -59,7 +59,6 @@ Rails.application.routes.draw do
       patch "reset_flags"
     end
   end
-  resources :answers
   resources :topics, only: %i[create update destroy]
   resources :homeworks
   resources :users, only: %i[show index update] do
