@@ -93,16 +93,19 @@ RSpec.describe "lessons controller", :default_creates do
   end
 
   describe "PATCH /lessons/:id" do
-    let(:lesson) { create(:lesson, topic: topic) }
+    let(:lesson) { create(:lesson, topic: topic, video_id: "VFZNvj-HfBU") }
 
     before do
       teacher.add_role :lesson_author, quiz_subject
       sign_in teacher
     end
 
-    it "saves the new details and redirects to the index" do
-      patch lesson_path(lesson), params: {lesson: {title: "Fantastic new title"}}
-      expect(lesson.reload.title).to eq("Fantastic new title")
+    it "saves the new details and keeps the video from the pre-filled link" do
+      # The edit form posts back the embed link, not the link the author typed
+      patch lesson_path(lesson),
+        params: {lesson: {title: "Fantastic new title", video_link: lesson.video_url}}
+      expect(lesson.reload)
+        .to have_attributes(title: "Fantastic new title", category: "youtube", video_id: "VFZNvj-HfBU")
       expect(response).to redirect_to(lessons_path)
     end
 

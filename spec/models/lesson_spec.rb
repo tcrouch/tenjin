@@ -110,6 +110,15 @@ RSpec.describe Lesson do
       lesson.video_link
       expect(lesson).to have_received(:video_url)
     end
+
+    # The edit form pre-fills the URL field with this value, so the setter must accept it
+    it "round-trips through #video_link= for every video category", :aggregate_failures do
+      described_class::CATEGORY_VIDEOS.each_key do |category|
+        stored = described_class.new(category: category, video_id: "371104836")
+        expect(described_class.new(video_link: stored.video_link))
+          .to have_attributes(category: category.to_s, video_id: "371104836")
+      end
+    end
   end
 
   describe "#video_url" do
