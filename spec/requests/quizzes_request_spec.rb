@@ -46,6 +46,20 @@ RSpec.describe "using a quiz" do
       end
     end
 
+    context "with an inactive topic in the subject" do
+      let(:classroom) { create(:classroom, school: school, subject: quiz_subject) }
+      let!(:enrollment) { create(:enrollment, school: school, classroom: classroom, user: student) }
+      let!(:active_topic) { create(:topic, subject: quiz_subject, name: "Fractions") }
+      let!(:inactive_topic) { create(:topic, subject: quiz_subject, name: "Photosynthesis", active: false) }
+
+      before { get new_quiz_path(subject: quiz_subject.name) }
+
+      it "offers only active topics" do
+        expect(Capybara.string(response.body))
+          .to have_select("quiz_topic_id", options: ["Lucky Dip", "Fractions"])
+      end
+    end
+
     context "when the subject is not enrolled by the student" do
       let!(:enrollment) { create(:enrollment, school: school, user: student) }
       let!(:different_subject) { create(:classroom, school: school) }
@@ -108,6 +122,27 @@ RSpec.describe "using a quiz" do
     it "renders the multiple choice question" do
       get quiz_path(id: quiz.id)
       expect(response).to have_http_status(:success)
+    end
+
+    context "when the question has no lesson but its topic has a default lesson" do
+      let(:lesson) { create(:lesson, topic: topic, title: "Photosynthesis") }
+
+      before do
+        topic.update!(default_lesson: lesson)
+        get quiz_path(quiz)
+      end
+
+      it "shows the default lesson" do
+        expect(Capybara.string(response.body)).to have_css("#lesson h3", text: "Photosynthesis")
+      end
+    end
+
+    context "when neither the question nor its topic has a lesson" do
+      before { get quiz_path(quiz) }
+
+      it "shows no lesson" do
+        expect(Capybara.string(response.body)).to have_no_css("#lesson")
+      end
     end
 
     context "when the question is a short answer" do
