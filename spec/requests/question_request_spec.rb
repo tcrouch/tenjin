@@ -56,7 +56,15 @@ RSpec.describe "questions controller", :default_creates do
   end
 
   describe "GET /questions/:id" do
+    let(:question) { create(:question, topic: topic) }
+
     before { sign_in author }
+
+    it "labels each select" do
+      get question_path(question)
+      expect(Capybara.string(response.body))
+        .to have_select("Question Type").and have_select("Lesson:").and have_select("Topic:")
+    end
 
     context "with a short answer question" do
       let(:question) { create(:short_answer_question, topic: topic) }
@@ -69,8 +77,6 @@ RSpec.describe "questions controller", :default_creates do
     end
 
     context "when previewing the question as boolean" do
-      let(:question) { create(:question, topic: topic) }
-
       before { get question_path(question, question: {question_type: "boolean"}) }
 
       it "hides the remove answer links" do

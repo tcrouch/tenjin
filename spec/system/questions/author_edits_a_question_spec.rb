@@ -31,7 +31,7 @@ RSpec.describe "Author edits a question", :default_creates do
 
       # rack_test form-wiring smoke; the persisted state is covered in spec/requests/question_request_spec.rb
       it "assigns a lesson" do
-        select "Photosynthesis", from: "select-lesson"
+        select "Photosynthesis", from: "Lesson:"
         click_button("Save Question")
         expect(page).to have_css(".alert-info", text: "Question successfully updated")
       end
@@ -45,7 +45,7 @@ RSpec.describe "Author edits a question", :default_creates do
 
     # reload-form smoke; the boolean preview is covered in spec/requests/question_request_spec.rb
     it "switches to boolean answers", :js do
-      select "Boolean", from: "select-question-type"
+      select "Boolean", from: "Question Type"
       expect(page).to have_field("answer-text-0", with: "False", readonly: true)
         .and have_field("answer-text-1", with: "True", readonly: true)
     end
