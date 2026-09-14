@@ -82,12 +82,19 @@ RSpec.describe "lessons controller", :default_creates do
 
     context "when the details are invalid" do
       let(:title) { "ab" }
+      let!(:inactive_topic) { create(:topic, subject: quiz_subject, name: "Photosynthesis", active: false) }
 
       it "re-renders the new form with errors" do
         expect { post lessons_path, params: params }.not_to change(Lesson, :count)
         expect(Capybara.string(response.body))
           .to have_css("h1", text: "Create Lesson")
           .and have_css(".invalid-feedback", text: "too short")
+      end
+
+      it "offers the subject's active topics in the re-rendered form" do
+        post lessons_path, params: params
+        expect(Capybara.string(response.body))
+          .to have_select("lesson[topic_id]", options: ["", topic.name])
       end
     end
   end
@@ -110,12 +117,20 @@ RSpec.describe "lessons controller", :default_creates do
     end
 
     context "when the details are invalid" do
+      let!(:inactive_topic) { create(:topic, subject: quiz_subject, name: "Photosynthesis", active: false) }
+
       it "re-renders the edit form with errors" do
         expect { patch lesson_path(lesson), params: {lesson: {title: "ab"}} }
           .not_to change { lesson.reload.title }
         expect(Capybara.string(response.body))
           .to have_css("h1", text: "Update Lesson")
           .and have_css(".invalid-feedback", text: "too short")
+      end
+
+      it "offers the subject's active topics in the re-rendered form" do
+        patch lesson_path(lesson), params: {lesson: {title: "ab"}}
+        expect(Capybara.string(response.body))
+          .to have_select("lesson[topic_id]", options: ["", topic.name])
       end
     end
   end

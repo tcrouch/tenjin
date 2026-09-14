@@ -13,17 +13,16 @@ class LessonsController < ApplicationController
 
   def new
     subject = Subject.find(new_lesson_params)
-    first_topic = Topic.where(active: true, subject: subject).first
-    return redirect_to lessons_path, flash: {error: "No topics found for subject"} if first_topic.blank?
+    @topics = topics_for(subject)
+    return redirect_to lessons_path, flash: {error: "No topics found for subject"} if @topics.empty?
 
-    @lesson = Lesson.new(topic: first_topic)
-    @topics = Topic.where(active: true, subject: subject).order(:name)
+    @lesson = Lesson.new(topic: @topics.first)
     authorize @lesson
   end
 
   def edit
     @lesson = find_lesson
-    @topics = Topic.where(active: true, subject: @lesson.subject).order(:name)
+    @topics = topics_for(@lesson.subject)
     authorize @lesson
   end
 
@@ -51,9 +50,15 @@ class LessonsController < ApplicationController
     Lesson.find(params[:id])
   end
 
+  # One query for new, edit and the invalid re-render: TopicPolicy scopes by
+  # question_author, a role a lesson author need not hold.
+  def topics_for(subject)
+    Topic.where(active: true, subject: subject).order(:name)
+  end
+
   def save_lesson
     unless @lesson.valid?
-      @topics = policy_scope(Topic).where(subject: @lesson.topic.subject)
+      @topics = topics_for(@lesson.subject)
 
       return render :edit if @lesson.persisted?
 
