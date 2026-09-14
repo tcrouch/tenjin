@@ -3,10 +3,11 @@
 class TopicsController < ApplicationController
   before_action :authenticate_user!
 
-  def new
-    subject = Subject.find(new_topic_params[:subject_id])
-    topic = Topic.create(subject: subject, active: true, name: "New topic. Click here to change name")
+  def create
+    subject = Subject.find(subject_id_param)
+    topic = Topic.new(subject: subject, active: true, name: "New topic")
     authorize topic
+    topic.save!
 
     redirect_to topic_questions_path(topic_id: topic)
   end
@@ -34,7 +35,7 @@ class TopicsController < ApplicationController
     params.require(:topic).permit(:name, :default_lesson_id)
   end
 
-  def new_topic_params
-    params.require(:subject).permit(:subject_id)
+  def subject_id_param
+    params.require(:topic).require(:subject_id)
   end
 end

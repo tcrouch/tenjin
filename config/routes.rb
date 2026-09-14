@@ -60,7 +60,7 @@ Rails.application.routes.draw do
     end
   end
   resources :answers
-  resources :topics
+  resources :topics, only: %i[create update destroy]
   resources :homeworks
   resources :users, only: %i[show index update] do
     member do
