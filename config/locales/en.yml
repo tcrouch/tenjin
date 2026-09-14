@@ -31,3 +31,9 @@
 
 en:
   hello: "Hello world"
+  activerecord:
+    errors:
+      models:
+        school_group:
+          restrict_dependent_destroy:
+            has_many: "This group still has schools. Move them to another group, or leave them ungrouped, before deleting it."
