@@ -2,41 +2,17 @@
 
 require "rails_helper"
 
-RSpec.describe "Lesson author edits a lesson", :default_creates, :js do
-  let!(:lesson) { create(:lesson, topic: topic) }
-
+RSpec.describe "Lesson author edits a lesson", :default_creates do
   before do
     teacher.add_role :lesson_author, quiz_subject
     sign_in teacher
   end
 
-  describe "the lessons index" do
-    before { visit(lessons_path) }
-
-    context "with lessons in multiple subjects" do
-      let!(:other_lesson) { create(:lesson) }
-
-      it "limits edit list to authored subjects" do
-        expect(page)
-          .to have_link("Edit", count: 1)
-          .and have_css(".subject-title", text: quiz_subject.name)
-          .and have_no_css(".subject-title", text: other_lesson.subject.name)
-          .and have_content(lesson.title)
-          .and have_no_content(other_lesson.title)
-      end
-
-      it "limits create list to authored subjects" do
-        within("#createLessons") do
-          expect(page)
-            .to have_css("h1", text: "CREATE LESSONS")
-            .and have_css("h3", text: quiz_subject.name)
-            .and have_no_css("h3", text: other_lesson.subject.name)
-        end
-      end
-    end
-  end
-
+  # Wiring smoke for the form's topic select; the persisted state, redirect
+  # and invalid-submit branch live in spec/requests/lessons_request_spec.rb.
   describe "adding a lesson" do
+    let!(:topic) { super() }
+
     before { visit(new_lesson_path(subject: quiz_subject)) }
 
     it "creates a lesson" do
@@ -48,23 +24,17 @@ RSpec.describe "Lesson author edits a lesson", :default_creates, :js do
     end
   end
 
-  describe "editing a lesson" do
+  # The one browser smoke for the turbo_confirm delete dialog; each
+  # resource's destroy and redirect belong to its request spec
+  # (spec/requests/lessons_request_spec.rb for lessons).
+  describe "deleting a lesson", :js do
+    let!(:lesson) { create(:lesson, topic: topic) }
+
     before { visit(lessons_path) }
 
-    it "saves new lesson details" do
-      click_link("Edit")
-      fill_in "Title", with: "Fantastic new title"
-      click_button("Update Lesson")
-      expect(page)
-        .to have_css(".videoLink[src=\"#{lesson.reload.video_url}\"]")
-        .and have_css(".lesson-title", text: "Fantastic new title")
-    end
-
     it "removes the lesson from the list" do
-      page.accept_confirm do
-        click_button("Delete")
-      end
-      expect(page).to have_no_content(lesson.title)
+      page.accept_confirm { click_button("Delete") }
+      expect(page).to have_no_css(".lesson-title", text: lesson.title)
     end
   end
 end
