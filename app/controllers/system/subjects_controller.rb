@@ -26,7 +26,7 @@ module System
       if @subject.save
         redirect_to edit_system_subject_path(@subject)
       else
-        render :new
+        render :new, status: :unprocessable_content
       end
     end
 

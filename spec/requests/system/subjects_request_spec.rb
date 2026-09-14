@@ -39,6 +39,7 @@ RSpec.describe "System::Subjects", :default_creates, type: :request do
       expect {
         post system_subjects_path, params: {subject: {name: ""}}
       }.not_to change(Subject, :count)
+      expect(response).to have_http_status(:unprocessable_content)
       expect(Capybara.string(response.body)).to have_css(".invalid-feedback", text: "can't be blank")
     end
   end
