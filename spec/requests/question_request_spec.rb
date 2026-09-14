@@ -84,6 +84,26 @@ RSpec.describe "questions controller", :default_creates do
       end
     end
 
+    context "with a question from another subject" do
+      let(:question) { create(:question) }
+
+      before { get question_path(question, question: {topic_id: topic.id}) }
+
+      it "redirects with an alert" do
+        expect(response).to redirect_to(root_path)
+        expect(flash[:alert]).to eq("You are not authorized to perform this action.")
+      end
+    end
+
+    context "when previewing a move to another subject's topic" do
+      before { get question_path(question, question: {topic_id: create(:topic).id}) }
+
+      it "redirects with an alert" do
+        expect(response).to redirect_to(root_path)
+        expect(flash[:alert]).to eq("You are not authorized to perform this action.")
+      end
+    end
+
     context "with a multiple choice question" do
       it "shows the correct answer toggle"
       it "shows a remove link for each answer"
@@ -155,6 +175,28 @@ RSpec.describe "questions controller", :default_creates do
       it "marks every answer correct" do
         expect(question.answers.reload).to all(be_correct)
         expect(flash[:notice]).to eq("Question successfully updated")
+      end
+    end
+
+    context "with a question from another subject" do
+      let(:question) { create(:question) }
+
+      it "leaves the question in its topic and redirects with an alert" do
+        expect { patch question_path(question), params: {question: {topic_id: topic.id}} }
+          .not_to change { question.reload.topic }
+        expect(response).to redirect_to(root_path)
+        expect(flash[:alert]).to eq("You are not authorized to perform this action.")
+      end
+    end
+
+    context "when moving the question to another subject's topic" do
+      let(:other_topic) { create(:topic) }
+
+      it "leaves the question in its topic and redirects with an alert" do
+        expect { patch question_path(question), params: {question: {topic_id: other_topic.id}} }
+          .not_to change { question.reload.topic }
+        expect(response).to redirect_to(root_path)
+        expect(flash[:alert]).to eq("You are not authorized to perform this action.")
       end
     end
   end
