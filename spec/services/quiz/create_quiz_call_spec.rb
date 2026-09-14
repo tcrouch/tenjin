@@ -31,6 +31,17 @@ RSpec.describe Quiz::CreateQuiz, :default_creates do
       expect(topic_result.payload[:quiz].topic).to eq(topic)
     end
 
+    context "with a lesson" do
+      let(:lesson) { create(:lesson, topic: topic) }
+      let(:result) do
+        described_class.call(user: student, topic: "Lucky Dip", subject: quiz_subject, lesson: lesson.id)
+      end
+
+      it "ignores the lesson" do
+        expect(result.payload[:quiz].lesson).to be_nil
+      end
+    end
+
     it "records the time the quiz was started" do
       described_class.call(user: student, topic: "Lucky Dip", subject: quiz_subject)
       expect(student.reload.time_of_last_quiz).to be_within(1.second).of(Time.current)
@@ -94,6 +105,40 @@ RSpec.describe Quiz::CreateQuiz, :default_creates do
 
     it "assigns the lesson to the quiz" do
       expect(result.payload[:quiz].lesson).to eq(lesson)
+    end
+  end
+
+  context "when the topic belongs to another subject" do
+    let(:other_topic) { create(:topic) }
+    let(:result) { described_class.call(user: student, topic: other_topic.id, subject: quiz_subject) }
+
+    # A question exists so only the topic guard can refuse
+    before { create(:question, topic: other_topic) }
+
+    it "returns a failure result" do
+      expect(result).to be_failure
+      expect(result.error).to eq "Topic not found"
+    end
+
+    it "does not save the quiz" do
+      expect { result }.not_to change(Quiz, :count)
+    end
+  end
+
+  context "when the lesson belongs to another topic" do
+    let(:lesson) { create(:lesson) }
+    let(:result) { described_class.call(user: student, topic: topic.id, subject: quiz_subject, lesson: lesson.id) }
+
+    # Questions exist so only the lesson guard can refuse
+    before { create_list(:question, 10, topic: lesson.topic, lesson: lesson) }
+
+    it "returns a failure result" do
+      expect(result).to be_failure
+      expect(result.error).to eq "Lesson not found"
+    end
+
+    it "does not save the quiz" do
+      expect { result }.not_to change(Quiz, :count)
     end
   end
 

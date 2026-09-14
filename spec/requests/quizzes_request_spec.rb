@@ -103,21 +103,91 @@ RSpec.describe "using a quiz" do
     end
   end
 
+  describe "starting a quiz" do
+    subject { post quizzes_path, params: {quiz: {topic_id: topic.id, subject: quiz_subject.id}} }
+
+    let(:classroom) { create(:classroom, school: school, subject: quiz_subject) }
+    let!(:enrollment) { create(:enrollment, school: school, classroom: classroom, user: student) }
+
+    before { create(:question, topic: topic) }
+
+    shared_examples "a refused quiz start" do |message|
+      it { is_expected.to redirect_to(dashboard_path) }
+
+      it "does not create a quiz" do
+        expect { subject }.not_to change(Quiz, :count)
+      end
+
+      it "explains the refusal" do
+        subject
+        expect(flash[:alert]).to match(message)
+      end
+    end
+
+    it "creates a quiz" do
+      expect { subject }.to change(Quiz, :count).by(1)
+    end
+
+    it "redirects to the new quiz" do
+      subject
+      expect(response).to redirect_to(Quiz.last)
+    end
+
+    context "with a lucky dip" do
+      subject { post quizzes_path, params: {quiz: {topic_id: Quiz::LUCKY_DIP, subject: quiz_subject.id}} }
+
+      it "creates a quiz" do
+        expect { subject }.to change(Quiz, :count).by(1)
+      end
+    end
+
+    context "with no topic" do
+      subject { post quizzes_path, params: {quiz: {subject: quiz_subject.id}} }
+
+      it { is_expected.to redirect_to(new_quiz_path(subject: quiz_subject.name)) }
+    end
+
+    context "when the subject does not exist" do
+      subject { post quizzes_path, params: {quiz: {topic_id: topic.id, subject: 0}} }
+
+      it_behaves_like "a refused quiz start", /does not exist/
+    end
+
+    context "when the student is not enrolled in the subject" do
+      let(:classroom) { create(:classroom, school: school) }
+
+      it_behaves_like "a refused quiz start", /not enrolled/
+    end
+
+    context "when the school is not permitted" do
+      let(:school) { create(:school, permitted: false) }
+
+      it_behaves_like "a refused quiz start", /does not have access/
+    end
+
+    context "when the topic belongs to another subject" do
+      let(:topic) { create(:topic) }
+
+      it_behaves_like "a refused quiz start", /Topic not found/
+    end
+
+    context "when the lesson belongs to another topic" do
+      subject do
+        post quizzes_path, params: {quiz: {topic_id: topic.id, subject: quiz_subject.id, lesson_id: lesson.id}}
+      end
+
+      let(:lesson) { create(:lesson) }
+
+      # Questions exist so only the lesson guard can refuse
+      before { create_list(:question, 10, topic: lesson.topic, lesson: lesson) }
+
+      it_behaves_like "a refused quiz start", /Lesson not found/
+    end
+  end
+
   context "when displaying a question" do
     let!(:multiplier) { create(:multiplier) }
     let(:quiz) { create(:new_quiz, user: student, question_order: [question.id]) }
-    let(:classroom) { create(:classroom, subject: quiz_subject) }
-
-    context "when creating a new quiz" do
-      let!(:enrollment) { create(:enrollment, school: school, classroom: classroom, user: student) }
-      let!(:extra_question) { create(:question, topic: topic) }
-
-      it "creates and redirects to the new quiz" do
-        post quizzes_path params: {quiz: {topic_id: topic, subject: quiz_subject}}
-        follow_redirect!
-        expect(response).to have_http_status(:success)
-      end
-    end
 
     it "renders the multiple choice question" do
       get quiz_path(id: quiz.id)

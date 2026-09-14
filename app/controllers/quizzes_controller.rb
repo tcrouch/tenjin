@@ -50,25 +50,22 @@ class QuizzesController < ApplicationController
   end
 
   def create
-    topic_id = quiz_params[:topic_id]
-    subject = Subject.find(quiz_params[:subject])
-    return select_quiz_topic(subject) if topic_id.blank?
+    subject = Subject.find_by(id: quiz_params[:subject])
+    authorize Quiz.new(subject: subject)
+    return redirect_to new_quiz_path(subject: subject.name) if quiz_params[:topic_id].blank?
 
     result = Quiz::CreateQuiz.call(user: current_user,
-      topic: topic_id,
+      topic: quiz_params[:topic_id],
       subject: subject,
       lesson: quiz_params[:lesson_id])
 
     case result
     in {success: true, payload: {quiz:}}
-      authorize(quiz)
       redirect_to quiz
     in {success: false, error: {code: :cooldown, seconds_left:}}
-      authorize(current_user, :show?, policy_class: UserPolicy)
       flash[:alert] = "You need to wait #{seconds_left} seconds to start another quiz"
       redirect_to dashboard_path
     in {success: false, error:}
-      authorize(current_user, :show?, policy_class: UserPolicy)
       flash[:alert] = error
       redirect_to dashboard_path
     end
@@ -96,12 +93,6 @@ class QuizzesController < ApplicationController
     end
   end
 
-  def select_quiz_topic(subject)
-    quiz = Quiz.new(subject: subject)
-    authorize quiz, :new?
-    redirect_to new_quiz_path(subject: subject)
-  end
-
   def find_quiz
     Quiz.find(params[:id])
   end
@@ -120,16 +111,19 @@ class QuizzesController < ApplicationController
 
   def quiz_not_authorized(exception)
     case exception.query
-    when "new?"
-      flash[:alert] = if exception.record.subject.present?
-        ["Invalid subject ", exception.record.subject]
-      else
-        "Subject does not exist"
-      end
+    when "new?", "create?"
+      flash[:alert] = refused_start_message(exception.record.subject)
     when "show?"
       return flash[:alert] = "Quiz does not belong to you" if exception.record.active?
     end
     redirect_to dashboard_path
+  end
+
+  def refused_start_message(subject)
+    return "Subject does not exist" if subject.nil?
+    return "Your school does not have access to quizzes" unless current_user.school.permitted?
+
+    "You are not enrolled in #{subject.name}"
   end
 
   def calculate_percent_correct(quiz)

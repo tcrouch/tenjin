@@ -168,8 +168,10 @@ RSpec.describe "Student visits the dashboard", :default_creates, :js do
     end
 
     context "when homework is lesson-based" do
-      let(:lesson) { create(:lesson, subject: classroom.subject) }
-      let!(:homework_lesson) { create(:homework, due_date: 8.days.from_now, classroom: classroom, lesson: lesson) }
+      let(:lesson) { create(:lesson, topic: topic) }
+      let!(:homework_lesson) do
+        create(:homework, due_date: 8.days.from_now, classroom: classroom, topic: topic, lesson: lesson)
+      end
       before { visit(dashboard_path) }
 
       it "shows the lesson title" do
