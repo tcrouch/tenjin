@@ -11,6 +11,11 @@ RSpec.describe ClassroomPolicy, :default_creates do
       it { is_expected.to be_show }
     end
 
+    context "as a teacher of another school" do
+      let(:actor) { build_stubbed(:teacher, school: build_stubbed(:school)) }
+      it { is_expected.not_to be_show }
+    end
+
     context "as a student" do
       let(:actor) { student }
       it { is_expected.not_to be_show }
