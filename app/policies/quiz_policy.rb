@@ -15,7 +15,7 @@ class QuizPolicy < ApplicationPolicy
     user.subjects.include?(record.subject) && user.school.permitted?
   end
 
-  alias_method :create?, :update?
+  alias_method :create?, :new?
 
   class Scope < Scope
     def resolve

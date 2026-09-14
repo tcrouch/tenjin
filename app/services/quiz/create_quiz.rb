@@ -6,14 +6,15 @@ class Quiz::CreateQuiz < ApplicationCommand
     @user = user
     @topic_id = topic
     @subject = subject
-    @lesson = (Lesson.find(lesson) if lesson.present?)
+    @lesson_id = lesson
     @lucky_dip = @topic_id == Quiz::LUCKY_DIP
-    @topic = Topic.find(@topic_id) unless @lucky_dip
     @quiz = Quiz.new
   end
 
   def call
     return failure("User not found") if @user.blank?
+    return failure("Topic not found") unless topic_found?
+    return failure("Lesson not found") unless lesson_found?
 
     initialise_quiz
 
@@ -30,6 +31,22 @@ class Quiz::CreateQuiz < ApplicationCommand
   end
 
   private
+
+  # Points go to the question's topic, so it must be inside the credited subject
+  def topic_found?
+    return true if @lucky_dip
+
+    @topic = @subject.topics.find_by(id: @topic_id)
+    @topic.present?
+  end
+
+  # Homework progress matches on topic, so a lesson must be inside the chosen topic
+  def lesson_found?
+    return true if @lucky_dip || @lesson_id.blank?
+
+    @lesson = @topic.lessons.find_by(id: @lesson_id)
+    @lesson.present?
+  end
 
   def initialise_quiz
     @quiz.user_id = @user.id
