@@ -86,6 +86,22 @@ RSpec.describe School do
       end
     end
 
+    context "with live leaderboard streams open" do
+      let!(:listed_student) { create(:student, school: school) }
+      let!(:unlisted_student) { create(:student, school: school) }
+
+      it "disconnects the users it disables" do
+        expect { school.finish_sync([listed_student.id]) }
+          .to have_broadcasted_to("action_cable/#{unlisted_student.to_gid_param}")
+          .with(type: "disconnect", reconnect: false)
+      end
+
+      it "leaves listed users connected" do
+        expect { school.finish_sync([listed_student.id]) }
+          .not_to have_broadcasted_to("action_cable/#{listed_student.to_gid_param}")
+      end
+    end
+
     context "with a school admin enrolled nowhere and off the roster" do
       let!(:school_admin) { create(:school_admin, school: school) }
       before { school.finish_sync([]) }
