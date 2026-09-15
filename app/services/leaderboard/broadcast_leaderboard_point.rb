@@ -9,7 +9,7 @@ class Leaderboard::BroadcastLeaderboardPoint < ApplicationService
 
   def call
     @subject_score, @topic_score = scores
-    LeaderboardChannel.broadcast_to(LeaderboardChannel.leaderboard_for(@topic.subject, @user.school), json_data)
+    LeaderboardChannel.broadcast_to(LeaderboardChannel.leaderboard_for(@topic.subject_id, @user.school), json_data)
   end
 
   protected

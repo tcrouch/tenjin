@@ -92,6 +92,24 @@ RSpec.describe School do
     end
   end
 
+  describe "#leaderboard_scope" do
+    context "when the school belongs to a school group" do
+      let(:school) { build_stubbed(:school) }
+
+      it "names the group" do
+        expect(school.leaderboard_scope).to eq("school-group-#{school.school_group_id}")
+      end
+    end
+
+    context "when the school has no school group" do
+      let(:school) { build_stubbed(:school, school_group: nil) }
+
+      it "names the school" do
+        expect(school.leaderboard_scope).to eq("school-#{school.id}")
+      end
+    end
+  end
+
   describe "#from_wonde" do
     let(:school) { described_class.from_wonde(OpenStruct.new(id: "1234", name: "test"), "token") }
 

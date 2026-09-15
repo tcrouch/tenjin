@@ -14,7 +14,7 @@ RSpec.describe LeaderboardChannel, :default_creates do
 
     it "streams the group's leaderboard, ignoring the school the client names" do
       expect(subscription.streams)
-        .to contain_exactly(described_class.broadcasting_for([quiz_subject, school.school_group]))
+        .to contain_exactly("leaderboard:subject-#{quiz_subject.id}:school-group-#{school.school_group_id}")
     end
   end
 
@@ -25,7 +25,7 @@ RSpec.describe LeaderboardChannel, :default_creates do
 
     it "streams the school's leaderboard" do
       expect(subscription.streams)
-        .to contain_exactly(described_class.broadcasting_for([quiz_subject, school_without_school_group]))
+        .to contain_exactly("leaderboard:subject-#{quiz_subject.id}:school-#{school_without_school_group.id}")
     end
   end
 
