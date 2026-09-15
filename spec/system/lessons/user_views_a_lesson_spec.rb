@@ -31,7 +31,8 @@ RSpec.describe "User views lessons", :default_creates, :js do
     end
 
     it "shows available lesson questions" do
-      find("a", text: "View Questions").click
+      find("summary", text: topic.name).click
+      click_link("Questions", href: lesson_questions_path(lesson_id: lesson))
       expect(page).to have_content(question.question_text.to_plain_text)
     end
   end

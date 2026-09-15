@@ -28,13 +28,7 @@ RSpec.describe "lessons controller", :default_creates do
         sign_in teacher
       end
 
-      it "shows a create lesson link for authored subjects" do
-        get lessons_path
-
-        expect(response.body)
-          .to include("Create #{quiz_subject.name} Lesson")
-          .and include(new_lesson_path(subject: quiz_subject))
-      end
+      # Lesson rows sit inside collapsed <details>, which Capybara treats as hidden
 
       context "with lessons in multiple subjects" do
         let(:other_subject) { create(:subject, name: "Woodwork") }
@@ -46,21 +40,76 @@ RSpec.describe "lessons controller", :default_creates do
 
         it "lists and offers to edit only lessons in authored subjects" do
           expect(Capybara.string(response.body))
-            .to have_link("Edit", count: 1)
+            .to have_link("Edit", count: 1, visible: :all)
             .and have_css(".subject-title", text: quiz_subject.name)
             .and have_no_css(".subject-title", text: other_subject.name)
-            .and have_css(".lesson-title", text: lesson.title)
-            .and have_no_css(".lesson-title", text: other_lesson.title)
+            .and have_css(".lesson-title", text: lesson.title, visible: :all)
+            .and have_no_css(".lesson-title", text: other_lesson.title, visible: :all)
         end
 
-        it "offers to create lessons only in authored subjects" do
+        it "offers to add lessons only to authored subjects" do
           expect(Capybara.string(response.body))
-            .to have_css("#createLessons h3", text: quiz_subject.name)
-            .and have_no_css("#createLessons h3", text: other_subject.name)
+            .to have_link("Add Lesson", count: 1)
+            .and have_link("Add Lesson", href: new_lesson_path(subject: quiz_subject))
         end
       end
 
-      context "with lessons that have no video" do
+      context "with lessons in several topics" do
+        let(:fractions) { create(:topic, subject: quiz_subject, name: "Fractions") }
+        let(:retired) { create(:topic, subject: quiz_subject, name: "Photosynthesis", active: false) }
+        let!(:fractions_lesson) { create(:lesson, title: "Adding fractions", topic: fractions) }
+        let!(:retired_lesson) { create(:lesson, title: "Leaf structure", topic: retired) }
+        let(:open_param) { nil }
+
+        before { get lessons_path(open: open_param) }
+
+        it "lists each lesson under its topic" do
+          expect(Capybara.string(response.body))
+            .to have_css("#topic_#{fractions.id} summary", text: "Fractions")
+            .and have_css("#topic_#{fractions.id} .lesson-title", text: fractions_lesson.title, visible: :all)
+            .and have_no_css("#topic_#{fractions.id} .lesson-title", text: lesson.title, visible: :all)
+        end
+
+        it "folds inactive topics into one group" do
+          expect(Capybara.string(response.body))
+            .to have_css("#inactive_topics_#{quiz_subject.id} #topic_#{retired.id}", visible: :all)
+            .and have_no_css("#inactive_topics_#{quiz_subject.id} #topic_#{fractions.id}", visible: :all)
+        end
+
+        it "starts with every topic closed" do
+          expect(Capybara.string(response.body)).to have_no_css("details[open]", visible: :all)
+        end
+
+        context "when returning to an active topic" do
+          let(:open_param) { fractions.id }
+
+          it "opens and scrolls to only that topic" do
+            expect(Capybara.string(response.body))
+              .to have_css("details[open]", count: 1, visible: :all)
+              .and have_css("[data-controller='scroll-into-view']", count: 1, visible: :all)
+              .and have_css("details#topic_#{fractions.id}[open][data-controller='scroll-into-view']")
+          end
+        end
+
+        context "when returning to an inactive topic" do
+          let(:open_param) { retired.id }
+
+          it "opens the topic inside the inactive group" do
+            expect(Capybara.string(response.body))
+              .to have_css("details#inactive_topics_#{quiz_subject.id}[open] details#topic_#{retired.id}[open]")
+          end
+        end
+
+        context "when the topic parameter is not an id" do
+          let(:open_param) { [fractions.id] }
+
+          it "opens no topic" do
+            expect(Capybara.string(response.body)).to have_no_css("details[open]", visible: :all)
+          end
+        end
+      end
+
+      context "with questions on its lessons" do
         let!(:revision_lesson) do
           create(:lesson, title: "Pythagoras revision", topic: topic, category: "no_content", video_id: nil)
         end
@@ -71,16 +120,31 @@ RSpec.describe "lessons controller", :default_creates do
         before do
           create_list(:question, 2, topic: topic, lesson: revision_lesson)
           create(:question, topic: topic, lesson: revision_lesson, active: false)
+          create(:question, topic: topic, lesson: lesson)
+          create(:question, topic: topic, lesson: lesson, active: false)
           get lessons_path
         end
 
         it "counts each lesson's active questions" do
           expect(Capybara.string(response.body)).to have_table(
+            visible: :all,
             with_rows: [
-              {"Lesson Title" => revision_lesson.title, "Questions" => "2"},
-              {"Lesson Title" => unused_lesson.title, "Questions" => "0"}
+              {"Lesson" => lesson.title, "Questions" => "1"},
+              {"Lesson" => revision_lesson.title, "Questions" => "2"},
+              {"Lesson" => unused_lesson.title, "Questions" => "0"}
             ]
           )
+        end
+
+        it "totals the topic's lessons and active questions" do
+          expect(Capybara.string(response.body))
+            .to have_css("#topic_#{topic.id} summary", text: "3 lessons · 3 questions")
+        end
+
+        it "offers to play only the lesson with a video" do
+          expect(Capybara.string(response.body))
+            .to have_css("#topic_#{topic.id} button[src]", count: 1, visible: :all)
+            .and have_css("button[src='#{lesson.video_url}']", visible: :all)
         end
       end
     end
@@ -97,11 +161,11 @@ RSpec.describe "lessons controller", :default_creates do
       sign_in teacher
     end
 
-    it "creates the lesson and redirects to the index" do
+    it "creates the lesson and returns to its topic" do
       expect { post lessons_path, params: params }.to change(Lesson, :count).by(1)
       expect(Lesson.find_by!(title: title))
         .to have_attributes(topic: topic, category: "vimeo", video_id: "371104836")
-      expect(response).to redirect_to(lessons_path)
+      expect(response).to redirect_to(lessons_path(open: topic.id))
     end
 
     context "when the details are invalid" do
@@ -137,7 +201,7 @@ RSpec.describe "lessons controller", :default_creates do
         params: {lesson: {title: "Fantastic new title", video_link: lesson.video_url}}
       expect(lesson.reload)
         .to have_attributes(title: "Fantastic new title", category: "youtube", video_id: "VFZNvj-HfBU")
-      expect(response).to redirect_to(lessons_path)
+      expect(response).to redirect_to(lessons_path(open: topic.id))
     end
 
     context "when the details are invalid" do
@@ -167,9 +231,9 @@ RSpec.describe "lessons controller", :default_creates do
       sign_in teacher
     end
 
-    it "destroys the lesson and redirects to the index" do
+    it "destroys the lesson and returns to its topic" do
       expect { delete lesson_path(lesson) }.to change(Lesson, :count).by(-1)
-      expect(response).to redirect_to(lessons_path)
+      expect(response).to redirect_to(lessons_path(open: topic.id))
     end
   end
 end

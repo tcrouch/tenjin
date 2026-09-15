@@ -1,0 +1,21 @@
+.text-start
+  - if @subjects.many?
+    nav.d-flex.flex-wrap.justify-content-center.gap-3 aria-label="Subjects"
+      - @subjects.each do |s|
+        = link_to s.name, "##{dom_id(s)}"
+  - @subjects.each do |s|
+    - editable = @author && @editable_subjects.include?(s)
+    - active_topics, inactive_topics = @lessons_by_subject[s.id].group_by(&:topic).partition { |topic, _| topic.active? }
+    section.lesson-subject.mt-4 id=dom_id(s)
+      .d-flex.flex-wrap.align-items-center.justify-content-between.gap-2.mb-2
+        h2.subject-title.mb-0 = s.name
+        - if editable
+          = link_to 'Add Lesson', new_lesson_path(subject: s), class: 'btn btn-primary'
+      - active_topics.each do |topic, lessons|
+        = render 'topic', topic: topic, lessons: lessons, editable: editable
+      - if inactive_topics.any?
+        details id="inactive_topics_#{s.id}" open=(inactive_topics.any? { |topic, _| topic.id == @open_topic_id })
+          summary.py-2.text-body-secondary = "Inactive topics (#{inactive_topics.size})"
+          .ps-3
+            - inactive_topics.each do |topic, lessons|
+              = render 'topic', topic: topic, lessons: lessons, editable: editable
