@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+# Pushes a user's fresh subject and topic scores to the live leaderboards their school streams
 class Leaderboard::BroadcastLeaderboardPoint < ApplicationService
   def initialize(topic, user)
     @topic = topic
@@ -8,20 +9,10 @@ class Leaderboard::BroadcastLeaderboardPoint < ApplicationService
 
   def call
     @subject_score, @topic_score = scores
-    LeaderboardChannel.broadcast_to(channel_name, json_data)
+    LeaderboardChannel.broadcast_to(LeaderboardChannel.leaderboard_for(@topic.subject_id, @user.school), json_data)
   end
 
   protected
-
-  def channel_name
-    school = @user.school
-    location = if school.school_group_id.present?
-      school.school_group.name
-    else
-      school.name
-    end
-    "#{@topic.subject.name}:#{location}"
-  end
 
   def json_data
     {

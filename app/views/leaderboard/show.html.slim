@@ -1,9 +1,7 @@
 - content_for :title
   title = ('Leaderboard - ' + @subject.name)
 
-- alpine_data = { subjectName: @subject.name,
-    schoolName: @school.name,
-    schoolGroupName: @school_group&.name,
+- alpine_data = { subjectId: @subject.id,
     topicId: @topic&.id,
     canSeeLiveToggle: %w[employee school_admin].include?(current_user.role) }
 

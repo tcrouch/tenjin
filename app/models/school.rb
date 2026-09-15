@@ -20,6 +20,11 @@ class School < ApplicationRecord
     school
   end
 
+  # Live leaderboard points fan out to the whole school group when there is one
+  def leaderboard_scope
+    school_group_id ? "school-group-#{school_group_id}" : "school-#{id}"
+  end
+
   def start_sync
     update!(sync_status: :syncing)
 

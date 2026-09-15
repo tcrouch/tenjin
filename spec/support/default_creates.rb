@@ -4,6 +4,7 @@ RSpec.shared_context "with default_creates", shared_context: :metadata do
   let(:quiz_subject) { create(:subject) }
   let(:topic) { create(:topic, subject: quiz_subject) }
   let(:school) { create(:school) }
+  let(:school_without_school_group) { create(:school, school_group: nil) }
 
   let(:student) { create(:student, school: school) }
   let(:teacher) { create(:teacher, school: school) }

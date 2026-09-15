@@ -56,20 +56,19 @@ RSpec.describe "User views a live leaderboard", :default_creates, :js do
       end
 
       it "shows live updates from a student in the same school group" do
-        Leaderboard::BroadcastLeaderboardPoint.new(topic_score_same_school_group, second_student).call
+        Leaderboard::BroadcastLeaderboardPoint.new(topic, second_student).call
         expect(page).to have_css("#leaderboardTable tbody tr")
       end
 
       it "filters live updates by class" do
         click_button("Select Class")
         click_button(enrollment_different_classroom.classroom.name)
-        Leaderboard::BroadcastLeaderboardPoint.new(topic_score_different_classroom,
-          topic_score_different_classroom.user).call
+        Leaderboard::BroadcastLeaderboardPoint.new(topic, topic_score_different_classroom.user).call
         expect(page).to have_css(".score-changed").and have_css("tbody tr", count: 1)
       end
 
       it "filters live updates by school" do
-        Leaderboard::BroadcastLeaderboardPoint.new(topic_score_same_school_group, topic_score_same_school_group.user).call
+        Leaderboard::BroadcastLeaderboardPoint.new(topic, topic_score_same_school_group.user).call
         click_button("All")
         click_button(topic_score_same_school_group.user.school.name)
         expect(page).to have_css("tbody tr", count: 1)
@@ -80,7 +79,7 @@ RSpec.describe "User views a live leaderboard", :default_creates, :js do
 
         it "shows the live score delta when All is selected" do
           click_button("All")
-          Leaderboard::BroadcastLeaderboardPoint.new(topic_score_same_school_group, second_student).call
+          Leaderboard::BroadcastLeaderboardPoint.new(topic, second_student).call
           expect(page).to have_css("#leaderboardTable tbody tr td#score-#{topic_score_same_school_group.user.id}",
             exact_text: 10)
         end
@@ -105,7 +104,7 @@ RSpec.describe "User views a live leaderboard", :default_creates, :js do
       end
 
       it "flashes an update when a broadcast arrives" do
-        Leaderboard::BroadcastLeaderboardPoint.new(student_topic_score, student_topic_score.user).call
+        Leaderboard::BroadcastLeaderboardPoint.new(topic, student_topic_score.user).call
         expect(page).to have_css("tr.score-changed")
       end
 

@@ -13,7 +13,6 @@ class LeaderboardController < ApplicationController
     authorize current_user
     @subject = find_subject
     @topic = find_topic
-    @school_group = current_user.school.school_group
     if request.xhr?
       set_leaderboard_ajax_response_variables
     else
@@ -67,13 +66,13 @@ class LeaderboardController < ApplicationController
 
   def set_leaderboard_variables
     @subjects = current_user.subjects.distinct
-    @school = current_user.school
     cookies.encrypted[:user_id] = current_user.id
   end
 
   def set_filter_data
-    @schools = if @school_group.present?
-      @school_group.schools.pluck(:name)
+    school_group = current_user.school.school_group
+    @schools = if school_group.present?
+      school_group.schools.pluck(:name)
     else
       [current_user.school.name]
     end
