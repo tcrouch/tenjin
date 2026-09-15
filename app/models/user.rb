@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+# A pupil or member of staff at a school, synced from Wonde and signed in through Devise
 class User < ApplicationRecord
   rolify
   # Include default devise modules. Others available are:
@@ -76,12 +77,12 @@ class User < ApplicationRecord
     save
   end
 
+  # Returns the ids of every user the class lists, so the sync can tell who has left
   def self.from_wonde(school, classroom, classroom_db)
-    create_employee_users(classroom, school)
+    ids = create_employee_users(classroom, school)
+    return ids if classroom_db.subject.blank?
 
-    return if classroom_db.subject.blank?
-
-    create_student_users(classroom, school)
+    ids + create_student_users(classroom, school)
   end
 
   def seconds_left_on_cooldown
@@ -94,24 +95,24 @@ class User < ApplicationRecord
     private
 
     def create_student_users(classroom, school)
-      return if classroom.subject.blank?
-      return if classroom.students.blank?
-      return if classroom.students.data.blank?
+      return [] if classroom.subject.blank?
+      return [] if classroom.students.blank?
+      return [] if classroom.students.data.blank?
 
-      classroom.students.data.each do |student|
+      classroom.students.data.filter_map do |student|
         u = initialize_user(student, :student, school)
-        u.save # invalid records are silently skipped
+        u.id if u.save # invalid records are silently skipped
       end
     end
 
     def create_employee_users(classroom, school)
-      return if classroom.subject.blank?
-      return if classroom.employees.blank?
-      return if classroom.employees.data.blank?
+      return [] if classroom.subject.blank?
+      return [] if classroom.employees.blank?
+      return [] if classroom.employees.data.blank?
 
-      classroom.employees.data.each do |employee|
+      classroom.employees.data.filter_map do |employee|
         u = initialize_user(employee, :employee, school)
-        u.save # invalid records are silently skipped
+        u.id if u.save # invalid records are silently skipped
       end
     end
 

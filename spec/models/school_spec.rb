@@ -30,9 +30,8 @@ RSpec.describe School do
       let!(:school_admin) { create(:school_admin, school: school) }
       before { school.start_sync }
 
-      it "disables non-admin users but not school admins" do
-        expect([student.reload, employee.reload]).to all(be_disabled)
-        expect(school_admin.reload).not_to be_disabled
+      it "leaves every user enabled until the roster is known" do
+        expect(User.where(school: school, disabled: true)).to be_empty
       end
     end
 
@@ -50,31 +49,36 @@ RSpec.describe School do
         expect(Enrollment.where(classroom: classroom)).to be_empty
       end
     end
-
-    context "with users from another school" do
-      let!(:other_student) { create(:student) }
-      before { school.start_sync }
-
-      it "does not affect other schools' users" do
-        expect(other_student.reload).not_to be_disabled
-      end
-    end
   end
 
   describe "#finish_sync" do
     let(:school) { create(:school, sync_status: :syncing) }
 
     it "sets sync_status to successful" do
-      school.finish_sync
+      school.finish_sync([])
       expect(school.reload).to be_successful
     end
 
-    context "with enrolled and unenrolled employees" do
+    context "with students on and off the roster" do
+      let!(:listed_student) { create(:student, school: school) }
+      let!(:unlisted_student) { create(:student, school: school) }
+      before { school.finish_sync([listed_student.id]) }
+
+      it "disables the student the roster no longer lists" do
+        expect(unlisted_student.reload).to be_disabled
+      end
+
+      it "keeps the listed student enabled" do
+        expect(listed_student.reload).not_to be_disabled
+      end
+    end
+
+    context "with enrolled and unenrolled employees on the roster" do
       let!(:classroom) { create(:classroom, school: school) }
       let!(:enrolled_employee) { create(:teacher, school: school) }
       let!(:unenrolled_employee) { create(:teacher, school: school) }
       let!(:enrollment) { create(:enrollment, classroom: classroom, user: enrolled_employee) }
-      before { school.finish_sync }
+      before { school.finish_sync([enrolled_employee.id, unenrolled_employee.id]) }
 
       it "disables unenrolled employees but not enrolled ones" do
         expect(unenrolled_employee.reload).to be_disabled
@@ -82,39 +86,21 @@ RSpec.describe School do
       end
     end
 
-    context "with students" do
-      let!(:student) { create(:student, school: school) }
-      before { school.finish_sync }
-
-      it "does not disable students" do
-        expect(student.reload).not_to be_disabled
-      end
-    end
-
-    context "with a school admin enrolled nowhere" do
+    context "with a school admin enrolled nowhere and off the roster" do
       let!(:school_admin) { create(:school_admin, school: school) }
-      before { school.finish_sync }
+      before { school.finish_sync([]) }
 
       it "keeps the school admin enabled" do
         expect(school_admin.reload).not_to be_disabled
       end
     end
-  end
 
-  describe "#leaderboard_scope" do
-    context "when the school belongs to a school group" do
-      let(:school) { build_stubbed(:school) }
+    context "with users from another school" do
+      let!(:other_student) { create(:student) }
+      before { school.finish_sync([]) }
 
-      it "names the group" do
-        expect(school.leaderboard_scope).to eq("school-group-#{school.school_group_id}")
-      end
-    end
-
-    context "when the school has no school group" do
-      let(:school) { build_stubbed(:school, school_group: nil) }
-
-      it "names the school" do
-        expect(school.leaderboard_scope).to eq("school-#{school.id}")
+      it "does not affect other schools' users" do
+        expect(other_student.reload).not_to be_disabled
       end
     end
   end

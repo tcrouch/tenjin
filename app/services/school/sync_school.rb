@@ -13,9 +13,10 @@ class School::SyncSchool < ApplicationService
     # Assume timed out if more than two minutes syncing.  Adjust or put as env var?
     return if @school.syncing? && (Time.current - @school.updated_at) < 240
 
+    @roster_user_ids = []
     @school.start_sync
     fetch_class_data
-    @school.finish_sync
+    @school.finish_sync(@roster_user_ids)
   end
 
   protected
@@ -30,7 +31,7 @@ class School::SyncSchool < ApplicationService
   def sync_all_data
     classroom = Classroom.from_wonde(@school, @sync_data)
 
-    User.from_wonde(@school, @sync_data, classroom)
+    @roster_user_ids.concat(User.from_wonde(@school, @sync_data, classroom))
 
     return if classroom.subject.blank?
 
