@@ -50,4 +50,18 @@ RSpec.describe Customisation do
       expect(customisation.reload).to be_purchasable
     end
   end
+
+  describe "#for_sale?" do
+    it "is true when purchasable and not retired" do
+      expect(build_stubbed(:customisation, purchasable: true, retired: false)).to be_for_sale
+    end
+
+    it "is false when not purchasable" do
+      expect(build_stubbed(:customisation, purchasable: false, retired: false)).not_to be_for_sale
+    end
+
+    it "is false when retired but still flagged purchasable" do
+      expect(build_stubbed(:customisation, purchasable: true, retired: true)).not_to be_for_sale
+    end
+  end
 end
