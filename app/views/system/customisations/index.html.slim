@@ -1,17 +1,18 @@
 - content_for :title
   title = ('Customisations')
-section.page-section
-  .container
-    =link_to 'New Customisation', new_system_customisation_path, class: 'btn w-100 btn-primary'
+.container
+  .d-flex.flex-wrap.align-items-center.justify-content-between.gap-2.pt-4.mb-3
+    h1.display-4.mb-0 Customisations
+    = link_to 'Add Customisation', new_system_customisation_path, class: 'btn btn-primary'
 section.page-section.text-center.available-customisations
   .container
-    h1.page-section-header.text-uppercase Available Customisations
+    h2.page-section-header.text-uppercase Available Customisations
     ==render_small_separator
     = render partial: "customisations/customisations",
       locals: { customisations: @customisations.order(sticky: :desc, purchasable: :desc),
         bought_customisations: [] }
 section.page-section.text-center.retired-customisations
   .container
-    h1.page-section-header.text-uppercase Retired Customisations
+    h2.page-section-header.text-uppercase Retired Customisations
     ==render_small_separator
     =render partial: "customisations/customisations", locals: {customisations: @retired_customisations, bought_customisations: []}

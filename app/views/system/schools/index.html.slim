@@ -1,5 +1,8 @@
 .container
-  span.display-4 Schools
+  .d-flex.flex-wrap.align-items-center.justify-content-between.gap-2.pt-4.mb-3
+    h1.display-4.mb-0 Schools
+    - if current_admin.super?
+      = link_to 'Add School', new_system_school_path, class: 'btn btn-primary'
   .table-responsive
     table.table
       tr
@@ -38,6 +41,3 @@
             class: 'btn w-100 btn-primary',
             method: :patch,
             form: { class: 'd-inline', data: { turbo: true } }
-    - if current_admin.super?
-      = link_to(new_system_school_path)
-        button.btn.btn-dark type="button" Add School
