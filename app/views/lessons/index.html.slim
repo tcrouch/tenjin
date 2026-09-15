@@ -4,81 +4,12 @@
   section.page-section.text-center.pt-2#newLesson
     h1.page-section-header.text-uppercase Lessons
     ==render_small_separator(margin: "mb-2")
-    - if @lessons.empty?
+    - if @subjects.empty?
       p.lead No lessons yet!
-    - @subjects.each do |s|
-      - @subject_author = @author && @editable_subjects.include?(s)
-      h1.py-4.h1.subject-title = s.name
-      .row.row-cols-1.row-cols-md-2.row-cols-lg-3.g-3
-        - @lessons_by_subject[s.id].each do |l|
-          - unless l.no_content?
-            .col
-              .card.h-100
-                .card-body.videoLink(src=l.video_url
-                  data-bs-toggle="modal"
-                  data-bs-target="#videoModal"
-                  data-action="click->video-modal#open")
-                  h3.h4.lesson-title = l.title
-                  p.fw-light = l.topic.name
-                  img.img-fluid.card-img-top(video_id=l.video_id
-                    category=l.category
-                    src=l.thumbnail_url
-                    data-video-modal-target=("vimeo" if l.vimeo?))
-                - if @subject_author
-                  .card-footer
-                    p = 'Questions: ' + l.questions_count.to_s
-                    = link_to 'View Questions', lesson_questions_path(lesson_id: l), class: 'btn btn-primary mx-2'
-                    = link_to 'Edit', edit_lesson_path(l), class: 'btn btn-primary mx-2'
-                    = button_to 'Delete', lesson_path(l),
-                      class: 'btn btn-danger',
-                      method: :delete,
-                      form: { class: 'd-inline', data: { turbo: true, turbo_confirm: 'Are you sure?' } }
-                - elsif !current_user.student?
-                  .card-footer
-                    = link_to 'View Questions', lesson_questions_path(lesson_id: l), class: 'btn btn-primary mx-2'
-
-      - if @subject_author
-        table.table
-          thead
-            tr
-              th Lesson Title
-              th Questions
-              th
-              th
-              th
-          tbody
-            - @lessons_by_subject[s.id].select(&:no_content?).each do |l|
-              tr
-                td = l.title
-                td = @active_question_counts.fetch(l.id, 0)
-                td = link_to 'View Questions', lesson_questions_path(lesson_id: l), class: 'btn btn-primary'
-                td = link_to 'Edit', edit_lesson_path(l), class: 'btn btn-primary'
-                td = button_to 'Delete', lesson_path(l),
-                  class: 'btn btn-danger',
-                  method: :delete,
-                  form: { class: 'd-inline', data: { turbo: true, turbo_confirm: 'Are you sure?' } }
-      - elsif !current_user.student?
-        table.table
-          thead
-            tr
-              th Lesson Title
-              th Questions
-              th
-          tbody
-            - @lessons_by_subject[s.id].select(&:no_content?).each do |l|
-              tr
-                td = l.title
-                td = @active_question_counts.fetch(l.id, 0)
-                td = link_to 'View Questions', lesson_questions_path(lesson_id: l), class: 'btn btn-primary mx-2'
-
-  - if @author
-    .container
-      section.page-section.text-center.pt-2#createLessons
-        h1.page-section-header.text-uppercase Create Lessons
-        ==render_small_separator
-        - @editable_subjects.each do |s|
-          h3.h3.py-2 = s.name
-          = link_to "Create #{s.name} Lesson", new_lesson_path(subject: s), class: 'btn w-100 btn-primary'
+    - elsif current_user.student?
+      = render 'student_lessons'
+    - else
+      = render 'staff_lessons'
 
   .modal.fade#videoModal data-video-modal-target='modal'
     .modal-dialog.modal-dialog-centered.modal-lg role="document"

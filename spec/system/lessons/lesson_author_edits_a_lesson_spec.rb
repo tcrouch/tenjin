@@ -33,6 +33,7 @@ RSpec.describe "Lesson author edits a lesson", :default_creates do
     before { visit(lessons_path) }
 
     it "removes the lesson from the list" do
+      find("summary", text: topic.name).click
       page.accept_confirm { click_button("Delete") }
       expect(page).to have_no_css(".lesson-title", text: lesson.title)
     end
