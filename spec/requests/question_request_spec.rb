@@ -60,6 +60,8 @@ RSpec.describe "questions controller", :default_creates do
 
     before { sign_in author }
 
+    def ticked_answer(label) = "#table-answers tbody tr:has(input.text-answer[value='#{label}']) input.form-check-input[checked]"
+
     it "labels each select" do
       get question_path(question)
       expect(Capybara.string(response.body))
@@ -81,6 +83,50 @@ RSpec.describe "questions controller", :default_creates do
 
       it "hides the remove answer links" do
         expect(Capybara.string(response.body)).to have_no_link("Remove")
+      end
+
+      it "labels the answers False and True" do
+        expect(Capybara.string(response.body)).to have_field(with: "False").and have_field(with: "True")
+      end
+    end
+
+    context "with a boolean question whose labels need tidying" do
+      let(:question) { create(:boolean_question, topic: topic) }
+
+      before do
+        question.answers.find_by!(correct: true).update_columns(text: "TRUE")
+        question.answers.find_by!(correct: false).update_columns(text: "FALSE ")
+        get question_path(question)
+      end
+
+      it "ticks the answer labelled True" do
+        expect(Capybara.string(response.body))
+          .to have_css(ticked_answer("True")).and have_no_css(ticked_answer("False"))
+      end
+    end
+
+    context "when previewing as boolean a question with one True answer" do
+      before do
+        question.answers.first.update_columns(text: "True")
+        create(:answer, question: question, correct: false, text: "Paris")
+        get question_path(question, question: {question_type: "boolean"})
+      end
+
+      it "keeps the tick on True and labels the other answer False" do
+        expect(Capybara.string(response.body))
+          .to have_css(ticked_answer("True")).and have_no_css(ticked_answer("False")).and have_field(with: "False")
+      end
+    end
+
+    context "when previewing as boolean a question with two True answers" do
+      before do
+        question.answers.first.update_columns(text: "True")
+        create(:answer, question: question, correct: false, text: "true")
+        get question_path(question, question: {question_type: "boolean"})
+      end
+
+      it "labels the answers False and True" do
+        expect(Capybara.string(response.body)).to have_field(with: "False").and have_field(with: "True")
       end
     end
 
@@ -207,6 +253,28 @@ RSpec.describe "questions controller", :default_creates do
           .not_to change { question.reload.topic }
         expect(response).to redirect_to(root_path)
         expect(flash[:alert]).to eq("You are not authorized to perform this action.")
+      end
+    end
+
+    context "with a boolean question whose labels need tidying" do
+      let(:question) { create(:boolean_question, topic: topic) }
+      let(:true_answer) { question.answers.find_by!(correct: true) }
+      let(:false_answer) { question.answers.find_by!(correct: false) }
+
+      before do
+        true_answer.update_columns(text: "TRUE")
+        false_answer.update_columns(text: "FALSE ")
+        patch question_path(question), params: {question: {answers_attributes: {
+          "0" => {id: true_answer.id, text: "TRUE", correct: "1"},
+          "1" => {id: false_answer.id, text: "FALSE ", correct: "0"}
+        }}}
+      end
+
+      it "keeps the correct answer on True" do
+        expect(question.answers.reload).to contain_exactly(
+          have_attributes(text: "True", correct: true),
+          have_attributes(text: "False", correct: false)
+        )
       end
     end
   end
