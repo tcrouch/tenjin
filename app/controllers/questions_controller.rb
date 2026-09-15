@@ -162,8 +162,10 @@ class QuestionsController < ApplicationController
 
   def setup_boolean_question(question)
     question.answers.build until question.answers.length >= 2
-    question.answers = question.answers.slice(0..1) if question.answers.length > 2
-    label_boolean_answers(question.answers)
+    answers = question.answers.to_a
+    # Marked, not removed: replacing the association deletes them at once, even on a preview
+    answers.drop(2).each(&:mark_for_destruction)
+    label_boolean_answers(answers.first(2))
     # Puts any remaining errors in front of the author in the editor
     question.valid?
   end
