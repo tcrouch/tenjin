@@ -15,9 +15,6 @@ class HomeworkPolicy < ApplicationPolicy
     user.employee? && record.classroom.school == user.school
   end
 
-  def show?
-    record.classroom.school == user.school
-  end
-
+  alias_method :show?, :create?
   alias_method :destroy?, :create?
 end
