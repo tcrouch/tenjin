@@ -13,5 +13,10 @@ RSpec.describe "Sessions", :default_creates do
       delete destroy_user_session_path
       expect(cookies[:user_id]).to be_blank
     end
+
+    it "disconnects the user's live leaderboard streams" do
+      expect { delete destroy_user_session_path }
+        .to have_broadcasted_to("action_cable/#{student.to_gid_param}").with(type: "disconnect", reconnect: false)
+    end
   end
 end
