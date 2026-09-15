@@ -1,5 +1,7 @@
 .container
-  span.display-4 School Groups
+  .d-flex.flex-wrap.align-items-center.justify-content-between.gap-2.pt-4.mb-3
+    h1.display-4.mb-0 School Groups
+    = link_to 'Add School Group', new_system_school_group_path, class: 'btn btn-primary'
   table.table.table-responsive
     tr
       th scope="col" Name
@@ -14,6 +16,3 @@
           method: :delete,
           class: 'btn btn-danger',
           form: { data: { turbo: true, turbo_confirm: 'Are you sure?' } }
-
-  = link_to(new_system_school_group_path)
-    button.btn.btn-dark type="button" Add School Group
