@@ -153,6 +153,16 @@ RSpec.describe "questions controller", :default_creates do
       end
     end
 
+    context "when the only correct answer is removed" do
+      it "keeps the answer and re-renders the editor with an error" do
+        expect do
+          patch question_path(question),
+            params: {question: {answers_attributes: {"0" => {id: correct_answer.id, _destroy: "true"}}}}
+        end.not_to change { Answer.exists?(correct_answer.id) }
+        expect(response.body).to include("Question must have at least one correct answer")
+      end
+    end
+
     context "when no answer is marked correct" do
       before do
         patch question_path(question),

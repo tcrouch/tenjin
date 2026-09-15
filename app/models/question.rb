@@ -37,7 +37,7 @@ class Question < ApplicationRecord
   def boolean_true_or_false
     return unless boolean?
 
-    answer_text = answers.filter_map { |i| i&.text }
+    answer_text = kept_answers.filter_map { |i| i&.text }
     # Check for the presence of both true and false in two answers in a case insensitive search
     return errors.add :base, "Boolean question must contain two answers" unless answer_text.size == 2
 
@@ -47,7 +47,7 @@ class Question < ApplicationRecord
   end
 
   def at_least_one_correct_answer
-    return if answers.any?(&:correct)
+    return if kept_answers.any?(&:correct)
 
     errors.add :base, "Question must have at least one correct answer."
   end
@@ -61,6 +61,11 @@ class Question < ApplicationRecord
   end
 
   private
+
+  # Answers removed through nested attributes stay loaded until the save
+  def kept_answers
+    answers.reject(&:marked_for_destruction?)
+  end
 
   def check_boolean
     return unless question_type_changed? && boolean?
