@@ -51,5 +51,16 @@ FactoryBot.define do
         user.add_role :question_author, evaluator.subject
       end
     end
+
+    factory :lesson_author do
+      transient do
+        subject { association :subject }
+      end
+
+      role { "employee" }
+      after(:create) do |user, evaluator|
+        user.add_role :lesson_author, evaluator.subject
+      end
+    end
   end
 end
