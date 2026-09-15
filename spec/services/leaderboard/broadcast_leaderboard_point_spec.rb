@@ -18,14 +18,13 @@ RSpec.describe Leaderboard::BroadcastLeaderboardPoint, :default_creates do
   end
 
   context "when the school has no school group" do
-    let(:school_without_group) { create(:school, school_group: nil) }
-    let(:local_student) { create(:student, school: school_without_group) }
+    let(:local_student) { create(:student, school: school_without_school_group) }
     let!(:topic_score) { create(:topic_score, user: local_student, topic: topic, score: 5) }
 
     it "broadcasts to a channel scoped to the school" do
       described_class.call(topic, local_student)
       expect(LeaderboardChannel).to have_received(:broadcast_to)
-        .with([quiz_subject, school_without_group], anything)
+        .with([quiz_subject, school_without_school_group], anything)
     end
   end
 end

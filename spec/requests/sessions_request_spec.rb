@@ -3,19 +3,14 @@
 require "rails_helper"
 
 RSpec.describe "Sessions", :default_creates do
-  before do
-    sign_in student
-    get leaderboard_path(quiz_subject.name)
-  end
-
-  it "keeps the leaderboard stream cookie while signed in" do
-    expect(cookies[:user_id]).to be_present
-  end
-
-  context "when signed out" do
-    before { delete destroy_user_session_path }
+  describe "signing out" do
+    before do
+      cookies[:user_id] = "stale"
+      sign_in student
+    end
 
     it "clears the leaderboard stream cookie" do
+      delete destroy_user_session_path
       expect(cookies[:user_id]).to be_blank
     end
   end

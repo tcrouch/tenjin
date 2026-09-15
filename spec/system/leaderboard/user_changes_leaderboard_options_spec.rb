@@ -11,7 +11,6 @@ RSpec.describe "User changes leaderboard options", :default_creates, :js do
   end
 
   context "with no school group" do
-    let(:school_without_school_group) { create(:school, school_group: nil) }
     let(:student) { create(:student, school: school_without_school_group) }
 
     before { visit(leaderboard_path(quiz_subject.name)) }

@@ -3,40 +3,29 @@
 require "rails_helper"
 
 RSpec.describe LeaderboardChannel, :default_creates do
-  before { stub_connection current_user: student }
+  let(:viewer) { student }
+
+  before { stub_connection current_user: viewer }
 
   context "when the school belongs to a school group" do
-    before { subscribe(subject_id: quiz_subject.id) }
+    before do
+      subscribe(subject_id: quiz_subject.id, school: "Another School", school_group: "Another Group")
+    end
 
-    it "streams the subject's leaderboard for the whole group" do
+    it "streams the group's leaderboard, ignoring the school the client names" do
       expect(subscription.streams)
         .to contain_exactly(described_class.broadcasting_for([quiz_subject, school.school_group]))
     end
   end
 
   context "when the school has no school group" do
-    before do
-      school.update!(school_group: nil)
-      subscribe(subject_id: quiz_subject.id)
-    end
+    let(:viewer) { create(:student, school: school_without_school_group) }
 
-    it "streams the subject's leaderboard for the school" do
+    before { subscribe(subject_id: quiz_subject.id) }
+
+    it "streams the school's leaderboard" do
       expect(subscription.streams)
-        .to contain_exactly(described_class.broadcasting_for([quiz_subject, school]))
-    end
-  end
-
-  context "when the client names another school" do
-    let(:other_school) { create(:school) }
-
-    before do
-      subscribe(subject_id: quiz_subject.id, school: other_school.name,
-        school_group: other_school.school_group.name)
-    end
-
-    it "streams the student's own school group" do
-      expect(subscription.streams)
-        .to contain_exactly(described_class.broadcasting_for([quiz_subject, school.school_group]))
+        .to contain_exactly(described_class.broadcasting_for([quiz_subject, school_without_school_group]))
     end
   end
 
