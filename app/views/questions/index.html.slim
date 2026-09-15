@@ -1,8 +1,10 @@
 .container
   - @subjects.each do |s|
-    .display-3.my-3 = s.name
-    = button_to 'Add Topic', topics_path, params: { topic: { subject_id: s.id } }, class: 'btn btn-primary w-100'
-    = link_to 'Most Flagged Questions', flagged_questions_questions_path( subject_id: s.id), class: 'btn btn-info w-100'
+    .d-flex.flex-wrap.align-items-center.justify-content-between.gap-2.my-3
+      .display-3 = s.name
+      .d-flex.flex-wrap.gap-2
+        = button_to 'Add Topic', topics_path, params: { topic: { subject_id: s.id } }, class: 'btn btn-primary'
+        = link_to 'Most Flagged Questions', flagged_questions_questions_path(subject_id: s.id), class: 'btn btn-info'
     table.table
       thead
         tr
