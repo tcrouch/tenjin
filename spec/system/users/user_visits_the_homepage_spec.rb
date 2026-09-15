@@ -65,9 +65,12 @@ RSpec.describe "User visits the homepage", :default_creates, :js, :vcr do
   end
 
   describe "the about page" do
-    context "with the OGAT constant hidden" do
+    # Stubs one key: replacing ENV hides PATH from Ferrum if this example starts the browser
+    before { allow(ENV).to receive(:[]).and_call_original }
+
+    context "without the OGAT environment variable" do
       before do
-        hide_const("OGAT")
+        allow(ENV).to receive(:[]).with("OGAT").and_return(nil)
         visit page_path("about")
       end
 
@@ -82,7 +85,7 @@ RSpec.describe "User visits the homepage", :default_creates, :js, :vcr do
 
     context "with the OGAT environment variable set" do
       before do
-        stub_const("ENV", "OGAT" => "true")
+        allow(ENV).to receive(:[]).with("OGAT").and_return("true")
         visit page_path("about")
       end
 
