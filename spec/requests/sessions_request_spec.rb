@@ -21,15 +21,6 @@ RSpec.describe "Sessions", :default_creates do
       get user_wonde_omniauth_callback_path
       expect(response).to redirect_to(new_user_session_path)
     end
-
-    context "while the school is syncing" do
-      before { school.update!(sync_status: :syncing) }
-
-      it "admits a disabled user" do
-        post user_session_path, params: credentials
-        expect(response).to redirect_to(dashboard_path)
-      end
-    end
   end
 
   describe "an existing session" do

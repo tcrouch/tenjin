@@ -139,8 +139,8 @@ RSpec.describe User do
       let(:disabled) { true }
       let(:school) { build_stubbed(:school, sync_status: :syncing) }
 
-      it "is true" do
-        expect(user).to be_active_for_authentication
+      it "is still false" do
+        expect(user).not_to be_active_for_authentication
       end
     end
   end

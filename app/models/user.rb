@@ -47,9 +47,9 @@ class User < ApplicationRecord
     end
   end
 
-  # Sync disables every user before re-enabling those still on the roster, so disabled counts once it has finished
+  # A finished sync lists everyone still at the school; anyone it dropped loses access
   def active_for_authentication?
-    super && (!disabled? || school.syncing?)
+    super && !disabled?
   end
 
   def inactive_message
