@@ -5,12 +5,14 @@
         = link_to s.name, "##{dom_id(s)}"
   - @subjects.each do |s|
     - editable = @author && @editable_subjects.include?(s)
-    - active_topics, inactive_topics = @lessons_by_subject[s.id].group_by(&:topic).partition { |topic, _| topic.active? }
+    - active_topics, inactive_topics = @lessons_by_subject.fetch(s.id, []).group_by(&:topic).partition { |topic, _| topic.active? }
     section.lesson-subject.mt-4 id=dom_id(s)
       .d-flex.flex-wrap.align-items-center.justify-content-between.gap-2.mb-2
         h2.subject-title.mb-0 = s.name
         - if editable
           = link_to 'Add Lesson', new_lesson_path(subject: s), class: 'btn btn-primary'
+      - if active_topics.empty? && inactive_topics.empty?
+        p.text-body-secondary No lessons yet.
       - active_topics.each do |topic, lessons|
         = render 'topic', topic: topic, lessons: lessons, editable: editable
       - if inactive_topics.any?

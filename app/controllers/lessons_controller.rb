@@ -9,7 +9,8 @@ class LessonsController < ApplicationController
     set_permitted_lessons_and_subjects
 
     @lessons_by_subject = @lessons.group_by { |lesson| lesson.topic.subject_id }
-    @subjects = Subject.where(id: @lessons_by_subject.keys)
+    # Authored subjects with no lessons yet still need a way to add the first
+    @subjects = Subject.where(id: @lessons_by_subject.keys + @editable_subjects.to_a.map(&:id))
     # Active questions only: lessons.questions_count counts every question
     @active_question_counts = Question.where(lesson_id: @lessons.map(&:id), active: true)
       .group(:lesson_id).count

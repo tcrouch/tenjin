@@ -1,7 +1,7 @@
 - @subjects.each do |s|
   h1.py-4.h1.subject-title = s.name
   .row.row-cols-1.row-cols-md-2.row-cols-lg-3.g-3
-    - @lessons_by_subject[s.id].reject(&:no_content?).each do |l|
+    - @lessons_by_subject.fetch(s.id, []).reject(&:no_content?).each do |l|
       .col
         .card.h-100
           .card-body.videoLink(src=l.video_url
