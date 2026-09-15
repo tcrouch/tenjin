@@ -47,6 +47,15 @@ class User < ApplicationRecord
     end
   end
 
+  # Sync disables every user before re-enabling those still on the roster, so disabled counts once it has finished
+  def active_for_authentication?
+    super && (!disabled? || school.syncing?)
+  end
+
+  def inactive_message
+    disabled? ? :disabled : super
+  end
+
   def self.from_omniauth(auth, current_user = nil)
     # Wonde users are stored with capitalized provider; the OmniAuth strategy returns "wonde"
     provider = (auth.provider == "wonde") ? "Wonde" : auth.provider
