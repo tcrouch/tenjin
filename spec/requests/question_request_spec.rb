@@ -90,6 +90,21 @@ RSpec.describe "questions controller", :default_creates do
       end
     end
 
+    context "when previewing a three-answer question as boolean" do
+      before do
+        create_list(:answer, 2, question: question, correct: false)
+        get question_path(question, question: {question_type: "boolean"})
+      end
+
+      it "deletes no answers" do
+        expect(question.answers.count).to eq(3)
+      end
+
+      it "shows two answer rows" do
+        expect(Capybara.string(response.body)).to have_css("#table-answers tbody tr", count: 2)
+      end
+    end
+
     context "with a boolean question whose labels need tidying" do
       let(:question) { create(:boolean_question, topic: topic) }
 
@@ -271,6 +286,48 @@ RSpec.describe "questions controller", :default_creates do
       end
 
       it "keeps the correct answer on True" do
+        expect(question.answers.reload).to contain_exactly(
+          have_attributes(text: "True", correct: true),
+          have_attributes(text: "False", correct: false)
+        )
+      end
+    end
+
+    context "when switching a three-answer question to boolean" do
+      before do
+        create_list(:answer, 2, question: question, correct: false)
+        patch question_path(question), params: {question: {question_type: "boolean"}}
+      end
+
+      it "saves it with two answers" do
+        expect(question.reload).to be_boolean
+        expect(question.answers.count).to eq(2)
+      end
+    end
+
+    context "with a boolean question that has three answers" do
+      let(:question) { create(:boolean_question, topic: topic) }
+
+      before do
+        create(:answer, question: question, correct: false, text: "Maybe")
+        patch question_path(question), params: {question: {question_text: "Is the sky blue?"}}
+      end
+
+      it "saves it with only the first two answers" do
+        expect(question.answers.reload.map(&:text)).to contain_exactly("True", "False")
+      end
+    end
+
+    context "with a boolean question whose True and False answers are not its first two" do
+      before do
+        question.answers.first.update_columns(text: "Maybe", correct: false)
+        create(:answer, question: question, correct: false, text: "false")
+        create(:answer, question: question, correct: true, text: "true")
+        question.update_columns(question_type: "boolean")
+        patch question_path(question), params: {question: {question_text: "Is the sky blue?"}}
+      end
+
+      it "keeps the answers that read True and False" do
         expect(question.answers.reload).to contain_exactly(
           have_attributes(text: "True", correct: true),
           have_attributes(text: "False", correct: false)
