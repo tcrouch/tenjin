@@ -111,6 +111,16 @@ RSpec.describe School do
       end
     end
 
+    context "with question and lesson authors enrolled nowhere and off the roster" do
+      let!(:question_author) { create(:question_author, school: school, subject: create(:subject)) }
+      let!(:lesson_author) { create(:lesson_author, school: school, subject: create(:subject)) }
+      before { school.finish_sync([]) }
+
+      it "keeps the authors enabled" do
+        expect([question_author, lesson_author].map(&:reload)).to all(have_attributes(disabled: false))
+      end
+    end
+
     context "with users from another school" do
       let!(:other_student) { create(:student) }
       before { school.finish_sync([]) }

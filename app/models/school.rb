@@ -12,6 +12,9 @@ class School < ApplicationRecord
 
   enum :sync_status, {never: 0, queued: 1, syncing: 2, successful: 3, failed: 4, needed: 5}
 
+  # Admins run the school and authors write for every school, so neither needs a class to keep access
+  SYNC_EXEMPT_ROLES = %w[school_admin question_author lesson_author].freeze
+
   def self.from_wonde(client_school, token)
     school = where(client_id: client_school.id).first_or_initialize
     school.name = client_school.name
@@ -49,12 +52,12 @@ class School < ApplicationRecord
 
   private
 
-  # Everyone the roster no longer lists, plus employees it enrols nowhere; school admins keep access regardless
+  # Everyone the roster no longer lists, plus employees it enrols nowhere; exempt role holders keep access regardless
   def dropped_users(roster_user_ids)
     unlisted = User.where.not(id: roster_user_ids)
     unenrolled_employees = User.where(role: :employee).where.not(id: enrolled_user_ids)
     User.where(school: self)
-      .where.not(id: User.with_role(:school_admin))
+      .where.not(id: User.joins(:roles).where(roles: {name: SYNC_EXEMPT_ROLES}).select(:id))
       .and(unlisted.or(unenrolled_employees))
   end
 
