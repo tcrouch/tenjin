@@ -75,6 +75,45 @@ RSpec.describe Customisation::BuyCustomisation, :default_creates do
     end
   end
 
+  context "when the customisation is not purchasable" do
+    let(:customisation) { create(:dashboard_customisation, cost: 5, purchasable: false) }
+
+    it "returns a failure result with the error message" do
+      result = described_class.call(user: student, customisation: customisation)
+      expect(result).to be_failure
+      expect(result.error).to eq "This customisation is not for sale"
+    end
+
+    it "does not create a customisation unlock" do
+      expect { described_class.call(user: student, customisation: customisation) }.not_to change(CustomisationUnlock, :count)
+    end
+
+    it "does not deduct any points" do
+      expect { described_class.call(user: student, customisation: customisation) }.not_to change { student.reload.challenge_points }
+    end
+  end
+
+  context "when the customisation is retired" do
+    let(:customisation) { create(:dashboard_customisation, cost: 5, retired: true) }
+
+    it "does not create a customisation unlock" do
+      expect { described_class.call(user: student, customisation: customisation) }.not_to change(CustomisationUnlock, :count)
+    end
+  end
+
+  context "when switching to an owned customisation that is no longer for sale" do
+    let(:customisation) { create(:dashboard_customisation, cost: 5, retired: true) }
+
+    before do
+      create(:customisation_unlock, customisation: customisation, user: student)
+      described_class.call(user: student, customisation: customisation)
+    end
+
+    it "sets the customisation as active" do
+      expect(ActiveCustomisation.where(customisation: customisation)).not_to be_empty
+    end
+  end
+
   context "when the customisation is nil" do
     it "returns a failure result" do
       result = described_class.call(user: student, customisation: nil)

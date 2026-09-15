@@ -12,6 +12,7 @@ class Customisation::BuyCustomisation < ApplicationCommand
 
     unlock = CustomisationUnlock.where(customisation: @customisation, user: @user).first_or_initialize
     if unlock.new_record?
+      return failure("This customisation is not for sale") unless @customisation.for_sale?
       return failure("You do not have enough points") unless funds_present?
 
       unlock.user = @user

@@ -15,6 +15,11 @@ class Customisation < ApplicationRecord
   validates :value, presence: true
   validates :image, presence: true, if: :dashboard_style?
 
+  # Checks retired too: update_all writes skip make_unpurchasable_if_retired
+  def for_sale?
+    purchasable? && !retired?
+  end
+
   def make_unpurchasable_if_retired
     return unless retired?
 
