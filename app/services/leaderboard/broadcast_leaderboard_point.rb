@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+# Pushes a user's fresh subject and topic scores to the live leaderboards their school streams
 class Leaderboard::BroadcastLeaderboardPoint < ApplicationService
   def initialize(topic, user)
     @topic = topic
