@@ -90,6 +90,15 @@ RSpec.describe School do
         expect(student.reload).not_to be_disabled
       end
     end
+
+    context "with a school admin enrolled nowhere" do
+      let!(:school_admin) { create(:school_admin, school: school) }
+      before { school.finish_sync }
+
+      it "keeps the school admin enabled" do
+        expect(school_admin.reload).not_to be_disabled
+      end
+    end
   end
 
   describe "#leaderboard_scope" do

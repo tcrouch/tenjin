@@ -41,6 +41,7 @@ class School < ApplicationRecord
   def finish_sync
     User.where(school: self, role: :employee)
       .where.not(id: Enrollment.joins(:classroom).where(classrooms: {school_id: id}).select(:user_id))
+      .where.not(id: User.with_role(:school_admin))
       .update_all(disabled: true)
 
     update!(sync_status: :successful)
