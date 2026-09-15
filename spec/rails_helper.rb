@@ -16,14 +16,9 @@ require "super_diff/rspec-rails"
 
 WebMock.disable_net_connect!(allow_localhost: true)
 
-# Prevent ActionCable WebSocket upgrades to /cable from interfering
-# with Devise session state.
-Warden::Manager.prepend(Module.new do
-  def call(env)
-    return @app.call(env) if %r{^/cable}.match?(env["PATH_INFO"])
-    super
-  end
-end)
+# A cable handshake must not consume a sign-in queued for the browser's next request
+Warden.test_mode!
+Warden.asset_paths << %r{^/cable}
 
 VCR.configure do |config|
   config.cassette_library_dir = "spec/fixtures/vcr_cassettes"

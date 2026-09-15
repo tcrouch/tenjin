@@ -66,7 +66,6 @@ class LeaderboardController < ApplicationController
 
   def set_leaderboard_variables
     @subjects = current_user.subjects.distinct
-    cookies.encrypted[:user_id] = current_user.id
   end
 
   def set_filter_data
