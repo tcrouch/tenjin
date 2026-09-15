@@ -10,9 +10,8 @@ RSpec.describe Leaderboard::BroadcastLeaderboardPoint, :default_creates do
 
     it "broadcasts to a channel scoped to the school group with scores" do
       described_class.call(topic, student)
-      expected_channel = "#{topic.subject.name}:#{student.school.school_group.name}"
       expect(LeaderboardChannel).to have_received(:broadcast_to).with(
-        expected_channel,
+        [quiz_subject, school.school_group],
         hash_including(id: student.id, topic_score: anything, subject_score: anything)
       )
     end
@@ -25,8 +24,8 @@ RSpec.describe Leaderboard::BroadcastLeaderboardPoint, :default_creates do
 
     it "broadcasts to a channel scoped to the school" do
       described_class.call(topic, local_student)
-      expected_channel = "#{topic.subject.name}:#{school_without_group.name}"
-      expect(LeaderboardChannel).to have_received(:broadcast_to).with(expected_channel, anything)
+      expect(LeaderboardChannel).to have_received(:broadcast_to)
+        .with([quiz_subject, school_without_group], anything)
     end
   end
 end

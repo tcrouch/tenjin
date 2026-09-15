@@ -1,19 +1,15 @@
 # frozen_string_literal: true
 
+# Streams live leaderboard points for a subject to the viewer's school, or its school group
 class LeaderboardChannel < ApplicationCable::Channel
+  def self.leaderboard_for(subject, school)
+    [subject, school.school_group || school]
+  end
+
   def subscribed
-    return if params[:subject].blank?
-    return if params[:school].blank?
+    subject = Subject.find_by(id: params[:subject_id])
+    return reject if subject.nil?
 
-    stream_from stream_string
-  end
-
-  def stream_string
-    subject = params[:subject]
-    location = params[:school_group].presence || params[:school]
-    "leaderboard:#{subject}:#{location}"
-  end
-
-  def unsubscribed
+    stream_for self.class.leaderboard_for(subject, current_user.school)
   end
 end
