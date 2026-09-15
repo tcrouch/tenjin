@@ -37,6 +37,11 @@ RSpec.describe User do
           expect(described_class.find_by!(role: "student").forename).to eq(user_api_data.data[0].forename)
         end
 
+        it "returns the ids of the users it saves" do
+          expect(described_class.from_wonde(school_api_data, classroom_api_data, classroom))
+            .to contain_exactly(described_class.find_by!(role: "student").id)
+        end
+
         it "generates a username" do
           described_class.from_wonde(school_api_data, classroom_api_data, classroom)
           u = user_api_data.data[0]

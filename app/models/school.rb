@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+# A school whose classrooms, users and enrollments are synced from its Wonde roster
 class School < ApplicationRecord
   belongs_to :school_group, optional: true
   has_many :classrooms
@@ -28,9 +29,6 @@ class School < ApplicationRecord
   def start_sync
     update!(sync_status: :syncing)
 
-    User.where(school: self)
-      .where.not(id: User.with_role(:school_admin))
-      .update_all(disabled: true)
     Enrollment.joins(:classroom)
       .where(classrooms: {school_id: id})
       .destroy_all
@@ -38,11 +36,24 @@ class School < ApplicationRecord
       .update_all(disabled: true)
   end
 
-  def finish_sync
-    User.where(school: self, role: :employee)
-      .where.not(id: Enrollment.joins(:classroom).where(classrooms: {school_id: id}).select(:user_id))
-      .update_all(disabled: true)
-
+  # Users are disabled only here, once the roster is known, so a running sync locks nobody out
+  def finish_sync(roster_user_ids)
+    dropped_users(roster_user_ids).update_all(disabled: true)
     update!(sync_status: :successful)
+  end
+
+  private
+
+  # Everyone the roster no longer lists, plus employees it enrols nowhere; school admins keep access regardless
+  def dropped_users(roster_user_ids)
+    unlisted = User.where.not(id: roster_user_ids)
+    unenrolled_employees = User.where(role: :employee).where.not(id: enrolled_user_ids)
+    User.where(school: self)
+      .where.not(id: User.with_role(:school_admin))
+      .and(unlisted.or(unenrolled_employees))
+  end
+
+  def enrolled_user_ids
+    Enrollment.joins(:classroom).where(classrooms: {school_id: id}).select(:user_id)
   end
 end

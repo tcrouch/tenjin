@@ -79,6 +79,16 @@ RSpec.describe School::SyncSchool, :vcr do
       end
     end
 
+    context "when a student no longer exists in the MIS" do
+      let!(:departed_student) { create(:student, school: existing_school) }
+
+      before { sync_school_with_wonde }
+
+      it "disables the student" do
+        expect(departed_student.reload).to be_disabled
+      end
+    end
+
     context "when a student enrollment no longer exists in the MIS" do
       let(:student) { create(:student, upi: "1234") }
 
@@ -110,6 +120,10 @@ RSpec.describe School::SyncSchool, :vcr do
 
     it "links each student to the correct school" do
       expect(User.find_by!(upi: student_upi).school.name).to eq(school_name)
+    end
+
+    it "leaves listed students enabled" do
+      expect(User.find_by!(upi: student_upi)).not_to be_disabled
     end
   end
 
