@@ -11,6 +11,10 @@ class ApplicationCable::Connection < ActionCable::Connection::Base
   private
 
   def find_verified_user
-    env["warden"].user(:user) || reject_unauthorized_connection
+    # Devise's fetch hooks log out and throw for an inactive user; a socket can only reject, so apply the rule here
+    user = env["warden"].user(scope: :user, run_callbacks: false)
+    return user if user&.active_for_authentication?
+
+    reject_unauthorized_connection
   end
 end

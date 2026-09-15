@@ -15,4 +15,9 @@ RSpec.describe ApplicationCable::Connection, :default_creates do
   it "rejects a handshake with no signed-in user" do
     expect { connect "/cable", env: {"warden" => warden_with(nil)} }.to have_rejected_connection
   end
+
+  it "rejects a user who is no longer active" do
+    disabled_student = build_stubbed(:student, disabled: true)
+    expect { connect "/cable", env: {"warden" => warden_with(disabled_student)} }.to have_rejected_connection
+  end
 end

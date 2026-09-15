@@ -47,6 +47,15 @@ class User < ApplicationRecord
     end
   end
 
+  # A finished sync lists everyone still at the school; anyone it dropped loses access
+  def active_for_authentication?
+    super && !disabled?
+  end
+
+  def inactive_message
+    disabled? ? :disabled : super
+  end
+
   def self.from_omniauth(auth, current_user = nil)
     # Wonde users are stored with capitalized provider; the OmniAuth strategy returns "wonde"
     provider = (auth.provider == "wonde") ? "Wonde" : auth.provider

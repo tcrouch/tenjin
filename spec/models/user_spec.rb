@@ -117,4 +117,37 @@ RSpec.describe User do
       end
     end
   end
+
+  describe "#active_for_authentication?" do
+    let(:user) { build_stubbed(:student, school: school, disabled: disabled) }
+    let(:school) { build_stubbed(:school, sync_status: :successful) }
+    let(:disabled) { false }
+
+    it "is true for an enabled user" do
+      expect(user).to be_active_for_authentication
+    end
+
+    context "when disabled after the school's sync has finished" do
+      let(:disabled) { true }
+
+      it "is false" do
+        expect(user).not_to be_active_for_authentication
+      end
+    end
+
+    context "when disabled while the school is syncing" do
+      let(:disabled) { true }
+      let(:school) { build_stubbed(:school, sync_status: :syncing) }
+
+      it "is still false" do
+        expect(user).not_to be_active_for_authentication
+      end
+    end
+  end
+
+  describe "#inactive_message" do
+    it "names the disabled state" do
+      expect(build_stubbed(:student, disabled: true).inactive_message).to eq(:disabled)
+    end
+  end
 end

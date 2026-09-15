@@ -38,7 +38,12 @@ class School < ApplicationRecord
 
   # Users are disabled only here, once the roster is known, so a running sync locks nobody out
   def finish_sync(roster_user_ids)
-    dropped_users(roster_user_ids).update_all(disabled: true)
+    dropped = dropped_users(roster_user_ids)
+    dropped.update_all(disabled: true)
+    # Devise ends their sessions on the next request, which an open leaderboard socket never makes
+    dropped.select(:id).find_each do |user|
+      ActionCable.server.remote_connections.where(current_user: user).disconnect(reconnect: false)
+    end
     update!(sync_status: :successful)
   end
 
