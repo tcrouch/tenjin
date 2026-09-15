@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+# Identifies each cable connection by the Warden session its handshake carries
 class ApplicationCable::Connection < ActionCable::Connection::Base
   identified_by :current_user
 
@@ -10,10 +11,6 @@ class ApplicationCable::Connection < ActionCable::Connection::Base
   private
 
   def find_verified_user
-    if (verified_user = User.find_by(id: cookies.encrypted[:user_id]))
-      verified_user
-    else
-      reject_unauthorized_connection
-    end
+    env["warden"].user(:user) || reject_unauthorized_connection
   end
 end
