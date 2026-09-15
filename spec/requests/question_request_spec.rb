@@ -317,6 +317,23 @@ RSpec.describe "questions controller", :default_creates do
         expect(question.answers.reload.map(&:text)).to contain_exactly("True", "False")
       end
     end
+
+    context "with a boolean question whose True and False answers are not its first two" do
+      before do
+        question.answers.first.update_columns(text: "Maybe", correct: false)
+        create(:answer, question: question, correct: false, text: "false")
+        create(:answer, question: question, correct: true, text: "true")
+        question.update_columns(question_type: "boolean")
+        patch question_path(question), params: {question: {question_text: "Is the sky blue?"}}
+      end
+
+      it "keeps the answers that read True and False" do
+        expect(question.answers.reload).to contain_exactly(
+          have_attributes(text: "True", correct: true),
+          have_attributes(text: "False", correct: false)
+        )
+      end
+    end
   end
 
   describe "DELETE /questions/:id" do
