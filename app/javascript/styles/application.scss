@@ -175,6 +175,27 @@ hr.small {
   }
 }
 
+// Play, counts and actions shrink to fit so each topic's table lines up with the next
+.lesson-table {
+  .lesson-play,
+  .lesson-count,
+  .lesson-actions {
+    width: 1%;
+    white-space: nowrap;
+  }
+  .lesson-actions {
+    @include media-breakpoint-down(md) {
+      white-space: normal;
+    }
+  }
+}
+
+// Clears the fixed navbar when a subject link or the reopened topic scrolls here
+.lesson-subject,
+.lesson-topic {
+  scroll-margin-top: 66px;
+}
+
 h1,
 h2,
 h3,

@@ -9,10 +9,12 @@ class LessonsController < ApplicationController
     set_permitted_lessons_and_subjects
 
     @lessons_by_subject = @lessons.group_by { |lesson| lesson.topic.subject_id }
-    @subjects = Subject.where(id: @lessons_by_subject.keys)
+    # Authored subjects with no lessons yet still need a way to add the first
+    @subjects = Subject.where(id: @lessons_by_subject.keys + @editable_subjects.to_a.map(&:id))
     # Active questions only: lessons.questions_count counts every question
-    @active_question_counts = Question.where(lesson: @lessons.select(&:no_content?), active: true)
+    @active_question_counts = Question.where(lesson_id: @lessons.map(&:id), active: true)
       .group(:lesson_id).count
+    @open_topic_id = Integer(params[:open], exception: false)
   end
 
   def new
@@ -45,7 +47,7 @@ class LessonsController < ApplicationController
   def destroy
     lesson = authorize find_lesson
     lesson.destroy
-    redirect_to lessons_path
+    redirect_to_topic(lesson.topic)
   end
 
   private
@@ -71,7 +73,12 @@ class LessonsController < ApplicationController
 
     @lesson.save!
 
-    redirect_to lessons_path
+    redirect_to_topic(@lesson.topic)
+  end
+
+  # The index starts with every topic closed, so reopen the one just changed
+  def redirect_to_topic(topic)
+    redirect_to lessons_path(open: topic.id)
   end
 
   def new_lesson_params

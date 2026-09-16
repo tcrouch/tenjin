@@ -1,0 +1,36 @@
+- opened = topic.id == @open_topic_id
+details.lesson-topic.border-bottom id=dom_id(topic) open=opened data-controller=("scroll-into-view" if opened)
+  summary.py-2
+    / Floated ahead of the name so it shares the marker's line
+    span.float-end.ms-2.small.text-body-secondary
+      = "#{pluralize(lessons.size, 'lesson')} · #{pluralize(lessons.sum { |l| @active_question_counts.fetch(l.id, 0) }, 'question')}"
+    = topic.name
+  table.table.table-sm.align-middle.mb-2.lesson-table
+    thead.visually-hidden
+      tr
+        th scope="col" Video
+        th scope="col" Lesson
+        th scope="col" Questions
+        th scope="col" Actions
+    tbody
+      - lessons.each do |l|
+        tr
+          td.lesson-play
+            - unless l.no_content?
+              button.btn.btn-sm.btn-outline-secondary(type="button"
+                src=l.video_url
+                aria-label="Play #{l.title}"
+                data-bs-toggle="modal"
+                data-bs-target="#videoModal"
+                data-action="click->video-modal#open")
+                i.fas.fa-play aria-hidden="true"
+          td.lesson-title = l.title
+          td.lesson-count.text-end = @active_question_counts.fetch(l.id, 0)
+          td.lesson-actions.text-end
+            = link_to 'Questions', lesson_questions_path(lesson_id: l), class: 'btn btn-sm btn-outline-primary'
+            - if editable
+              = link_to 'Edit', edit_lesson_path(l), class: 'btn btn-sm btn-outline-primary ms-1'
+              = button_to 'Delete', lesson_path(l),
+                class: 'btn btn-sm btn-outline-danger',
+                method: :delete,
+                form: { class: 'd-inline ms-1', data: { turbo: true, turbo_confirm: 'Are you sure?' } }
