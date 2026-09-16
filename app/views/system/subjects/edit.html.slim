@@ -4,7 +4,7 @@
     .col
       = simple_form_for [:system, @subject] do |f|
        =f.input :name
-       =f.button :submit, class: "btn btn-primary w-100"
+       =f.button :submit, class: "btn btn-primary"
       - if @subject.active?
         = render layout: 'shared/callout', locals: { type: :caution, title: 'Before you deactivate' } do
           p

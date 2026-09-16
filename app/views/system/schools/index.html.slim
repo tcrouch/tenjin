@@ -2,37 +2,42 @@
   = admin_page_header 'Schools' do
     - if current_admin.super?
       = link_to 'Add School', new_system_school_path, class: 'btn btn-primary'
-  .table-responsive
-    table.table
-      thead
-        tr
-          th Name
-          th.text-end Students
-          th.text-end Weekly Questions
-          th.text-end Monthly Questions
-          th Sync Status
-          - if current_admin.super?
-            th Permitted
-            th School Group
-            th Force Sync
-      tbody
-        - @schools.each do |school|
+  - if @schools.empty?
+    p.text-body-secondary No schools yet.
+  - else
+    .table-responsive
+      table.table
+        thead
           tr
-            td = link_to(school.name, [:system, school])
-            td.text-end = number_with_delimiter(@student_counts[school.id].to_i)
-            td.text-end = number_with_delimiter(@weekly_questions[school.id].to_i)
-            td.text-end = number_with_delimiter(@monthly_questions[school.id].to_i)
-            td id=dom_id(school, :sync_status) = sync_status_badge(school)
+            th Name
+            th.text-end Students
+            th.text-end Weekly Questions
+            th.text-end Monthly Questions
+            th Sync Status
             - if current_admin.super?
-              td id=dom_id(school, :permitted) = render 'permitted', school: school
-              td = form_with model: [:system, school], data: { turbo: true, controller: 'auto-submit' } do |f|
-                = f.select :school_group_id,
-                  options_from_collection_for_select(@school_groups, :id, :name, school.school_group_id),
-                  { include_blank: '' },
-                  id: ('school-group-select-' + school.id.to_s),
-                  class: 'form-select',
-                  data: { action: 'change->auto-submit#submit' }
-              td = button_to 'Sync', sync_system_school_path(school),
-                class: 'btn w-100 btn-primary',
-                method: :patch,
-                form: { class: 'd-inline', data: { turbo: true } }
+              th Permitted
+              th School Group
+              th
+                span.visually-hidden Actions
+        tbody
+          - @schools.each do |school|
+            tr
+              td = link_to(school.name, [:system, school])
+              td.text-end = number_with_delimiter(@student_counts[school.id].to_i)
+              td.text-end = number_with_delimiter(@weekly_questions[school.id].to_i)
+              td.text-end = number_with_delimiter(@monthly_questions[school.id].to_i)
+              td id=dom_id(school, :sync_status) = sync_status_badge(school)
+              - if current_admin.super?
+                td id=dom_id(school, :permitted) = render 'permitted', school: school
+                td = form_with model: [:system, school], data: { turbo: true, controller: 'auto-submit' } do |f|
+                  = f.select :school_group_id,
+                    options_from_collection_for_select(@school_groups, :id, :name, school.school_group_id),
+                    { include_blank: '' },
+                    id: ('school-group-select-' + school.id.to_s),
+                    class: 'form-select form-select-sm',
+                    aria: { label: 'School group' },
+                    data: { action: 'change->auto-submit#submit' }
+                td.text-end = button_to 'Sync', sync_system_school_path(school),
+                  class: 'btn btn-sm btn-outline-secondary',
+                  method: :patch,
+                  form: { class: 'd-inline', data: { turbo: true } }

@@ -4,11 +4,15 @@
 section.available-customisations aria-labelledby='available-heading'
   .container
     h2.admin-section-heading#available-heading Available
+    - if @customisations.empty?
+      p.text-body-secondary No customisations yet.
   = render partial: "customisations/customisations",
     locals: { customisations: @customisations.order(sticky: :desc, purchasable: :desc),
       bought_customisations: [], manage: true }
-section.retired-customisations aria-labelledby='retired-heading'
+section.retired-customisations.pb-5 aria-labelledby='retired-heading'
   .container
     h2.admin-section-heading#retired-heading Retired
+    - if @retired_customisations.empty?
+      p.text-body-secondary No retired customisations.
   = render partial: "customisations/customisations",
     locals: {customisations: @retired_customisations, bought_customisations: [], manage: true}

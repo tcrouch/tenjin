@@ -21,6 +21,10 @@ RSpec.describe "System::Customisations", :default_creates, type: :request do
           .to have_link("Edit", href: edit_system_customisation_path(customisation))
           .and have_no_button("Buy")
       end
+
+      it "says there are no retired customisations" do
+        expect(Capybara.string(response.body)).to have_css(".retired-customisations", text: "No retired customisations.")
+      end
     end
 
     context "as a school group admin" do

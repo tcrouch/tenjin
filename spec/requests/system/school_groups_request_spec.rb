@@ -12,6 +12,11 @@ RSpec.describe "System::SchoolGroups", :default_creates, type: :request do
       expect(response).to have_http_status(:ok)
       expect(response.body).to include("North")
     end
+
+    it "says when there are none" do
+      get system_school_groups_path
+      expect(Capybara.string(response.body)).to have_text("No school groups yet.")
+    end
   end
 
   describe "GET /system/school_groups/:id/edit" do
