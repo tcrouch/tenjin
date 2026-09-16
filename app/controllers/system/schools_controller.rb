@@ -18,10 +18,10 @@ module System
     def stats
       authorize current_admin, :show_stats?
       @school_statistics = School::Statistics.new
-      @customisation_statistics = Customisation.select(:name, :customisation_type, "COUNT(customisations.id)")
+      @customisation_statistics = Customisation.select(:id, :name, :customisation_type, "COUNT(customisation_unlocks.id) AS times_bought")
         .left_joins(:customisation_unlocks)
         .group(:id)
-        .order(count: :desc)
+        .order(times_bought: :desc, name: :asc)
       render "overall_statistics"
     end
 

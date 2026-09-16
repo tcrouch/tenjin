@@ -9,13 +9,15 @@
     ==render_small_separator
     .row.justify-content-center
       .col.mx-auto
-        table.table
-          tr
-            th
-            th Weekly
-            th Overall
-          - @customisation_statistics.each do |c|
+        table.table#customisation-statistics
+          thead
             tr
-              td = c.name
-              td = c.customisation_type
-              td = c.count.to_s
+              th scope='col' Customisation
+              th scope='col' Type
+              th scope='col' Times bought
+          tbody
+            - @customisation_statistics.each do |c|
+              tr id=dom_id(c)
+                td = c.name
+                td = c.customisation_type.humanize
+                td = c.times_bought
