@@ -21,6 +21,22 @@ RSpec.describe "Sessions", :default_creates do
       get user_wonde_omniauth_callback_path
       expect(response).to redirect_to(new_user_session_path)
     end
+
+    it "accepts a username in any case" do
+      post user_session_path, params: {user: {login: student.username.upcase, password: student.password}}
+      expect(response).to redirect_to(dashboard_path)
+    end
+
+    it "accepts an email address in any case" do
+      post user_session_path, params: {user: {login: school_admin.email.upcase, password: school_admin.password}}
+      expect(response).to redirect_to(dashboard_path)
+    end
+
+    it "refuses a login sent as an array" do
+      post user_session_path, params: {user: {login: [student.username], password: student.password}}
+      expect(response).to have_http_status(:unprocessable_content)
+      expect(response.body).to include("Invalid login or password")
+    end
   end
 
   describe "an existing session" do
