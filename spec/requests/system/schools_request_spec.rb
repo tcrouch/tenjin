@@ -21,6 +21,12 @@ RSpec.describe "System::Schools", :default_creates, type: :request do
       get stats_system_schools_path
       expect(response).to have_http_status(:ok)
     end
+
+    it "marks only Statistics as the current page, though its path is under Schools" do
+      get stats_system_schools_path
+      expect(Capybara.string(response.body)).to have_css("#navbar-main a.nav-link.active[aria-current='page']", count: 1)
+        .and have_css("a.nav-link.active", exact_text: "Statistics")
+    end
   end
 
   describe "GET /system/schools/:id" do
