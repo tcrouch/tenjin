@@ -25,6 +25,7 @@ Rails.application.routes.draw do
     resources :admins, only: [:show] do
       member do
         post :become
+        delete :become, action: :unbecome
         post :reset_year
       end
     end

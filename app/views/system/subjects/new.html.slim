@@ -1,7 +1,7 @@
 .container
   .row
     .col
-      h1.display-4#subject_name = @subject.name
+      h1.display-4 Add Subject
       = simple_form_for [:system, @subject] do |f|
        =f.input :name
        =f.button :submit, class: "btn btn-primary w-100"

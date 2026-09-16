@@ -38,7 +38,9 @@ section.page-section.pt-2#Users
                       form: "form-#{e.id}",
                       class: 'form-select'
                   td = select_tag 'user[role]',
-                    options_for_select([ 'school_admin', 'question_author', 'lesson_author'], e.role),
+                    options_for_select(User::ChangeUserRole::ROLES.map { |role| [role.humanize, role] }),
+                    prompt: 'Choose role…',
+                    required: true,
                     id: "role-select-user-#{e.id}",
                     form: "form-#{e.id}",
                     class: 'form-select'

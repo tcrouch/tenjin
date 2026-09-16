@@ -5,6 +5,7 @@ class User::ChangeUserRole < ApplicationCommand
   # A new role here also needs a decision in School::SYNC_EXEMPT_ROLES
   SUBJECT_SCOPED_ROLES = %w[lesson_author question_author].freeze
   GLOBAL_ROLES = %w[school_admin].freeze
+  ROLES = (GLOBAL_ROLES + SUBJECT_SCOPED_ROLES).freeze
 
   def initialize(user:, role:, action:, subject: nil)
     @user = user
@@ -22,7 +23,7 @@ class User::ChangeUserRole < ApplicationCommand
       return failure("Must include a subject with a lesson or question author role")
     end
 
-    return failure("Unrecognised role: #{@role}") unless GLOBAL_ROLES.include?(@role) || SUBJECT_SCOPED_ROLES.include?(@role)
+    return failure("Unrecognised role: #{@role}") unless ROLES.include?(@role)
 
     change_user_role
     success

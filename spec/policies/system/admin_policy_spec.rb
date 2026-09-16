@@ -53,6 +53,18 @@ RSpec.describe System::AdminPolicy do
     end
   end
 
+  describe "#unbecome?" do
+    context "as a super admin" do
+      let(:admin) { build_stubbed(:super_admin) }
+      it { is_expected.to be_unbecome }
+    end
+
+    context "as a school group admin" do
+      let(:admin) { build_stubbed(:school_group_admin) }
+      it { is_expected.to be_unbecome }
+    end
+  end
+
   describe "#show_stats?" do
     context "as a super admin" do
       let(:admin) { build_stubbed(:super_admin) }

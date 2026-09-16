@@ -39,9 +39,9 @@
                   td = button_to 'Send Setup Email', send_welcome_email_system_user_path(sa),
                     class: 'btn btn-primary',
                     form: { class: 'd-inline', data: { turbo: true } }
-                td = button_to 'Become User', become_system_admin_path(@current_admin, user_id: sa.id ),
-                  class: 'btn btn-primary',
-                  form: { class: 'd-inline', data: { turbo: true } }
+                td = button_to 'Become User', become_system_admin_path(current_admin, user_id: sa.id),
+                  class: 'btn btn-outline-secondary',
+                  form: { class: 'd-inline', data: { turbo: false } }
       - if current_admin.super?
         .d-flex.justify-content-center
           = link_to 'Manage User Roles', manage_roles_system_users_path(school: @school), class: 'btn btn-dark'
@@ -66,4 +66,6 @@
                 => u.forename
                 = u.surname
               td = u.role.humanize
-              td = button_to 'Become User', become_system_admin_path(@current_admin, user_id: u.id ), class: 'btn btn-primary'
+              td = button_to 'Become User', become_system_admin_path(current_admin, user_id: u.id),
+                class: 'btn btn-outline-secondary',
+                form: { data: { turbo: false } }

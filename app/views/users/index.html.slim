@@ -55,7 +55,8 @@ section.page-section.text-center.pt-2#Users
           input.px-2#confirmAllPasswordResetTextbox data-confirm-text-target='input' data-action='input->confirm-text#check'
           = button_to 'Confirm', reset_all_passwords_school_path(current_user.school),
             method: :patch,
-            class: 'btn btn-danger disabled',
+            disabled: true,
+            class: 'btn btn-danger',
             id: 'confirmAllPasswordResetButton',
             data: { 'confirm-text-target': 'button' },
             form: { class: 'd-inline', data: { turbo: true } }

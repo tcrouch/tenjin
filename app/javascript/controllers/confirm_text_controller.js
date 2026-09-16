@@ -4,10 +4,8 @@ export default class extends Controller {
   static targets = ["input", "button", "match"];
 
   check() {
-    const expected = this.matchTarget.textContent.trim();
-    this.buttonTarget.classList.toggle(
-      "disabled",
-      this.inputTarget.value !== expected,
-    );
+    const mismatch =
+      this.inputTarget.value !== this.matchTarget.textContent.trim();
+    this.buttonTarget.disabled = mismatch;
   }
 }

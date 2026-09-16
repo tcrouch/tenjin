@@ -18,10 +18,10 @@ module System
     def stats
       authorize current_admin, :show_stats?
       @school_statistics = School::Statistics.new
-      @customisation_statistics = Customisation.select(:name, :customisation_type, "COUNT(customisations.id)")
+      @customisation_statistics = Customisation.select(:id, :name, :customisation_type, "COUNT(customisation_unlocks.id) AS times_bought")
         .left_joins(:customisation_unlocks)
         .group(:id)
-        .order(count: :desc)
+        .order(times_bought: :desc, name: :asc)
       render "overall_statistics"
     end
 
@@ -49,19 +49,27 @@ module System
     end
 
     def update
-      school = authorize find_school
-      school.update(update_school_params)
-      head :no_content
+      @school = authorize find_school
+      @school.reload unless @school.update(update_school_params)
+      respond_to_row_change
     end
 
     def sync
-      school = authorize find_school
-      school.update_attribute(:sync_status, "queued")
-      SyncSchoolJob.perform_later school
-      head :no_content
+      @school = authorize find_school
+      @school.update_attribute(:sync_status, "queued")
+      SyncSchoolJob.perform_later @school
+      respond_to_row_change
     end
 
     private
+
+    # The Turbo Stream redraws the changed cell of the schools table
+    def respond_to_row_change
+      respond_to do |format|
+        format.turbo_stream
+        format.html { redirect_to system_schools_path }
+      end
+    end
 
     def find_school
       School.find(params[:id])

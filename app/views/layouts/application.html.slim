@@ -22,9 +22,12 @@ html lang="en-GB"
     = content_for(:page_meta)
 
   body data-action=action_name data-controller=controller_name
-    = render('shared/user_navigation') if current_user.present?
-    = render('shared/admin_navigation') if current_admin.present?
-    - if current_user.nil? && current_admin.nil?
+    - if current_user.present?
+      = render('shared/user_navigation')
+      = render('shared/impersonation', admin_area: false) if current_admin.present?
+    - elsif current_admin.present?
+      = render('shared/admin_navigation')
+    - else
       = render('shared/logged_out_navigation')
       = render('shared/student_login_modal') unless devise_controller?
     #flashes = render('shared/flashes')

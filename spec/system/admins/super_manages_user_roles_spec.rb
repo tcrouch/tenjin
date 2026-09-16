@@ -13,7 +13,7 @@ RSpec.describe "Super manages user roles", :default_creates, :js do
 
     it "adds the role to the user" do
       select quiz_subject.name, from: "user[subject]" if requires_subject
-      select role_name, from: "user[role]"
+      select role_name.humanize, from: "user[role]"
       click_button "Add Role"
       within(table_id) { expect(page).to have_content(full_name) }
     end

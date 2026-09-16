@@ -28,6 +28,8 @@ class User < ApplicationRecord
 
   QUIZ_COOLDOWN_PERIOD = 40
 
+  def full_name = "#{forename} #{surname}"
+
   # Virtual attribute for authenticating by either username or email
   # This is in addition to a real persisted field like 'username'
   # Needed to allow users to sign in with either a username or an email
