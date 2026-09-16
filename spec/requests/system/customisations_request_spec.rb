@@ -6,6 +6,8 @@ RSpec.describe "System::Customisations", :default_creates, type: :request do
   let(:school_group_admin) { create(:school_group_admin) }
 
   describe "GET /system/customisations" do
+    let!(:customisation) { create(:customisation) }
+
     before do
       sign_in admin
       get system_customisations_path
@@ -14,8 +16,10 @@ RSpec.describe "System::Customisations", :default_creates, type: :request do
     context "as a super admin" do
       let(:admin) { super_admin }
 
-      it "renders the index" do
-        expect(response).to have_http_status(:ok)
+      it "offers the admin controls rather than the shop" do
+        expect(Capybara.string(response.body))
+          .to have_link("Edit", href: edit_system_customisation_path(customisation))
+          .and have_no_button("Buy")
       end
     end
 

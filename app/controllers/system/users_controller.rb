@@ -31,13 +31,13 @@ module System
       @user = authorize find_user
       @user.email = update_email_params[:email]
       @user.save
-      flash.now[:notice] = "Updated email to #{@user.forename} #{@user.surname}"
+      flash.now[:notice] = "Updated email to #{@user.full_name}"
       render template: "shared/flash"
     end
 
     def send_welcome_email
       @user = authorize find_user
-      flash.now[:notice] = "Setup email sent to #{@user.forename} #{@user.surname} (#{@user.email})"
+      flash.now[:notice] = "Setup email sent to #{@user.full_name} (#{@user.email})"
       UserMailer.with(user: @user).setup_email.deliver_later
       @user.send_reset_password_instructions
       render template: "shared/flash"

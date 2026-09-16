@@ -39,6 +39,25 @@ RSpec.describe "customisations", :default_creates do
     end
   end
 
+  describe "GET /customisations/show_available" do
+    let!(:customisation) { create(:customisation) }
+
+    before { sign_in student }
+
+    context "while an admin is signed in as the student" do
+      before do
+        sign_in super_admin
+        get show_available_customisations_path
+      end
+
+      it "offers the shop rather than the admin controls" do
+        expect(Capybara.string(response.body))
+          .to have_button("Buy")
+          .and have_no_link("Edit", href: edit_system_customisation_path(customisation))
+      end
+    end
+  end
+
   describe "POST /customisations/:id/buy" do
     before { sign_in student }
 

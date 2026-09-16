@@ -7,8 +7,14 @@ module System
       authorize user
 
       sign_in(:user, user)
-      sign_out current_admin
-      redirect_to root_url # or user_root_url
+      redirect_to root_url
+    end
+
+    def unbecome
+      authorize current_admin
+      user = current_user
+      sign_out(:user)
+      redirect_to system_root_path, notice: ("Signed out #{user.full_name}" if user)
     end
 
     def show

@@ -1,0 +1,17 @@
+/ Shown on every page while an admin is signed in as a user
+section#impersonation.bg-warning.text-dark.py-2 aria-label="Signed in as a user"
+  .container-fluid.d-flex.flex-wrap.align-items-center.justify-content-between.gap-2
+    span
+      - if admin_area
+        | Also signed in as #{current_user.full_name}, #{current_user.school.name}
+      - else
+        | Viewing as #{current_user.full_name}, #{current_user.school.name}
+    .d-flex.gap-2
+      - if admin_area
+        = link_to 'Back to their pages', dashboard_path, class: 'btn btn-sm btn-outline-dark'
+      - else
+        = link_to 'Admin area', system_root_path, class: 'btn btn-sm btn-outline-dark'
+      = button_to (admin_area ? 'Sign them out' : 'Stop viewing'), become_system_admin_path(current_admin),
+        method: :delete,
+        class: 'btn btn-sm btn-dark',
+        form: { data: { turbo: false } }

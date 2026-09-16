@@ -12,7 +12,7 @@ RSpec.describe "Admin impersonates a user", :default_creates, :js do
 
       it "signs in as the student" do
         click_button "Become User"
-        expect(page).to have_css("#current_user", text: "#{student.forename} #{student.surname}")
+        expect(page).to have_css("#current_user", text: student.full_name)
       end
     end
 
@@ -22,7 +22,7 @@ RSpec.describe "Admin impersonates a user", :default_creates, :js do
 
       it "signs in as the school admin" do
         within("#schoolAdminTable") { click_button "Become User" }
-        expect(page).to have_css("#current_user", text: "#{school_admin.forename} #{school_admin.surname}")
+        expect(page).to have_css("#current_user", text: school_admin.full_name)
       end
     end
   end
@@ -35,5 +35,21 @@ RSpec.describe "Admin impersonates a user", :default_creates, :js do
   describe "as a school group admin" do
     before { sign_in school_group_admin }
     include_examples "an impersonator"
+  end
+
+  describe "stopping" do
+    let!(:student) { super() }
+
+    before do
+      sign_in super_admin
+      visit(system_school_path(school))
+      click_button "Become User"
+    end
+
+    it "returns to the admin area and ends the user session" do
+      click_button "Stop viewing"
+      expect(page).to have_text("Signed out #{student.full_name}")
+        .and have_no_css("#impersonation")
+    end
   end
 end
