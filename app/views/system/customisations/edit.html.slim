@@ -1,7 +1,9 @@
+- heading = @customisation.new_record? ? 'Add Customisation' : "Edit #{@customisation.name_in_database}"
 - content_for :title
-  title = ("Edit #{@customisation.name}")
+  title = heading
 section.page-section.text-center.available-customisations
   .container
+    h1.display-4.text-start = heading
     - if @customisation.dashboard_style? || @customisation.image.attached?
       .card.dashboard-style style=render_dashboard_style(@customisation)
         .card-body.m-5

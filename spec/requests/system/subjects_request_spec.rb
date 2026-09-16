@@ -71,6 +71,7 @@ RSpec.describe "System::Subjects", :default_creates, type: :request do
       }.not_to change(Subject, :count)
       expect(response).to have_http_status(:unprocessable_content)
       expect(Capybara.string(response.body)).to have_css(".invalid-feedback", text: "can't be blank")
+        .and have_css("h1", exact_text: "Add Subject")
     end
   end
 
@@ -96,6 +97,7 @@ RSpec.describe "System::Subjects", :default_creates, type: :request do
       patch system_subject_path(subject_record), params: {subject: {name: ""}}
       expect(response).to have_http_status(:unprocessable_content)
       expect(subject_record.reload.name).to eq("Geography")
+      expect(Capybara.string(response.body)).to have_css("h1", exact_text: "Geography")
     end
   end
 

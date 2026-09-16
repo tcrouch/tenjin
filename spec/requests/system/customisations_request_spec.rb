@@ -57,6 +57,15 @@ RSpec.describe "System::Customisations", :default_creates, type: :request do
         }
       }.to change(Customisation, :count).by(1)
     end
+
+    it "does not create a customisation with a blank name" do
+      expect {
+        post system_customisations_path, params: {
+          customisation: {name: "", value: "blue,heart", customisation_type: "leaderboard_icon", cost: 5}
+        }
+      }.not_to change(Customisation, :count)
+      expect(Capybara.string(response.body)).to have_css("h1", exact_text: "Add Customisation")
+    end
   end
 
   describe "PATCH /system/customisations/:id" do
@@ -77,6 +86,7 @@ RSpec.describe "System::Customisations", :default_creates, type: :request do
       }
       expect(response).to have_http_status(:unprocessable_content)
       expect(customisation.reload.name).to eq("Original")
+      expect(Capybara.string(response.body)).to have_css("h1", exact_text: "Edit Original")
     end
   end
 end
