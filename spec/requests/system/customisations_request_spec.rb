@@ -64,7 +64,10 @@ RSpec.describe "System::Customisations", :default_creates, type: :request do
           customisation: {name: "", value: "blue,heart", customisation_type: "leaderboard_icon", cost: 5}
         }
       }.not_to change(Customisation, :count)
+      expect(response).to have_http_status(:unprocessable_content)
       expect(Capybara.string(response.body)).to have_css("h1", exact_text: "Add Customisation")
+        .and have_css("form .invalid-feedback", exact_text: "Name can't be blank")
+        .and have_text("Name can't be blank", count: 1)
     end
   end
 

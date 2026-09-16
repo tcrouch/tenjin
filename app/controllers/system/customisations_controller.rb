@@ -25,7 +25,7 @@ module System
       if @customisation.save
         redirect_to system_customisations_path, notice: "Created new customisation #{@customisation.name}"
       else
-        render :edit
+        render :edit, status: :unprocessable_content
       end
     end
 
