@@ -1,0 +1,6 @@
+= button_to system_school_path(school, school: { permitted: !school.permitted }),
+  method: :patch,
+  class: 'btn btn-link p-0 border-0',
+  aria: { label: 'Permitted', pressed: school.permitted? },
+  form: { class: 'd-inline', data: { turbo: true } } do
+  = boolean_icon(school.permitted?)
