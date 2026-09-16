@@ -125,10 +125,18 @@ class User < ApplicationRecord
       end
     end
 
+    # Random digits: none to misread or blur into the surname, and a class list doesn't reveal usernames
     def generate_username(user)
-      str = "#{user.forename.strip[0].downcase}#{user.surname.strip.downcase}#{user.upi[0..3]}"
-      str.next! while User.where(username: str).exists?
-      str
+      stem = "#{username_letters(user.forename)[0]}#{username_letters(user.surname)}".presence || "user"
+      100.times do
+        username = format("%s%04d", stem, SecureRandom.random_number(10_000))
+        return username unless User.exists?(username: username)
+      end
+      raise "No free username after 100 draws"
+    end
+
+    def username_letters(name)
+      I18n.transliterate(name.to_s).downcase.gsub(/[^a-z]/, "")
     end
 
     def initialize_user(user, role, school)
