@@ -14,13 +14,6 @@ RSpec.shared_context "with api_data", shared_context: :metadata do
     OpenStruct.new(data: [user_openstruct_data])
   end
 
-  let(:duplicate_user_api_data) do
-    OpenStruct.new(data: [user_openstruct_data,
-      OpenStruct.new(id: SecureRandom.hex, upi: user_openstruct_data.upi.slice(0..4),
-        forename: user_openstruct_data.forename,
-        surname: user_openstruct_data.surname)])
-  end
-
   let(:alt_user_api_data) do
     OpenStruct.new(data: [OpenStruct.new(id: SecureRandom.hex, upi: SecureRandom.hex,
       forename: FFaker::Name.first_name, surname: FFaker::Name.last_name)])
