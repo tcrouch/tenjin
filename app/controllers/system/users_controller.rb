@@ -3,20 +3,14 @@
 module System
   class UsersController < BaseController
     def set_role
-      role = set_user_role_params[:role]
-      return if role.blank?
-
       user = authorize find_user
-      result = User::ChangeUserRole.call(user: user, role: role, action: :add, subject: set_user_role_params[:subject])
+      result = User::ChangeUserRole.call(user: user, role: set_user_role_params[:role], action: :add, subject: set_user_role_params[:subject])
       handle_role_result(result, user)
     end
 
     def remove_role
-      role = set_user_role_params[:role]
-      return if role.blank?
-
       user = authorize find_user
-      result = User::ChangeUserRole.call(user: user, role: role, action: :remove, subject: set_user_role_params[:subject])
+      result = User::ChangeUserRole.call(user: user, role: set_user_role_params[:role], action: :remove, subject: set_user_role_params[:subject])
       handle_role_result(result, user)
     end
 
