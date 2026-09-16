@@ -12,6 +12,7 @@ module System
 
     def edit
       @subject = authorize find_subject
+      count_deactivation_losses
     end
 
     def new
@@ -36,6 +37,7 @@ module System
       if @subject.update(subject_params)
         redirect_to edit_system_subject_path(@subject)
       else
+        count_deactivation_losses
         render :edit, status: :unprocessable_content
       end
     end
@@ -44,8 +46,14 @@ module System
       subject = authorize find_subject
       subject.update_attribute(:active, false)
 
-      Enrollment.joins(:classroom).where(classrooms: {subject_id: subject}).destroy_all
+      enrollments_in(subject).destroy_all
       Classroom.where(subject: subject).update_all(subject_id: nil)
+      redirect_to system_subjects_path
+    end
+
+    def reactivate
+      subject = authorize find_subject
+      subject.update!(active: true)
       redirect_to system_subjects_path
     end
 
@@ -56,7 +64,16 @@ module System
     end
 
     def subject_params
-      params.require(:subject).permit(:name, :active)
+      params.require(:subject).permit(:name)
+    end
+
+    def enrollments_in(subject)
+      Enrollment.joins(:classroom).where(classrooms: {subject_id: subject})
+    end
+
+    def count_deactivation_losses
+      @classroom_count = @subject.classrooms.count
+      @enrollment_count = enrollments_in(@subject).count
     end
   end
 end

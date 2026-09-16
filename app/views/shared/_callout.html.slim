@@ -1,0 +1,14 @@
+/ Renders its block in a callout; type is a GitHub alert type, title defaults to it
+ruby:
+  color, icon = {
+    note: %w[info note-sticky],
+    tip: %w[success lightbulb],
+    important: %w[primary message],
+    warning: %w[warning triangle-exclamation],
+    caution: %w[danger circle-exclamation]
+  }.fetch(type)
+.callout class="callout-#{color}"
+  h2.callout-heading.h5
+    i.fas.fa-fw class="fa-#{icon}" aria-hidden='true'
+    = " #{local_assigns.fetch(:title, type.to_s.titleize)}"
+  = yield

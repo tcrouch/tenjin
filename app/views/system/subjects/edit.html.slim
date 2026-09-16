@@ -4,10 +4,23 @@
       h1.display-4#subject_name = @subject.name
       = simple_form_for [:system, @subject] do |f|
        =f.input :name
-       =f.input :active
        =f.button :submit, class: "btn btn-primary w-100"
-      = button_to 'Deactivate Subject',
-        system_subject_path(@subject),
-        method: :delete,
-        class: 'btn w-100 btn-danger my-5',
-        form: { data: { turbo: true, turbo_confirm: 'Are you sure?' } }
+      - if @subject.active?
+        = render layout: 'shared/callout', locals: { type: :caution, title: 'Before you deactivate' } do
+          p
+            | Deactivating removes #{pluralize(@enrollment_count, 'enrolment')} across #{pluralize(@classroom_count, 'class')}:
+              every pupil and teacher is unenrolled and those classes lose the subject, so it disappears from their dashboards.
+          p
+            | Reactivating does not restore them. Each school must assign the subject to its classes again and re-sync.
+        = button_to 'Deactivate Subject',
+          system_subject_path(@subject),
+          method: :delete,
+          class: 'btn btn-danger',
+          form: { data: { turbo: true, turbo_confirm: 'Are you sure?' } }
+      - else
+        .mt-5
+          p.text-muted Its classes must be assigned the subject again and re-synced before pupils see it.
+          = button_to 'Reactivate Subject',
+            reactivate_system_subject_path(@subject),
+            method: :patch,
+            class: 'btn btn-primary'

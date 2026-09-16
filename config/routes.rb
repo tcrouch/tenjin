@@ -8,7 +8,11 @@ Rails.application.routes.draw do
     root to: "schools#index"
 
     resources :school_groups, except: %i[show]
-    resources :subjects, except: %i[show]
+    resources :subjects, except: %i[show] do
+      member do
+        patch :reactivate
+      end
+    end
     resources :customisations, except: %i[show destroy]
     resources :schools do
       collection do

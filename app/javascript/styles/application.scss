@@ -25,6 +25,7 @@ $fa-font-path: "~@fortawesome/fontawesome-free/webfonts";
 @import "trix/dist/trix";
 @import "leaderboard";
 @import "shepherd";
+@import "callout";
 
 .navbar-dark .nav-item .nav-link {
   color: map-get($theme-colors, "light");
