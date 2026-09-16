@@ -1,9 +1,9 @@
 - confirmation = System::AdminsController::RESET_YEAR_CONFIRMATION
-.container.pt-4
-  h1.display-4 Admin Options
-  = link_to 'Invite new admin', new_admin_invitation_path, class: 'btn btn-primary'
+.container
+  = admin_page_header 'Admin Options' do
+    = link_to 'Invite new admin', new_admin_invitation_path, class: 'btn btn-primary'
 
-  section.card.border-danger.my-5 aria-labelledby='reset-year-heading' data-controller='confirm-text'
+  section.card.border-danger.mb-5 aria-labelledby='reset-year-heading' data-controller='confirm-text'
     .card-body
       h2.h4.card-title.text-danger#reset-year-heading Reset year data
       p Deletes this year's activity for every school:

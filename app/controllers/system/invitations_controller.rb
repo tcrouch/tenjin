@@ -3,6 +3,8 @@
 module System
   class InvitationsController < Devise::InvitationsController
     before_action :authenticate_admin!
+    # Accepting an invitation happens signed out, on the public layout
+    layout "system", only: %i[new create]
 
     def new
       authorize current_admin, policy_class: System::AdminPolicy

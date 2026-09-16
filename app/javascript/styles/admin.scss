@@ -1,0 +1,6 @@
+// Second-level headings on admin pages share the h4 size and one gap from whatever precedes them
+.admin-section-heading {
+  @include font-size($h4-font-size);
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+}

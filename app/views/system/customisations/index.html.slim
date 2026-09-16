@@ -1,19 +1,14 @@
-- content_for :title
-  title = ('Customisations')
 .container
-  .d-flex.flex-wrap.align-items-center.justify-content-between.gap-2.pt-4.mb-3
-    h1.display-4.mb-0 Customisations
+  = admin_page_header 'Customisations' do
     = link_to 'Add Customisation', new_system_customisation_path, class: 'btn btn-primary'
-section.page-section.text-center.available-customisations
+section.available-customisations aria-labelledby='available-heading'
   .container
-    h2.page-section-header.text-uppercase Available Customisations
-    ==render_small_separator
-    = render partial: "customisations/customisations",
-      locals: { customisations: @customisations.order(sticky: :desc, purchasable: :desc),
-        bought_customisations: [], manage: true }
-section.page-section.text-center.retired-customisations
+    h2.admin-section-heading#available-heading Available
+  = render partial: "customisations/customisations",
+    locals: { customisations: @customisations.order(sticky: :desc, purchasable: :desc),
+      bought_customisations: [], manage: true }
+section.retired-customisations aria-labelledby='retired-heading'
   .container
-    h2.page-section-header.text-uppercase Retired Customisations
-    ==render_small_separator
-    = render partial: "customisations/customisations",
-      locals: {customisations: @retired_customisations, bought_customisations: [], manage: true}
+    h2.admin-section-heading#retired-heading Retired
+  = render partial: "customisations/customisations",
+    locals: {customisations: @retired_customisations, bought_customisations: [], manage: true}

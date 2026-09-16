@@ -11,5 +11,11 @@ RSpec.describe "System::Invitations", :default_creates, type: :request do
       expect(response).to have_http_status(:ok)
       expect(controller.class).to eq(System::InvitationsController)
     end
+
+    it "renders inside the admin area" do
+      get new_admin_invitation_path
+      expect(Capybara.string(response.body)).to have_css("#navbar-main a.nav-link", text: "Schools")
+        .and have_title("Invite an Admin · Tenjin admin")
+    end
   end
 end

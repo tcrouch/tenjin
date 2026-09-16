@@ -1,6 +1,5 @@
 .container
-  .d-flex.flex-wrap.align-items-center.justify-content-between.gap-2.pt-4.mb-3
-    h1.display-4.mb-0 Subjects
+  = admin_page_header 'Subjects' do
     - if current_admin.super?
       = link_to 'Add Subject', new_system_subject_path, class: 'btn btn-primary'
   .table-responsive
@@ -18,7 +17,7 @@
           td.asked_questions = @subject_statistics[subject.id].asked_questions
           td.asked_questions_this_week = @subject_statistics[subject.id].asked_questions_this_week
   - if current_admin.super?
-    h2.display-4.my-5 Deactivated Subjects
+    h2.admin-section-heading Deactivated subjects
     .table-responsive
       table.table#deactivated-subjects
         tr

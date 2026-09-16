@@ -1,24 +1,22 @@
 - heading = @customisation.new_record? ? 'Add Customisation' : "Edit #{@customisation.name_in_database}"
-- content_for :title
-  title = heading
-section.page-section.text-center.available-customisations
-  .container
-    h1.display-4.text-start = heading
-    - if @customisation.dashboard_style? || @customisation.image.attached?
+.container.pb-5
+  = admin_page_header heading, breadcrumbs: [['Customisations', system_customisations_path]]
+  - if @customisation.dashboard_style? || @customisation.image.attached?
+    .text-center.mb-4
       .card.dashboard-style style=render_dashboard_style(@customisation)
         .card-body.m-5
           h2.m-5.page-section-header.text-uppercase.text-white = @customisation.name
           ==render_small_separator(@customisation)
-    =simple_form_for [:system, @customisation] do |f|
-      = f.error_notification
-      =f.select :customisation_type, options_for_select(Customisation.customisation_types.to_a.map { |k| [k[0].humanize, k[0]] },
-        selected: @customisation.customisation_type ), {},
-        class: 'form-select'
-      =f.input :name
-      =f.input :value
-      =f.input :cost
-      =f.input :purchasable
-      =f.input :sticky
-      =f.input :retired
-      =f.input :image
-      =f.submit
+  =simple_form_for [:system, @customisation] do |f|
+    = f.error_notification
+    =f.select :customisation_type, options_for_select(Customisation.customisation_types.to_a.map { |k| [k[0].humanize, k[0]] },
+      selected: @customisation.customisation_type ), {},
+      class: 'form-select'
+    =f.input :name
+    =f.input :value
+    =f.input :cost
+    =f.input :purchasable
+    =f.input :sticky
+    =f.input :retired
+    =f.input :image
+    =f.submit
