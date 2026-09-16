@@ -22,11 +22,11 @@ RSpec.describe "Super views all statistics", :default_creates, :js do
     before { visit(stats_system_schools_path) }
 
     it "shows total questions answered" do
-      expect(page).to have_css("#asked_questions", exact_text: total_answered.to_s)
+      expect(page).to have_css("#asked_questions", exact_text: total_answered.to_fs(:delimited))
     end
 
     it "shows this week's questions answered" do
-      expect(page).to have_css("#asked_questions_weekly", exact_text: weekly_answered.to_s)
+      expect(page).to have_css("#asked_questions_weekly", exact_text: weekly_answered.to_fs(:delimited))
     end
   end
 

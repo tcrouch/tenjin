@@ -8,10 +8,10 @@
         tbody
           tr
             td Students
-            td = @school.users.where(role: 'student').count
+            td.text-end = number_with_delimiter(@role_counts["student"].to_i)
           tr
             td Employees
-            td = @school.users.where(role: 'employee').count
+            td.text-end = number_with_delimiter(@role_counts["employee"].to_i)
       = render('school_statistics_table')
   .row
     .col

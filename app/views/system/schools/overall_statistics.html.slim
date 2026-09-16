@@ -9,10 +9,10 @@
       tr
         th scope='col' Customisation
         th scope='col' Type
-        th scope='col' Times bought
+        th.text-end scope='col' Times bought
     tbody
       - @customisation_statistics.each do |c|
         tr id=dom_id(c)
           td = c.name
           td = c.customisation_type.humanize
-          td = c.times_bought
+          td.text-end = number_with_delimiter(c.times_bought)

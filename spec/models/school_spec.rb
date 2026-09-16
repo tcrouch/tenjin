@@ -16,6 +16,20 @@ RSpec.describe School do
     it { is_expected.to validate_presence_of(:token) }
   end
 
+  describe "#sync_stalled?" do
+    it "is stalled once a sync has run past the timeout" do
+      expect(build_stubbed(:school, sync_status: :syncing, updated_at: (School::SYNC_TIMEOUT + 1.minute).ago)).to be_sync_stalled
+    end
+
+    it "is not stalled while a sync is within the timeout" do
+      expect(build_stubbed(:school, sync_status: :syncing, updated_at: 1.minute.ago)).not_to be_sync_stalled
+    end
+
+    it "is not stalled when no sync is running, however old" do
+      expect(build_stubbed(:school, sync_status: :successful, updated_at: 1.day.ago)).not_to be_sync_stalled
+    end
+  end
+
   describe "#start_sync" do
     let(:school) { create(:school) }
 
@@ -57,6 +71,10 @@ RSpec.describe School do
     it "sets sync_status to successful" do
       school.finish_sync([])
       expect(school.reload).to be_successful
+    end
+
+    it "records today as the last sync" do
+      expect { school.finish_sync([]) }.to change { school.reload.last_sync }.from(nil).to(Date.current)
     end
 
     context "with students on and off the roster" do

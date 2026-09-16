@@ -7,16 +7,16 @@
       thead
         tr
           th Name
-          th Questions Available
-          th Questions Asked Overall
-          th Questions Asked This Week
+          th.text-end Questions Available
+          th.text-end Questions Asked Overall
+          th.text-end Questions Asked This Week
       tbody
         - @subjects.each do |subject|
           tr id=('subject-' + subject.id.to_s)
             td.name = link_to(subject.name, edit_system_subject_path(subject))
-            td.questionsAvailable = @question_counts[subject.id].to_i
-            td.asked_questions = @subject_statistics[subject.id].asked_questions
-            td.asked_questions_this_week = @subject_statistics[subject.id].asked_questions_this_week
+            td.questionsAvailable.text-end = number_with_delimiter(@question_counts[subject.id].to_i)
+            td.asked_questions.text-end = number_with_delimiter(@subject_statistics[subject.id].asked_questions)
+            td.asked_questions_this_week.text-end = number_with_delimiter(@subject_statistics[subject.id].asked_questions_this_week)
   - if current_admin.super?
     h2.admin-section-heading Deactivated subjects
     .table-responsive
@@ -24,9 +24,9 @@
         thead
           tr
             th Name
-            th Questions Available
+            th.text-end Questions Available
         tbody
           - @deactivated_subjects.each do |subject|
             tr id=('subject-' + subject.id.to_s)
               td.name = link_to(subject.name, edit_system_subject_path(subject))
-              td.questionsAvailable = @question_counts[subject.id].to_i
+              td.questionsAvailable.text-end = number_with_delimiter(@question_counts[subject.id].to_i)

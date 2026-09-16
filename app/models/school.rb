@@ -12,6 +12,9 @@ class School < ApplicationRecord
 
   enum :sync_status, {never: 0, queued: 1, syncing: 2, successful: 3, failed: 4, needed: 5}
 
+  # A sync still marked as running this long after it started is presumed to have died
+  SYNC_TIMEOUT = 240.seconds
+
   # Admins run the school and authors write for every school, so neither needs a class to keep access
   SYNC_EXEMPT_ROLES = %w[school_admin question_author lesson_author].freeze
 
@@ -27,6 +30,11 @@ class School < ApplicationRecord
   # Live leaderboard points fan out to the whole school group when there is one
   def leaderboard_scope
     school_group_id ? "school-group-#{school_group_id}" : "school-#{id}"
+  end
+
+  # Starting a sync stamps updated_at, so it dates how long the sync has run
+  def sync_stalled?
+    syncing? && updated_at < SYNC_TIMEOUT.ago
   end
 
   def start_sync
@@ -47,7 +55,7 @@ class School < ApplicationRecord
     dropped.select(:id).find_each do |user|
       ActionCable.server.remote_connections.where(current_user: user).disconnect(reconnect: false)
     end
-    update!(sync_status: :successful)
+    update!(sync_status: :successful, last_sync: Date.current)
   end
 
   private
