@@ -1,0 +1,23 @@
+// Callout for standing guidance on a page; .alert is for feedback after an action
+.callout {
+  margin-block: 2 * $spacer;
+  padding: 1rem;
+  border-left: 0.25rem solid var(--bs-border-color);
+  background-color: var(--bs-tertiary-bg);
+  color: var(--bs-body-color);
+
+  > :last-child {
+    margin-bottom: 0;
+  }
+
+  @each $color in info, success, warning, primary, danger {
+    &.callout-#{$color} {
+      border-left-color: var(--bs-#{$color});
+      background-color: var(--bs-#{$color}-bg-subtle);
+
+      .callout-heading {
+        color: var(--bs-#{$color}-text-emphasis);
+      }
+    }
+  }
+}
