@@ -89,11 +89,11 @@ class User < ApplicationRecord
   end
 
   # Returns the ids of every user the class lists, so the sync can tell who has left
-  def self.from_wonde(school, classroom, classroom_db)
-    ids = create_employee_users(classroom, school)
-    return ids if classroom_db.subject.blank?
+  def self.from_wonde(school, wonde_class, classroom)
+    ids = create_employee_users(wonde_class, school)
+    return ids if classroom.subject.blank?
 
-    ids + create_student_users(classroom, school)
+    ids + create_student_users(wonde_class, school)
   end
 
   def seconds_left_on_cooldown
@@ -105,24 +105,23 @@ class User < ApplicationRecord
   class << self
     private
 
-    def create_student_users(classroom, school)
-      return [] if classroom.subject.blank?
-      return [] if classroom.students.blank?
-      return [] if classroom.students.data.blank?
-
-      classroom.students.data.filter_map do |student|
-        u = initialize_user(student, :student, school)
-        u.id if u.save # invalid records are silently skipped
-      end
+    def create_student_users(wonde_class, school)
+      create_users(wonde_class, "students", :student, school)
     end
 
-    def create_employee_users(classroom, school)
-      return [] if classroom.subject.blank?
-      return [] if classroom.employees.blank?
-      return [] if classroom.employees.data.blank?
+    def create_employee_users(wonde_class, school)
+      create_users(wonde_class, "employees", :employee, school)
+    end
 
-      classroom.employees.data.filter_map do |employee|
-        u = initialize_user(employee, :employee, school)
+    def create_users(wonde_class, collection, role, school)
+      # A class Wonde maps to no subject carries nobody this app has a use for
+      return [] if wonde_class["subject"].blank?
+
+      people = wonde_class.dig(collection, "data")
+      return [] if people.blank?
+
+      people.filter_map do |person|
+        u = initialize_user(person, role, school)
         u.id if u.save # invalid records are silently skipped
       end
     end
@@ -142,9 +141,9 @@ class User < ApplicationRecord
     end
 
     def initialize_user(user, role, school)
-      u = User.where(provider: "Wonde", upi: user.upi).first_or_initialize
+      u = User.where(provider: "Wonde", upi: user["upi"]).first_or_initialize
       u.attributes = {school_id: school.id, role: role, provider: "Wonde",
-                       upi: user.upi, forename: user.forename, surname: user.surname, disabled: false}
+                       upi: user["upi"], forename: user["forename"], surname: user["surname"], disabled: false}
       u.challenge_points = 0 if u.challenge_points.blank?
       u.username = generate_username(u) if u.new_record? || u.username.blank?
       u

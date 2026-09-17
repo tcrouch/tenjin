@@ -5,24 +5,24 @@ RSpec.shared_context "with api_data", shared_context: :metadata do
     School.from_wonde(OpenStruct.new(id: SecureRandom.hex, name: FFaker::Education.school), SecureRandom.hex)
   end
 
-  let(:user_openstruct_data) do
-    OpenStruct.new(id: SecureRandom.hex, upi: SecureRandom.hex,
-      forename: FFaker::Name.first_name, surname: FFaker::Name.last_name)
+  # Class payloads reach the models as parsed JSON, so the fixtures are plain hashes
+  def wonde_person
+    {"id" => SecureRandom.hex, "upi" => SecureRandom.hex,
+     "forename" => FFaker::Name.first_name, "surname" => FFaker::Name.last_name}
   end
 
   let(:user_api_data) do
-    OpenStruct.new(data: [user_openstruct_data])
+    {"data" => [wonde_person]}
   end
 
   let(:alt_user_api_data) do
-    OpenStruct.new(data: [OpenStruct.new(id: SecureRandom.hex, upi: SecureRandom.hex,
-      forename: FFaker::Name.first_name, surname: FFaker::Name.last_name)])
+    {"data" => [wonde_person]}
   end
   let(:subject_api_data) do
-    OpenStruct.new(data: OpenStruct.new(id: SecureRandom.hex, name: FFaker::Lorem.word))
+    {"data" => {"id" => SecureRandom.hex, "name" => FFaker::Lorem.word}}
   end
   let(:classroom_api_data) do
-    OpenStruct.new(id: SecureRandom.hex, subject: subject_api_data, code: FFaker::Lorem.word)
+    {"id" => SecureRandom.hex, "subject" => subject_api_data, "code" => FFaker::Lorem.word}
   end
 
   let(:school_api) { instance_double(Wonde::Employees) }

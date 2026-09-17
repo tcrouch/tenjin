@@ -30,11 +30,11 @@ RSpec.describe User do
       end
 
       context "when students are assigned to a mapped subject" do
-        before { classroom_api_data.students = user_api_data }
+        before { classroom_api_data["students"] = user_api_data }
 
         it "creates students for a mapped subject" do
           described_class.from_wonde(school_api_data, classroom_api_data, classroom)
-          expect(described_class.find_by!(role: "student").forename).to eq(user_api_data.data[0].forename)
+          expect(described_class.find_by!(role: "student").forename).to eq(user_api_data["data"][0]["forename"])
         end
 
         it "returns the ids of the users it saves" do
@@ -48,12 +48,12 @@ RSpec.describe User do
 
         def wonde_students(*names)
           data = names.map do |forename, surname|
-            OpenStruct.new(id: SecureRandom.hex, upi: SecureRandom.hex, forename: forename, surname: surname)
+            {"id" => SecureRandom.hex, "upi" => SecureRandom.hex, "forename" => forename, "surname" => surname}
           end
-          OpenStruct.new(data: data)
+          {"data" => data}
         end
 
-        before { classroom_api_data.students = students }
+        before { classroom_api_data["students"] = students }
 
         context "with a single-word name" do
           let(:students) { wonde_students(%w[Leo Ward]) }
@@ -122,18 +122,18 @@ RSpec.describe User do
 
       context "when employees are assigned to a mapped subject" do
         before do
-          classroom_api_data.employees = user_api_data
+          classroom_api_data["employees"] = user_api_data
           allow(school_api).to receive(:get).and_return(contact_details_api_data)
         end
 
         it "creates employees for a mapped subject" do
           described_class.from_wonde(school_api_data, classroom_api_data, classroom)
-          expect(described_class.find_by!(role: "employee").forename).to eq(user_api_data.data[0].forename)
+          expect(described_class.find_by!(role: "employee").forename).to eq(user_api_data["data"][0]["forename"])
         end
       end
 
       context "when the classroom subject is unmapped" do
-        before { classroom_api_data.subject.data.name = "Not a subject" }
+        before { classroom_api_data["subject"]["data"]["name"] = "Not a subject" }
 
         it "creates no accounts" do
           described_class.from_wonde(school_api_data, classroom_api_data, classroom)
@@ -143,8 +143,8 @@ RSpec.describe User do
 
       context "when both employees and students are present" do
         before do
-          classroom_api_data.students = user_api_data
-          classroom_api_data.employees = alt_user_api_data
+          classroom_api_data["students"] = user_api_data
+          classroom_api_data["employees"] = alt_user_api_data
           allow(school_api).to receive(:get).and_return(contact_details_api_data)
         end
 
@@ -155,7 +155,7 @@ RSpec.describe User do
       end
 
       context "when a user record already exists" do
-        let(:existing_upi) { user_api_data.data.first.upi }
+        let(:existing_upi) { user_api_data["data"].first["upi"] }
 
         before do
           described_class.create!(
@@ -165,7 +165,7 @@ RSpec.describe User do
             role: "employee",
             school: school_api_data
           )
-          classroom_api_data.employees = user_api_data
+          classroom_api_data["employees"] = user_api_data
           allow(school_api).to receive(:get).and_return(contact_details_api_data)
         end
 

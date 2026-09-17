@@ -112,7 +112,7 @@ http_interactions:
   recorded_at: Sat, 14 Sep 2019 13:26:48 GMT
 - request:
     method: get
-    uri: https://api.wonde.com/v1.0/schools/A852030759/classes?include=students,employees
+    uri: https://api.wonde.com/v1.0/schools/A852030759/classes?include=students,employees&per_page=50
     body:
       encoding: US-ASCII
       string: ''
@@ -485,7 +485,7 @@ http_interactions:
   recorded_at: Sat, 14 Sep 2019 13:26:49 GMT
 - request:
     method: get
-    uri: https://api.wonde.com/v1.0/schools/A852030759/classes?include=students,employees
+    uri: https://api.wonde.com/v1.0/schools/A852030759/classes?include=students,employees&per_page=50
     body:
       encoding: US-ASCII
       string: ''

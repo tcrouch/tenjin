@@ -8,30 +8,30 @@ class Enrollment < ApplicationRecord
 
   validates :user, uniqueness: {scope: :classroom_id}
 
-  def self.from_wonde(classroom_api_data)
-    classroom = Classroom.find_by(client_id: classroom_api_data.id)
+  def self.from_wonde(wonde_class)
+    classroom = Classroom.find_by(client_id: wonde_class["id"])
 
     return if classroom.subject_id.blank?
 
-    enroll_users_to_classroom(classroom_api_data, classroom)
+    enroll_users_to_classroom(wonde_class, classroom)
   end
 
   class << self
     private
 
-    def enroll_users_to_classroom(classroom_api_data, classroom)
+    def enroll_users_to_classroom(wonde_class, classroom)
       # To handle updates to classrooms, delete all existing enrollments and start again
       classroom.enrollments.destroy_all
-      create_classroom_enrollments(classroom_api_data.students, classroom) if classroom_api_data.students.present?
-      create_classroom_enrollments(classroom_api_data.employees, classroom) if classroom_api_data.employees.present?
+      create_classroom_enrollments(wonde_class.dig("students", "data"), classroom)
+      create_classroom_enrollments(wonde_class.dig("employees", "data"), classroom)
     end
 
-    def create_classroom_enrollments(students_data, classroom)
-      return if students_data.data.blank?
+    def create_classroom_enrollments(people, classroom)
+      return if people.blank?
 
-      users_by_upi = User.where(upi: students_data.data.map(&:upi)).index_by(&:upi)
-      students_data.data.each do |s|
-        student = users_by_upi[s.upi]
+      users_by_upi = User.where(upi: people.pluck("upi")).index_by(&:upi)
+      people.each do |person|
+        student = users_by_upi[person["upi"]]
         next unless student
 
         create_enrollment(classroom, student)

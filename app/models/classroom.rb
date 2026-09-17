@@ -10,12 +10,12 @@ class Classroom < ApplicationRecord
   validates :client_id, presence: true, uniqueness: true
   validates :name, presence: true
 
-  def self.from_wonde(school, classroom)
-    c = where(client_id: classroom.id).first_or_initialize
-    c.client_id = classroom.id
-    c.name = classroom.name
-    c.description = classroom.description
-    c.code = classroom.code
+  def self.from_wonde(school, wonde_class)
+    c = where(client_id: wonde_class["id"]).first_or_initialize
+    c.client_id = wonde_class["id"]
+    c.name = wonde_class["name"]
+    c.description = wonde_class["description"]
+    c.code = wonde_class["code"]
     c.school_id = school.id
     c.disabled = false
     c.save!

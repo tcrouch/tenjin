@@ -42,24 +42,24 @@ RSpec.describe Enrollment do
     before do
       school_api_data
       create(:classroom, client_id: "classroom_id", school: School.first)
-      create(:student, upi: user_api_data.data[0].upi, school: School.first)
-      classroom_api_data.id = "classroom_id"
+      create(:student, upi: user_api_data["data"][0]["upi"], school: School.first)
+      classroom_api_data["id"] = "classroom_id"
     end
 
     it "creates student enrollments" do
-      classroom_api_data.students = user_api_data
+      classroom_api_data["students"] = user_api_data
       described_class.from_wonde(classroom_api_data)
       expect(described_class.count).to eq(1)
     end
 
     it "creates employee enrollments" do
-      classroom_api_data.employees = user_api_data
+      classroom_api_data["employees"] = user_api_data
       described_class.from_wonde(classroom_api_data)
       expect(described_class.count).to eq(1)
     end
 
     it "enables the classroom" do
-      classroom_api_data.employees = user_api_data
+      classroom_api_data["employees"] = user_api_data
       described_class.from_wonde(classroom_api_data)
       expect(Classroom.first).not_to be_disabled
     end
@@ -73,14 +73,14 @@ RSpec.describe Enrollment do
 
     context "when a prior sync has already run" do
       before do
-        classroom_api_data.students = user_api_data
+        classroom_api_data["students"] = user_api_data
         School.from_wonde(school_api_data, classroom_api_data)
         described_class.from_wonde(classroom_api_data)
       end
 
       context "when a different student is synced" do
         before do
-          classroom_api_data.students = alt_user_api_data
+          classroom_api_data["students"] = alt_user_api_data
           described_class.from_wonde(classroom_api_data)
         end
 
