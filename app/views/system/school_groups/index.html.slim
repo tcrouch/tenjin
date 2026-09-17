@@ -1,7 +1,7 @@
 .container
   = admin_page_header 'School Groups' do
     = link_to 'Add School Group', new_system_school_group_path, class: 'btn btn-primary'
-  - if @school_groups.empty?
+  - if @school_groups.blank?
     p.text-body-secondary No school groups yet.
   - else
     .table-responsive
