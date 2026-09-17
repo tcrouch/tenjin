@@ -4,7 +4,7 @@ header.d-flex.flex-wrap.align-items-end.justify-content-between.gap-3.pt-4.pb-3.
       nav aria-label='Breadcrumb'
         ol.breadcrumb.mb-1
           - breadcrumbs.each do |label, path|
-            li.breadcrumb-item = link_to label, path, class: 'text-decoration-underline'
+            li.breadcrumb-item = link_to label, path
           li.breadcrumb-item.active aria-current='page' = title
     h1.h2.mb-0 = title
   - if actions.present?
