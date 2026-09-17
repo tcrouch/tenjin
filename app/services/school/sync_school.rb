@@ -17,6 +17,10 @@ class School::SyncSchool < ApplicationService
     @school.start_sync
     fetch_class_data
     @school.finish_sync(@roster_user_ids)
+  rescue
+    # Left as syncing, the guard above would turn Delayed Job's retries of the raise into no-ops
+    @school.update!(sync_status: :failed)
+    raise
   end
 
   protected
