@@ -1,21 +1,8 @@
-/*
- * This is a manifest file that'll be compiled into application.css, which will include all the files
- * listed below.
- *
- * Any CSS and SCSS file within this directory, lib/assets/stylesheets, or any plugin's
- * vendor/assets/stylesheets directory can be referenced here using a relative path.
- *
- * You're free to add application-wide styles to this file and they'll appear at the bottom of the
- * compiled file so the styles you add here take precedence over styles defined in any other CSS/SCSS
- * files in this directory. Styles in this file should be added after the last require_* statement.
- * It is generally better to create a new file per style scope.
- *
- */
 @import url("https://fonts.googleapis.com/css?family=Raleway:300,900,900i");
 @import url("https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,300;0,400;0,900;1,400;1,900&display=swap");
 
-@import "~bootstrap/scss/bootstrap";
-$fa-font-path: "~@fortawesome/fontawesome-free/webfonts";
+@import "bootstrap/scss/bootstrap";
+$fa-font-path: "@fortawesome/fontawesome-free/webfonts";
 @import "@fortawesome/fontawesome-free/scss/fontawesome";
 @import "@fortawesome/fontawesome-free/scss/solid";
 @import "@fortawesome/fontawesome-free/scss/regular";
@@ -28,20 +15,20 @@ $fa-font-path: "~@fortawesome/fontawesome-free/webfonts";
 @import "callout";
 @import "admin";
 
-.navbar-dark .nav-item .nav-link {
-  color: map-get($theme-colors, "light");
+// Every link shares one colour, so the current page is marked by an underline instead
+#navbar-main {
+  --bs-navbar-color: #{$light};
+  --bs-navbar-hover-color: #{$light};
+  --bs-navbar-active-color: #{$light};
 }
 
-// Every link shares one colour, so the current page is marked by an underline instead
-.navbar-dark .nav-item .nav-link.active {
+#navbar-main .nav-item .nav-link.active {
   text-decoration: underline;
   text-decoration-thickness: 2px;
   text-underline-offset: 0.4em;
 }
 
-// BS5 dropped .btn-block; Phase 6 replaced it with .w-100, which loses
-// the adjacent-sibling top margin that BS4 added between stacked
-// block buttons. Restore exactly that selector against the new class.
+// .w-100 carries no gap of its own, so stacked buttons would touch
 .btn.w-100 + .btn.w-100 {
   margin-top: 0.5rem;
 }
