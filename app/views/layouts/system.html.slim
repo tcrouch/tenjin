@@ -25,4 +25,4 @@ html lang="en-GB"
     = render('shared/admin_navigation')
     = render('shared/impersonation', admin_area: true) if current_user.present?
     #flashes = render('shared/flashes')
-    = yield
+    main = yield
