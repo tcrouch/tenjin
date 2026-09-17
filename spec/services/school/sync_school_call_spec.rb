@@ -195,3 +195,61 @@ RSpec.describe School::SyncSchool do
     end
   end
 end
+
+RSpec.describe School::SyncSchool do
+  describe "when the roster spans several pages" do
+    let(:school) { create(:school, client_id: "PAGED", token: "a-token", sync_status: :successful) }
+    let(:quiz_subject) { create(:subject) }
+    let(:first_page_url) do
+      "https://api.wonde.com/v1.0/schools/PAGED/classes?include=students,employees&per_page=50"
+    end
+    # Wonde hands back an absolute next URL that repeats the original include and per_page
+    let(:second_page_url) do
+      "https://api.wonde.com/v1.0/schools/PAGED/classes?per_page=50&include=students%2Cemployees&page=2"
+    end
+
+    let!(:first_page_classroom) { create(:classroom, school: school, client_id: "C1", subject: quiz_subject) }
+    let!(:second_page_classroom) { create(:classroom, school: school, client_id: "C2", subject: quiz_subject) }
+    let!(:second_page_pupil) { create(:student, school: school, upi: "upi-page-2") }
+
+    def pupil(upi)
+      {"id" => "id-#{upi}", "upi" => upi, "forename" => "Pat", "surname" => "Pupil"}
+    end
+
+    def wonde_class(client_id, pupils)
+      {"id" => client_id, "name" => "Class #{client_id}", "code" => nil, "description" => nil,
+       "subject" => "S1", "students" => {"data" => pupils}, "employees" => {"data" => []}}
+    end
+
+    def page(classes, next_url)
+      {"data" => classes,
+       "meta" => {"pagination" => {"next" => next_url, "more" => !next_url.nil?}}}.to_json
+    end
+
+    before do
+      stub_request(:get, first_page_url)
+        .to_return(body: page([wonde_class("C1", [pupil("upi-page-1")])], second_page_url))
+      stub_request(:get, second_page_url)
+        .to_return(body: page([wonde_class("C2", [pupil("upi-page-2")])], nil))
+      described_class.call(school)
+    end
+
+    it "enrolls pupils listed only on a later page" do
+      expect(second_page_classroom.reload.users.pluck(:upi)).to contain_exactly("upi-page-2")
+    end
+
+    # A page the sync never reads leaves its pupils off the roster, and finish_sync locks them out
+    it "leaves a pupil listed only on a later page enabled" do
+      expect(second_page_pupil.reload).not_to be_disabled
+    end
+
+    it "keeps a classroom from every page enabled" do
+      expect(Classroom.where(school: school, disabled: false).pluck(:client_id))
+        .to contain_exactly("C1", "C2")
+    end
+
+    it "records the sync as successful" do
+      expect(school.reload).to be_successful
+    end
+  end
+end
