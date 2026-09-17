@@ -39,11 +39,6 @@ $fa-font-path: "~@fortawesome/fontawesome-free/webfonts";
   text-underline-offset: 0.4em;
 }
 
-// Links read as plain text under the global anchor colour, so breadcrumb links are underlined
-.breadcrumb a {
-  text-decoration: underline;
-}
-
 // BS5 dropped .btn-block; Phase 6 replaced it with .w-100, which loses
 // the adjacent-sibling top margin that BS4 added between stacked
 // block buttons. Restore exactly that selector against the new class.

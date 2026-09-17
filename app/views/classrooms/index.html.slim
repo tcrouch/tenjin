@@ -1,10 +1,11 @@
 - content_for :title
   title = 'Classrooms'
 .container
-  section.page-section.text-center.pt-2#classrooms data-controller='sync-notice'
+  section.page-section.text-center.pt-2#classrooms(data-controller='sync-notice'
+    data-sync-notice-needed-label-value=t('school.sync_status.needed'))
     p
       |Current school sync status:
-      b.fw-bold#syncStatus data-sync-notice-target='status' #{@school.sync_status.humanize}
+      b.fw-bold#syncStatus data-sync-notice-target='status' = @school.sync_status_label
     ==sync_status_button
     h1.page-section-header.text-uppercase Classrooms
     ==render_small_separator

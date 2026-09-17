@@ -2,7 +2,7 @@
   = admin_page_header 'Schools' do
     - if current_admin.super?
       = link_to 'Add School', new_system_school_path, class: 'btn btn-primary'
-  - if @schools.empty?
+  - if @schools.blank?
     p.text-body-secondary No schools yet.
   - else
     .table-responsive
