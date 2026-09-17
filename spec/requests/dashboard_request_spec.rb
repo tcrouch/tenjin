@@ -15,6 +15,11 @@ RSpec.describe "dashboard controller", :default_creates do
         expect(Capybara.string(response.body)).to have_link("Classrooms", href: dashboard_path)
       end
 
+      it "holds the page, but not the navbar, in the main landmark" do
+        expect(Capybara.string(response.body)).to have_css("main")
+          .and have_no_css("main #navbar-main")
+      end
+
       it "does not show a link to school admin" do
         expect(Capybara.string(response.body)).to have_no_link("User Admin", href: users_path)
       end

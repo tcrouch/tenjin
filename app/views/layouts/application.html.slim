@@ -31,4 +31,4 @@ html lang="en-GB"
       = render('shared/logged_out_navigation')
       = render('shared/student_login_modal') unless devise_controller?
     #flashes = render('shared/flashes')
-    = yield
+    main = yield

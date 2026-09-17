@@ -27,6 +27,11 @@ RSpec.describe "System::Schools", :default_creates, type: :request do
         expect(Capybara.string(response.body)).to have_button("Sync")
       end
 
+      it "holds the page, but not the navbar, in the main landmark" do
+        expect(Capybara.string(response.body)).to have_css("main h1", exact_text: "Schools")
+          .and have_no_css("main #navbar-main")
+      end
+
       it "shows no breadcrumb on a top-level page" do
         expect(Capybara.string(response.body)).to have_no_css("nav[aria-label='Breadcrumb']")
       end
