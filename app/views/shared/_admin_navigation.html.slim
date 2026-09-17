@@ -37,7 +37,8 @@ nav#navbar-main.navbar.navbar-dark.bg-dark class="navbar-expand-#{breakpoint}"
             form: { data: { turbo: false } }
       ul.navbar-nav.d-none class="d-#{breakpoint}-flex"
         li.nav-item.dropdown#account-menu
-          button.btn.btn-primary.rounded-circle.admin-avatar(type='button'
+          button.btn.rounded-circle.admin-avatar(type='button'
+            class=admin_avatar_class(current_admin)
             data-bs-toggle='dropdown'
             aria-expanded='false'
             aria-label="Account menu for #{current_admin.email}")
