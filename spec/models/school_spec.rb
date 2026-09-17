@@ -16,6 +16,21 @@ RSpec.describe School do
     it { is_expected.to validate_presence_of(:token) }
   end
 
+  describe "#sync_status_label" do
+    it "words a finished sync as synced" do
+      expect(build_stubbed(:school, sync_status: :successful).sync_status_label).to eq("Synced")
+    end
+
+    it "words a stalled sync as timed out" do
+      school = build_stubbed(:school, sync_status: :syncing, updated_at: (School::SYNC_TIMEOUT + 1.minute).ago)
+      expect(school.sync_status_label).to eq("Sync timed out")
+    end
+
+    it "words a status outside the enum as unknown" do
+      expect(build_stubbed(:school, sync_status: nil).sync_status_label).to eq("Unknown")
+    end
+  end
+
   describe "#sync_stalled?" do
     it "is stalled once a sync has run past the timeout" do
       expect(build_stubbed(:school, sync_status: :syncing, updated_at: (School::SYNC_TIMEOUT + 1.minute).ago)).to be_sync_stalled

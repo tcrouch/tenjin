@@ -15,6 +15,10 @@ RSpec.describe "School admin sets up classrooms", :default_creates, :js do
     it "does not show a sync required message" do
       expect(page).to have_no_content("School sync required")
     end
+
+    it "words the status as the admin table does" do
+      expect(page).to have_css("#syncStatus", exact_text: "Synced")
+    end
   end
 
   context "when a subject is set" do
@@ -22,6 +26,10 @@ RSpec.describe "School admin sets up classrooms", :default_creates, :js do
 
     it "shows a sync required message" do
       expect(page).to have_content("School sync required. Click here to start")
+    end
+
+    it "marks the status as needing a sync" do
+      expect(page).to have_css("#syncStatus", exact_text: "Sync needed")
     end
   end
 end

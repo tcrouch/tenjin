@@ -37,6 +37,12 @@ class School < ApplicationRecord
     syncing? && updated_at < SYNC_TIMEOUT.ago
   end
 
+  # The status in the words both the admin table and the classrooms page use
+  def sync_status_label
+    key = sync_stalled? ? "stalled" : (sync_status || "unknown")
+    I18n.t("school.sync_status.#{key}")
+  end
+
   def start_sync
     update!(sync_status: :syncing)
 

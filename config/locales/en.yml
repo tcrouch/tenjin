@@ -31,6 +31,16 @@
 
 en:
   hello: "Hello world"
+  school:
+    sync_status:
+      never: Never synced
+      queued: Queued
+      syncing: Syncing
+      successful: Synced
+      failed: Failed
+      needed: Sync needed
+      stalled: Sync timed out
+      unknown: Unknown
   activerecord:
     errors:
       models:
