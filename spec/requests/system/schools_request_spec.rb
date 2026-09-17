@@ -26,6 +26,10 @@ RSpec.describe "System::Schools", :default_creates, type: :request do
       it "offers a sync" do
         expect(Capybara.string(response.body)).to have_button("Sync")
       end
+
+      it "shows no breadcrumb on a top-level page" do
+        expect(Capybara.string(response.body)).to have_no_css("nav[aria-label='Breadcrumb']")
+      end
     end
 
     context "as a school group admin" do
@@ -86,6 +90,12 @@ RSpec.describe "System::Schools", :default_creates, type: :request do
 
       it "links to role management for the school" do
         expect(response.body).to include(manage_roles_system_users_path(school: school))
+      end
+
+      it "titles the tab after the school and leads back to Schools" do
+        expect(Capybara.string(response.body)).to have_title("#{school.name} · Tenjin admin")
+          .and have_css("nav[aria-label='Breadcrumb'] a[href='#{system_schools_path}']", exact_text: "Schools")
+          .and have_css(".breadcrumb-item.active[aria-current='page']", exact_text: school.name)
       end
     end
 

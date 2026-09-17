@@ -1,6 +1,5 @@
 .container
-  .d-flex.flex-wrap.align-items-center.justify-content-between.gap-2.pt-4.mb-3
-    h1.display-4.mb-0 School Groups
+  = admin_page_header 'School Groups' do
     = link_to 'Add School Group', new_system_school_group_path, class: 'btn btn-primary'
   table.table.table-responsive
     tr

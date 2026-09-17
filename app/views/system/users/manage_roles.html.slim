@@ -1,7 +1,7 @@
-section.page-section.pt-2#Users
-  .container
-    h1.page-section-header.text-uppercase.text-center Manage Roles
-    ==render_small_separator
+section#Users
+  .container.pb-5
+    - crumbs = @school ? [['Schools', system_schools_path], [@school.name, system_school_path(@school)]] : []
+    = admin_page_header 'Roles', breadcrumbs: crumbs
     =render partial: 'role_table',
       locals: {role: 'school_admin',
       role_collection: @school_admins} if @school_admins.present?
@@ -13,9 +13,7 @@ section.page-section.pt-2#Users
       role_collection: @question_authors} if @question_authors.present?
     - if @employees.present?
       .col
-        h1.text-center = link_to @school.name, system_school_path(@school)
-        h2.h2.text-center.text-uppercase School Users
-        ==render_small_separator
+        h2.admin-section-heading Staff at #{@school.name}
         .table-responsive
           table.table#employees-table
             thead

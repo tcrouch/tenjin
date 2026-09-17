@@ -1,0 +1,11 @@
+header.d-flex.flex-wrap.align-items-end.justify-content-between.gap-3.pt-4.pb-3.mb-4.border-bottom
+  div
+    - if breadcrumbs.any?
+      nav aria-label='Breadcrumb'
+        ol.breadcrumb.mb-1
+          - breadcrumbs.each do |label, path|
+            li.breadcrumb-item = link_to label, path
+          li.breadcrumb-item.active aria-current='page' = title
+    h1.h2.mb-0 = title
+  - if actions.present?
+    .d-flex.flex-wrap.gap-2 = actions

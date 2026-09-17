@@ -26,6 +26,7 @@ $fa-font-path: "~@fortawesome/fontawesome-free/webfonts";
 @import "leaderboard";
 @import "shepherd";
 @import "callout";
+@import "admin";
 
 .navbar-dark .nav-item .nav-link {
   color: map-get($theme-colors, "light");
@@ -36,6 +37,11 @@ $fa-font-path: "~@fortawesome/fontawesome-free/webfonts";
   text-decoration: underline;
   text-decoration-thickness: 2px;
   text-underline-offset: 0.4em;
+}
+
+// Links read as plain text under the global anchor colour, so breadcrumb links are underlined
+.breadcrumb a {
+  text-decoration: underline;
 }
 
 // BS5 dropped .btn-block; Phase 6 replaced it with .w-100, which loses

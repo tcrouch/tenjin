@@ -1,7 +1,9 @@
 .container
+  = admin_page_header @school.name, breadcrumbs: [['Schools', system_schools_path]] do
+    - if current_admin.super?
+      = link_to 'Manage User Roles', manage_roles_system_users_path(school: @school), class: 'btn btn-outline-secondary'
   .row
     .col
-      h1.display-4 = @school.name
       table.table
         tr
           td Students
@@ -12,7 +14,7 @@
       = render('school_statistics_table')
   .row
     .col
-      h3.h3 School Admins
+      h2.admin-section-heading School admins
       - if @school_admins.count.zero?
         p No current admins
       - else
@@ -42,13 +44,10 @@
                 td = button_to 'Become User', become_system_admin_path(current_admin, user_id: sa.id),
                   class: 'btn btn-outline-secondary',
                   form: { class: 'd-inline', data: { turbo: false } }
-      - if current_admin.super?
-        .d-flex.justify-content-center
-          = link_to 'Manage User Roles', manage_roles_system_users_path(school: @school), class: 'btn btn-dark'
 
-  .row.py-4
+  .row
     .col
-     h3.h3 Users
+      h2.admin-section-heading Users
     .table-responsive data-controller='datatable' data-datatable-options-value=({ paginationSize: 10 }.to_json)
       = render 'shared/table_search'
       table.table#users-table data-datatable-target='table'

@@ -1,23 +1,18 @@
 .container
-    h1.page-section-header.text-uppercase.text-center School Statistics
-    ==render_small_separator
-    .row.justify-content-center
-      .col.mx-auto
-        =render('school_statistics_table')
+  = admin_page_header 'Statistics'
+  h2.admin-section-heading Activity
+  = render('school_statistics_table')
 
-    h1.page-section-header.text-uppercase.text-center Customisations
-    ==render_small_separator
-    .row.justify-content-center
-      .col.mx-auto
-        table.table#customisation-statistics
-          thead
-            tr
-              th scope='col' Customisation
-              th scope='col' Type
-              th scope='col' Times bought
-          tbody
-            - @customisation_statistics.each do |c|
-              tr id=dom_id(c)
-                td = c.name
-                td = c.customisation_type.humanize
-                td = c.times_bought
+  h2.admin-section-heading Customisations
+  table.table#customisation-statistics
+    thead
+      tr
+        th scope='col' Customisation
+        th scope='col' Type
+        th scope='col' Times bought
+    tbody
+      - @customisation_statistics.each do |c|
+        tr id=dom_id(c)
+          td = c.name
+          td = c.customisation_type.humanize
+          td = c.times_bought

@@ -1,0 +1,6 @@
+.container
+  = admin_page_header 'Invite an Admin', breadcrumbs: [['Admin Options', system_admin_path(current_admin)]]
+  = simple_form_for(resource, as: resource_name, url: invitation_path(resource_name), html: { method: :post }) do |f|
+    = f.error_notification
+    = f.input :email, hint: 'They join as a school group admin.'
+    = f.button :submit, t('devise.invitations.new.submit_button'), class: 'btn btn-primary'

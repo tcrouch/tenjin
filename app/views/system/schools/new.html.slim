@@ -1,5 +1,5 @@
 .container
-  h1.display-4 Add School
+  = admin_page_header 'Add School', breadcrumbs: [['Schools', system_schools_path]]
   = simple_form_for([:system, @school]) do |f|
     = f.input :client_id, label: 'Client ID'
     = f.input :token
