@@ -46,11 +46,11 @@ class School < ApplicationRecord
   def start_sync
     update!(sync_status: :syncing)
 
-    Enrollment.joins(:classroom)
-      .where(classrooms: {school_id: id})
-      .destroy_all
+    # Deleting in one statement keeps a large roster out of memory, at the cost of the
+    # counter_cache callback: enrollments_count has to come back to zero by hand.
+    Enrollment.where(classroom_id: Classroom.where(school_id: id).select(:id)).delete_all
     Classroom.where(school: self)
-      .update_all(disabled: true)
+      .update_all(disabled: true, enrollments_count: 0)
   end
 
   # Users are disabled only here, once the roster is known, so a running sync locks nobody out
