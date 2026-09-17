@@ -4,3 +4,17 @@
   margin-top: 2rem;
   margin-bottom: 1rem;
 }
+
+// Admin tables are dense, so cells centre on their row and column headers step down to secondary text
+.admin-area {
+  .table {
+    vertical-align: middle;
+  }
+
+  .table > thead th,
+  .tabulator .tabulator-header .tabulator-col {
+    font-size: 0.875rem;
+    font-weight: 400;
+    color: var(--bs-secondary-color);
+  }
+}

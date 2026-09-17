@@ -1,17 +1,19 @@
 .container
   = admin_page_header 'School Groups' do
     = link_to 'Add School Group', new_system_school_group_path, class: 'btn btn-primary'
-  table.table.table-responsive
-    tr
-      th scope="col" Name
-      th
-      th
-
-    - @school_groups.each do |sg|
-      tr
-        td = sg.name
-        td = link_to 'Edit', edit_system_school_group_path(sg.id), class: 'btn btn-primary'
-        td = button_to 'Delete', system_school_group_path(sg.id),
-          method: :delete,
-          class: 'btn btn-danger',
-          form: { data: { turbo: true, turbo_confirm: 'Are you sure?' } }
+  .table-responsive
+    table.table
+      thead
+        tr
+          th scope="col" Name
+          th
+          th
+      tbody
+        - @school_groups.each do |sg|
+          tr
+            td = sg.name
+            td = link_to 'Edit', edit_system_school_group_path(sg.id), class: 'btn btn-primary'
+            td = button_to 'Delete', system_school_group_path(sg.id),
+              method: :delete,
+              class: 'btn btn-danger',
+              form: { data: { turbo: true, turbo_confirm: 'Are you sure?' } }
