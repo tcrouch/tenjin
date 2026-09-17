@@ -15,7 +15,7 @@ module ClassroomsHelper
     when "failed", "needed"
       sync_needed_button
     when "syncing"
-      ((Time.current - @school.updated_at) < 240) ? sync_timeout_button : SYNC_REFRESH_MESSAGE
+      @school.sync_stalled? ? sync_timeout_button : SYNC_REFRESH_MESSAGE
     else
       SYNC_REFRESH_MESSAGE
     end
