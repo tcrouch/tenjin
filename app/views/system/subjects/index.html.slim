@@ -2,31 +2,37 @@
   = admin_page_header 'Subjects' do
     - if current_admin.super?
       = link_to 'Add Subject', new_system_subject_path, class: 'btn btn-primary'
-  .table-responsive
-    table.table#active-subjects
-      thead
-        tr
-          th Name
-          th.text-end Questions Available
-          th.text-end Questions Asked Overall
-          th.text-end Questions Asked This Week
-      tbody
-        - @subjects.each do |subject|
-          tr id=('subject-' + subject.id.to_s)
-            td.name = link_to(subject.name, edit_system_subject_path(subject))
-            td.questionsAvailable.text-end = number_with_delimiter(@question_counts[subject.id].to_i)
-            td.asked_questions.text-end = number_with_delimiter(@subject_statistics[subject.id].asked_questions)
-            td.asked_questions_this_week.text-end = number_with_delimiter(@subject_statistics[subject.id].asked_questions_this_week)
-  - if current_admin.super?
-    h2.admin-section-heading Deactivated subjects
+  - if @subjects.empty?
+    p.text-body-secondary No subjects yet.
+  - else
     .table-responsive
-      table.table#deactivated-subjects
+      table.table#active-subjects
         thead
           tr
             th Name
             th.text-end Questions Available
+            th.text-end Questions Asked Overall
+            th.text-end Questions Asked This Week
         tbody
-          - @deactivated_subjects.each do |subject|
+          - @subjects.each do |subject|
             tr id=('subject-' + subject.id.to_s)
               td.name = link_to(subject.name, edit_system_subject_path(subject))
               td.questionsAvailable.text-end = number_with_delimiter(@question_counts[subject.id].to_i)
+              td.asked_questions.text-end = number_with_delimiter(@subject_statistics[subject.id].asked_questions)
+              td.asked_questions_this_week.text-end = number_with_delimiter(@subject_statistics[subject.id].asked_questions_this_week)
+  - if current_admin.super?
+    h2.admin-section-heading Deactivated subjects
+    - if @deactivated_subjects.empty?
+      p.text-body-secondary No deactivated subjects.
+    - else
+      .table-responsive
+        table.table#deactivated-subjects
+          thead
+            tr
+              th Name
+              th.text-end Questions Available
+          tbody
+            - @deactivated_subjects.each do |subject|
+              tr id=('subject-' + subject.id.to_s)
+                td.name = link_to(subject.name, edit_system_subject_path(subject))
+                td.questionsAvailable.text-end = number_with_delimiter(@question_counts[subject.id].to_i)

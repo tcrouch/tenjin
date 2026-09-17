@@ -35,17 +35,17 @@ section#Users
                       options_from_collection_for_select(@all_subjects, :id, :name),
                       id: "subject-select-user-#{e.id}",
                       form: "form-#{e.id}",
-                      class: 'form-select'
+                      class: 'form-select form-select-sm'
                   td = select_tag 'user[role]',
                     options_for_select(User::ChangeUserRole::ROLES.map { |role| [role.humanize, role] }),
                     prompt: 'Choose role…',
                     required: true,
                     id: "role-select-user-#{e.id}",
                     form: "form-#{e.id}",
-                    class: 'form-select'
+                    class: 'form-select form-select-sm'
                   td = button_to 'Add Role',
                     set_role_system_user_path(e.id),
                     id: "add-role-#{e.id}",
-                    class: 'btn btn-primary add-role-button',
+                    class: 'btn btn-sm btn-outline-secondary add-role-button',
                     form: { id: "form-#{e.id}", data: { turbo: true } },
                     method: :patch

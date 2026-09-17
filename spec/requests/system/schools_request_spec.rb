@@ -30,6 +30,14 @@ RSpec.describe "System::Schools", :default_creates, type: :request do
       it "shows no breadcrumb on a top-level page" do
         expect(Capybara.string(response.body)).to have_no_css("nav[aria-label='Breadcrumb']")
       end
+
+      it "labels the account menu with the admin's initial and offers Settings" do
+        expect(Capybara.string(response.body).find("#account-menu"))
+          .to have_button(exact_text: admin.email.first.upcase, visible: :all)
+          .and have_css("button[aria-label='Account menu for #{admin.email}']")
+          .and have_link("Settings", href: system_admin_path(admin), visible: :all)
+          .and have_button("Sign out", visible: :all)
+      end
     end
 
     context "as a school group admin" do
@@ -37,6 +45,12 @@ RSpec.describe "System::Schools", :default_creates, type: :request do
 
       it "offers no sync, which only super admins may run" do
         expect(Capybara.string(response.body)).to have_no_button("Sync")
+      end
+
+      it "keeps Settings, which only super admins may open, out of the account menu" do
+        expect(Capybara.string(response.body).find("#account-menu"))
+          .to have_no_link("Settings", visible: :all)
+          .and have_button("Sign out", visible: :all)
       end
     end
   end

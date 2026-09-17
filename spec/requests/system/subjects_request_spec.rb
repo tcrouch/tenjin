@@ -12,6 +12,26 @@ RSpec.describe "System::Subjects", :default_creates, type: :request do
       expect(response).to have_http_status(:ok)
       expect(response.body).to include("Maths")
     end
+
+    context "with no deactivated subjects" do
+      before { get system_subjects_path }
+
+      it "says so in place of an empty table" do
+        expect(Capybara.string(response.body)).to have_text("No deactivated subjects.")
+          .and have_no_css("#deactivated-subjects")
+      end
+    end
+
+    context "with a deactivated subject" do
+      let!(:deactivated_subject) { create(:subject, active: false) }
+
+      before { get system_subjects_path }
+
+      it "lists it" do
+        expect(Capybara.string(response.body)).to have_css("#deactivated-subjects #subject-#{deactivated_subject.id}")
+          .and have_no_text("No deactivated subjects.")
+      end
+    end
   end
 
   describe "GET /system/subjects/:id/edit" do

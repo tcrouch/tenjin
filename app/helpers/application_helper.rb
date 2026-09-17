@@ -20,9 +20,9 @@ module ApplicationHelper
     end
   end
 
-  # Links a navbar item, marking the current page for both styling and screen readers
-  def nav_link(label, path, current:)
-    link_to label, path, class: ["nav-link", {active: current}], aria: {current: ("page" if current)}
+  # Links a navigation item, marking the current page for both styling and screen readers; css_class is the base class
+  def nav_link(label, path, current:, css_class: "nav-link")
+    link_to label, path, class: [css_class, {active: current}], aria: {current: ("page" if current)}
   end
 
   def render_small_separator(style = nil, margin: "mb-5")
