@@ -46,7 +46,7 @@ RSpec.describe "System::Schools", :default_creates, type: :request do
 
     it "redraws the permitted toggle in its new state" do
       patch system_school_path(school), params: {school: {permitted: false}}, headers: turbo_headers
-      expect(stream_update("permitted_school_#{school.id}")).to have_css("button[aria-pressed='false']")
+      expect(stream_update("permitted_school_#{school.id}")).to have_field("Permitted", type: "checkbox", checked: false)
     end
   end
 
@@ -92,6 +92,19 @@ RSpec.describe "System::Schools", :default_creates, type: :request do
         expect(response.body).to include(manage_roles_system_users_path(school: school))
       end
 
+      context "with pupils and staff on the roll" do
+        let!(:pupils) { create_list(:student, 2, school: school) }
+        let!(:staff) { create(:teacher, school: school) }
+
+        # The outer GET ran before these records existed
+        before { get system_school_path(school) }
+
+        it "counts each role" do
+          expect(Capybara.string(response.body)).to have_xpath("//tr[td='Students'][td='2']")
+            .and have_xpath("//tr[td='Employees'][td='1']")
+        end
+      end
+
       it "titles the tab after the school and leads back to Schools" do
         expect(Capybara.string(response.body)).to have_title("#{school.name} · Tenjin admin")
           .and have_css("nav[aria-label='Breadcrumb'] a[href='#{system_schools_path}']", exact_text: "Schools")
@@ -119,7 +132,7 @@ RSpec.describe "System::Schools", :default_creates, type: :request do
 
     it "redraws the sync status as queued" do
       patch sync_system_school_path(school), headers: turbo_headers
-      expect(stream_update("sync_status_school_#{school.id}")).to have_css("i.fa-clock")
+      expect(stream_update("sync_status_school_#{school.id}")).to have_css(".badge", exact_text: "Queued")
     end
   end
 end

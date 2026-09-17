@@ -7,22 +7,22 @@
       thead
         tr
           th Name
-          th Students
-          th Weekly Questions
-          th Monthly Questions
+          th.text-end Students
+          th.text-end Weekly Questions
+          th.text-end Monthly Questions
           th Sync Status
           - if current_admin.super?
-            th Permitted?
+            th Permitted
             th School Group
             th Force Sync
       tbody
         - @schools.each do |school|
           tr
             td = link_to(school.name, [:system, school])
-            td = @student_counts[school.id].to_i
-            td = @weekly_questions[school.id].to_i
-            td = @monthly_questions[school.id].to_i
-            td id=dom_id(school, :sync_status) = sync_status_icon(school.sync_status)
+            td.text-end = number_with_delimiter(@student_counts[school.id].to_i)
+            td.text-end = number_with_delimiter(@weekly_questions[school.id].to_i)
+            td.text-end = number_with_delimiter(@monthly_questions[school.id].to_i)
+            td id=dom_id(school, :sync_status) = sync_status_badge(school)
             - if current_admin.super?
               td id=dom_id(school, :permitted) = render 'permitted', school: school
               td = form_with model: [:system, school], data: { turbo: true, controller: 'auto-submit' } do |f|

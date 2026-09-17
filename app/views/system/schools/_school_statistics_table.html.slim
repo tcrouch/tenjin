@@ -2,18 +2,18 @@ table.table
   thead
     tr
       th
-      th Weekly
-      th Overall
+      th.text-end Weekly
+      th.text-end Overall
   tbody
     tr
       td Questions Asked
-      td#asked_questions_weekly = @school_statistics.asked_questions_weekly
-      td#asked_questions = @school_statistics.asked_questions
+      td.text-end#asked_questions_weekly = number_with_delimiter(@school_statistics.asked_questions_weekly)
+      td.text-end#asked_questions = number_with_delimiter(@school_statistics.asked_questions)
     tr
       td Homeworks Completed
-      td#homeworks_completed_weekly = @school_statistics.homeworks_completed_weekly
-      td#homeworks_completed = @school_statistics.homeworks_completed
+      td.text-end#homeworks_completed_weekly = number_with_delimiter(@school_statistics.homeworks_completed_weekly)
+      td.text-end#homeworks_completed = number_with_delimiter(@school_statistics.homeworks_completed)
     tr
       td Customisations Bought
-      td#customisations_bought_weekly = @school_statistics.customisation_unlocks_weekly
-      td#customisations_bought = @school_statistics.customisation_unlocks
+      td.text-end#customisations_bought_weekly = number_with_delimiter(@school_statistics.customisation_unlocks_weekly)
+      td.text-end#customisations_bought = number_with_delimiter(@school_statistics.customisation_unlocks)

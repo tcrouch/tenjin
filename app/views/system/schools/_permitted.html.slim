@@ -1,6 +1,8 @@
-= button_to system_school_path(school, school: { permitted: !school.permitted }),
-  method: :patch,
-  class: 'btn btn-link p-0 border-0',
-  aria: { label: 'Permitted', pressed: school.permitted? },
-  form: { class: 'd-inline', data: { turbo: true } } do
-  = boolean_icon(school.permitted?)
+= form_with model: [:system, school], data: { turbo: true, controller: 'auto-submit' } do |f|
+  .form-check.form-switch.mb-0
+    = f.check_box :permitted,
+      class: 'form-check-input',
+      role: 'switch',
+      id: dom_id(school, :permitted_switch),
+      data: { action: 'change->auto-submit#submit' }
+    = f.label :permitted, 'Permitted', class: 'form-check-label visually-hidden', for: dom_id(school, :permitted_switch)

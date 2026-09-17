@@ -10,8 +10,8 @@ class School::SyncSchool < ApplicationService
   end
 
   def call
-    # Assume timed out if more than two minutes syncing.  Adjust or put as env var?
-    return if @school.syncing? && (Time.current - @school.updated_at) < 240
+    # A second job queued behind a running sync must not start over it
+    return if @school.syncing? && !@school.sync_stalled?
 
     @roster_user_ids = []
     @school.start_sync

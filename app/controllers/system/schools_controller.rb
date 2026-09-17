@@ -28,6 +28,7 @@ module System
     def show
       @school = authorize find_school
       @school_statistics = School::Statistics.new(@school)
+      @role_counts = @school.users.group(:role).count
       @school_admins = User.where(school: @school).with_role(:school_admin)
       @users = User.where(school: @school)
     end
