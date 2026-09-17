@@ -33,12 +33,46 @@
 
 // The account menu's label is the signed-in admin's initial, since organisational emails run long
 .admin-avatar {
+  // The darker half of the palette is too close to the navbar behind it, so the ring draws the button's edge.
+  // 0.7 is the floor: the ring paints over the fill, so more transparency drops the lightest fill below 3:1.
+  --bs-btn-border-color: rgba(255, 255, 255, 0.7);
+  --bs-btn-hover-border-color: rgba(255, 255, 255, 0.7);
+  --bs-btn-active-border-color: rgba(255, 255, 255, 0.7);
+
+  --bs-btn-color: #fff;
+  --bs-btn-bg: var(--admin-avatar-bg);
+  --bs-btn-hover-color: #fff;
+  --bs-btn-hover-bg: color-mix(in oklch, var(--admin-avatar-bg), black 12%);
+  --bs-btn-active-color: #fff;
+  --bs-btn-active-bg: color-mix(in oklch, var(--admin-avatar-bg), black 20%);
+  --bs-btn-focus-box-shadow: 0 0 0 0.25rem color-mix(in oklch, var(--admin-avatar-bg), transparent 60%);
+  --bs-btn-font-size: 1.25rem;
+
   width: 2.25rem;
   height: 2.25rem;
   padding: 0;
-  font-weight: 900;
   line-height: 1;
 }
+
+// Hues 22.5deg apart at alternating lightness, each solved for 4.7:1 against the white initial;
+// the pairs hue alone leaves close - the olives, the teals - separate by darkness instead.
+// One class per colour in AdminAreaHelper::AVATAR_COLOURS, which picks between them.
+.admin-avatar-0 { --admin-avatar-bg: oklch(0.577 0.16 25); }
+.admin-avatar-1 { --admin-avatar-bg: oklch(0.469 0.125 47.5); }
+.admin-avatar-2 { --admin-avatar-bg: oklch(0.564 0.12 70); }
+.admin-avatar-3 { --admin-avatar-bg: oklch(0.458 0.09 92.5); }
+.admin-avatar-4 { --admin-avatar-bg: oklch(0.552 0.125 115); }
+.admin-avatar-5 { --admin-avatar-bg: oklch(0.446 0.135 137.5); }
+.admin-avatar-6 { --admin-avatar-bg: oklch(0.543 0.12 160); }
+.admin-avatar-7 { --admin-avatar-bg: oklch(0.448 0.08 182.5); }
+.admin-avatar-8 { --admin-avatar-bg: oklch(0.548 0.09 205); }
+.admin-avatar-9 { --admin-avatar-bg: oklch(0.452 0.085 227.5); }
+.admin-avatar-10 { --admin-avatar-bg: oklch(0.558 0.155 250); }
+.admin-avatar-11 { --admin-avatar-bg: oklch(0.468 0.16 272.5); }
+.admin-avatar-12 { --admin-avatar-bg: oklch(0.573 0.16 295); }
+.admin-avatar-13 { --admin-avatar-bg: oklch(0.478 0.16 317.5); }
+.admin-avatar-14 { --admin-avatar-bg: oklch(0.578 0.16 340); }
+.admin-avatar-15 { --admin-avatar-bg: oklch(0.479 0.16 2.5); }
 
 #account-menu .dropdown-header {
   max-width: 18rem;

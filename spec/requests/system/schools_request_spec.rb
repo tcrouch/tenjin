@@ -44,6 +44,13 @@ RSpec.describe "System::Schools", :default_creates, type: :request do
           .and have_button("Sign out", visible: :all)
       end
 
+      it "colours the avatar for the signed-in admin" do
+        colour = "admin-avatar-#{admin.id % AdminAreaHelper::AVATAR_COLOURS}"
+
+        expect(Capybara.string(response.body))
+          .to have_css("#account-menu button.admin-avatar.#{colour}", visible: :all)
+      end
+
       it "lists the email, Settings and Sign out where the collapsed menu would hide the avatar" do
         expect(Capybara.string(response.body).find("#account-links"))
           .to have_text(admin.email)

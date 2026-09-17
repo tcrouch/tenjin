@@ -2,6 +2,14 @@
 
 # Page furniture shared by the admin area's views
 module AdminAreaHelper
+  # Each colour is an .admin-avatar-N class in admin.scss, so the count must match; changing it recolours every admin
+  AVATAR_COLOURS = 16
+
+  # Colours the account avatar, so two admins whose emails share an initial still tell apart
+  def admin_avatar_class(admin)
+    "admin-avatar-#{admin.id % AVATAR_COLOURS}"
+  end
+
   # Titles the tab and heads the page; breadcrumbs are [label, path] pairs leading to it, and the block yields its actions
   def admin_page_header(title, breadcrumbs: [], &actions)
     content_for(:title) { tag.title("#{title} · Tenjin admin") }
