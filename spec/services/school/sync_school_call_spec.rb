@@ -182,3 +182,16 @@ RSpec.describe School::SyncSchool, :vcr do
     end
   end
 end
+
+RSpec.describe School::SyncSchool do
+  context "when Wonde fails mid-sync" do
+    let(:school) { create(:school, sync_status: :successful) }
+
+    before { stub_request(:get, /wonde/).to_return(status: 503) }
+
+    it "marks the school failed and lets the error through to the job" do
+      expect { described_class.call(school) }.to raise_error(RestClient::ServiceUnavailable)
+      expect(school.reload).to be_failed
+    end
+  end
+end
