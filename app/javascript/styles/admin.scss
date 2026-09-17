@@ -19,6 +19,18 @@
   }
 }
 
+// Links share the body text colour, so an underline is what sets them apart from plain text
+.admin-area main a:not(.btn) {
+  text-decoration: underline;
+  text-decoration-color: rgba(var(--bs-body-color-rgb), 0.35);
+  text-underline-offset: 0.2em;
+
+  &:hover {
+    color: inherit;
+    text-decoration-color: currentColor;
+  }
+}
+
 // The account menu's label is the signed-in admin's initial, since organisational emails run long
 .admin-avatar {
   width: 2.25rem;
