@@ -14,11 +14,8 @@
         tbody
           - @school_groups.each do |sg|
             tr
-              td = sg.name
-              td.text-end
-                .d-inline-flex.gap-2
-                  = link_to 'Edit', edit_system_school_group_path(sg.id), class: 'btn btn-sm btn-outline-secondary'
-                  = button_to 'Delete', system_school_group_path(sg.id),
-                    method: :delete,
-                    class: 'btn btn-sm btn-outline-danger',
-                    form: { data: { turbo: true, turbo_confirm: "Delete #{sg.name}?" } }
+              td = link_to(sg.name, edit_system_school_group_path(sg))
+              td.text-end = button_to 'Delete', system_school_group_path(sg),
+                method: :delete,
+                class: 'btn btn-sm btn-outline-danger',
+                form: { data: { turbo: true, turbo_confirm: "Delete #{sg.name}?" } }

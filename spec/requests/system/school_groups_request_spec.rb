@@ -6,11 +6,10 @@ RSpec.describe "System::SchoolGroups", :default_creates, type: :request do
   before { sign_in super_admin }
 
   describe "GET /system/school_groups" do
-    it "renders the index" do
-      create(:school_group, name: "North")
+    it "links each group by name to its edit form" do
+      school_group = create(:school_group, name: "North")
       get system_school_groups_path
-      expect(response).to have_http_status(:ok)
-      expect(response.body).to include("North")
+      expect(Capybara.string(response.body)).to have_link("North", href: edit_system_school_group_path(school_group))
     end
 
     it "says when there are none" do
