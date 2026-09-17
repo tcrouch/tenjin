@@ -4,27 +4,29 @@
       = link_to 'Add Subject', new_system_subject_path, class: 'btn btn-primary'
   .table-responsive
     table.table#active-subjects
-      tr
-        th Name
-        th Questions Available
-        th Questions Asked Overall
-        th Questions Asked This Week
-
-      - @subjects.each do |subject|
-        tr id=('subject-' + subject.id.to_s)
-          td.name = link_to(subject.name, edit_system_subject_path(subject))
-          td.questionsAvailable = @question_counts[subject.id].to_i
-          td.asked_questions = @subject_statistics[subject.id].asked_questions
-          td.asked_questions_this_week = @subject_statistics[subject.id].asked_questions_this_week
+      thead
+        tr
+          th Name
+          th Questions Available
+          th Questions Asked Overall
+          th Questions Asked This Week
+      tbody
+        - @subjects.each do |subject|
+          tr id=('subject-' + subject.id.to_s)
+            td.name = link_to(subject.name, edit_system_subject_path(subject))
+            td.questionsAvailable = @question_counts[subject.id].to_i
+            td.asked_questions = @subject_statistics[subject.id].asked_questions
+            td.asked_questions_this_week = @subject_statistics[subject.id].asked_questions_this_week
   - if current_admin.super?
     h2.admin-section-heading Deactivated subjects
     .table-responsive
       table.table#deactivated-subjects
-        tr
-          th Name
-          th Questions Available
-
-        - @deactivated_subjects.each do |subject|
-          tr id=('subject-' + subject.id.to_s)
-            td.name = link_to(subject.name, edit_system_subject_path(subject))
-            td.questionsAvailable = @question_counts[subject.id].to_i
+        thead
+          tr
+            th Name
+            th Questions Available
+        tbody
+          - @deactivated_subjects.each do |subject|
+            tr id=('subject-' + subject.id.to_s)
+              td.name = link_to(subject.name, edit_system_subject_path(subject))
+              td.questionsAvailable = @question_counts[subject.id].to_i

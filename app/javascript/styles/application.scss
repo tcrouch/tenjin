@@ -282,13 +282,18 @@ h3,
   padding-bottom: 0.15rem;
 }
 
-.form-control {
+// Pupil pages read large and light; the admin area keeps Bootstrap's 1rem regular type for its dense tables and forms
+body:not(.admin-area) {
+  font-size: 1.25rem;
+  font-weight: 300;
+}
+
+// :where keeps this at bare-class specificity, below Bootstrap's input-group sizing
+:where(body:not(.admin-area)) .form-control {
   font-size: 1.25rem;
 }
 
 body {
-  font-size: 1.25rem;
-  font-weight: 300;
   font-family:
     "Roboto",
     -apple-system,

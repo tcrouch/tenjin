@@ -5,12 +5,13 @@
   .row
     .col
       table.table
-        tr
-          td Students
-          td = @school.users.where(role: 'student').count
-        tr
-          td Employees
-          td = @school.users.where(role: 'employee').count
+        tbody
+          tr
+            td Students
+            td = @school.users.where(role: 'student').count
+          tr
+            td Employees
+            td = @school.users.where(role: 'employee').count
       = render('school_statistics_table')
   .row
     .col
