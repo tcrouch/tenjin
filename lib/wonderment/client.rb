@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+# This app's client for the Wonde MIS API
 module Wonderment
   # Reads the Wonde REST API, holding one page of a listing at a time.
   class Client
@@ -64,9 +65,19 @@ module Wonderment
         raise Error.new("Wonde responded #{response.status}", status: response.status, body: response.body)
       end
 
-      JSON.parse(response.body)
+      payload(response)
     rescue Faraday::Error => e
       raise Error, "Wonde did not answer: #{e.message}"
+    end
+
+    # Every Wonde reply wraps its resource or listing in data; anything else is not Wonde talking
+    def payload(response)
+      body = JSON.parse(response.body)
+      return body if body.is_a?(Hash) && body.key?("data")
+
+      raise Error.new("Wonde answered without a data payload", status: response.status, body: response.body)
+    rescue JSON::ParserError
+      raise Error.new("Wonde answered with something not JSON", status: response.status, body: response.body)
     end
 
     def url_for(path, params)

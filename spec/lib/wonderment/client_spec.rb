@@ -138,5 +138,18 @@ RSpec.describe Wonderment::Client do
 
       expect { client.get("schools/S1") }.to raise_error(Wonderment::Error, /did not answer/)
     end
+
+    # A proxy's maintenance page comes back 200 and as HTML
+    it "raises when the reply is not JSON" do
+      stub_request(:get, resource_url).to_return(body: "<html>Down for maintenance</html>")
+
+      expect { client.get("schools/S1") }.to raise_error(Wonderment::Error, /not JSON/)
+    end
+
+    it "raises when the reply carries no data payload" do
+      stub_request(:get, resource_url).to_return(body: {"error" => "nothing here"}.to_json)
+
+      expect { client.get("schools/S1") }.to raise_error(Wonderment::Error, /data payload/)
+    end
   end
 end
