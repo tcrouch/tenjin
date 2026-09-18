@@ -9,7 +9,7 @@ class Customisation < ApplicationRecord
   has_one_attached :image
 
   # Only the original blob is ever linked, so the variant preloads in with_attached_image would go unused
-  scope :with_image, -> { includes(image_attachment: :blob) }
+  scope :preload_image, -> { includes(image_attachment: :blob) }
 
   before_save :make_unpurchasable_if_retired
 

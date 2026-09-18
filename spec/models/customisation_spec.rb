@@ -51,9 +51,9 @@ RSpec.describe Customisation do
     end
   end
 
-  describe ".with_image" do
+  describe ".preload_image" do
     let!(:customisation) { create(:dashboard_customisation) }
-    let!(:loaded) { described_class.with_image.find(customisation.id) }
+    let!(:loaded) { described_class.preload_image.find(customisation.id) }
 
     it "preloads the image blob" do
       queries = 0

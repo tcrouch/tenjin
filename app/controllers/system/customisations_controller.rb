@@ -4,8 +4,8 @@ module System
   class CustomisationsController < BaseController
     def index
       authorize Customisation, :index?
-      @customisations = policy_scope(Customisation).where(retired: false).order(sticky: :desc, purchasable: :desc).with_image
-      @retired_customisations = policy_scope(Customisation).where(retired: true).with_image
+      @customisations = policy_scope(Customisation).where(retired: false).order(sticky: :desc, purchasable: :desc).preload_image
+      @retired_customisations = policy_scope(Customisation).where(retired: true).preload_image
     end
 
     def new
