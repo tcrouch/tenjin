@@ -51,6 +51,25 @@ RSpec.describe Customisation do
     end
   end
 
+  describe ".with_image" do
+    let!(:customisation) { create(:dashboard_customisation) }
+    let!(:loaded) { described_class.with_image.find(customisation.id) }
+
+    it "preloads the image blob" do
+      queries = 0
+      counter = ->(*) { queries += 1 }
+      ActiveSupport::Notifications.subscribed(counter, "sql.active_record") do
+        loaded.image.blob
+      end
+
+      expect(queries).to be_zero
+    end
+
+    it "does not preload variant records" do
+      expect(loaded.image.blob.association(:variant_records)).not_to be_loaded
+    end
+  end
+
   describe "#for_sale?" do
     it "is true when purchasable and not retired" do
       expect(build_stubbed(:customisation, purchasable: true, retired: false)).to be_for_sale
