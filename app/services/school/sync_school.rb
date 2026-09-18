@@ -40,6 +40,6 @@ class School::SyncSchool < ApplicationService
 
     return if classroom.subject.blank?
 
-    Enrollment.from_wonde(wonde_class)
+    Enrollment.from_wonde(wonde_class, classroom)
   end
 end
