@@ -20,6 +20,9 @@ class User < ApplicationRecord
   has_many :homeworks, through: :classrooms
   has_many :subjects, through: :classrooms
 
+  # rolify's finder joins roles, so it repeats a user per subject they hold the role on
+  scope :holding_role, ->(role) { where(id: Role.where(name: role).joins(:users).select("users_roles.user_id")) }
+
   belongs_to :school
 
   enum :role, {student: 0, employee: 1, contact: 2, school_admin: 3}

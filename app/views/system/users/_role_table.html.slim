@@ -11,7 +11,7 @@ h2.admin-section-heading = role.humanize.pluralize
           th Subject
         th Remove
     tbody
-      - role_collection.uniq.each do |r|
+      - role_collection.each do |r|
         tr
           td
             => r.forename
@@ -21,7 +21,7 @@ h2.admin-section-heading = role.humanize.pluralize
             td = r.school.name
           - else
             td = select_tag 'user[subject]',
-                options_from_collection_for_select(Subject.with_role(role, r), :id, :name),
+                options_from_collection_for_select(Subject.authored_by(r, role), :id, :name),
                 class: 'form-select form-select-sm',
                 form: "form-#{role}-#{r.id}"
           td = button_to 'Remove',

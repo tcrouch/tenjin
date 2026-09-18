@@ -71,7 +71,7 @@ class School < ApplicationRecord
     unlisted = User.where.not(id: roster_user_ids)
     unenrolled_employees = User.where(role: :employee).where.not(id: enrolled_user_ids)
     User.where(school: self)
-      .where.not(id: User.joins(:roles).where(roles: {name: SYNC_EXEMPT_ROLES}).select(:id))
+      .where.not(id: User.holding_role(SYNC_EXEMPT_ROLES))
       .and(unlisted.or(unenrolled_employees))
   end
 

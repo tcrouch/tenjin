@@ -6,7 +6,7 @@ class QuestionsController < ApplicationController
   before_action :authenticate_user!
 
   def index
-    @subjects = policy_scope(Subject.with_role(:question_author, current_user).where(active: true))
+    @subjects = policy_scope(Subject.authored_by(current_user, :question_author).where(active: true))
       .includes(:topics)
     raise Pundit::NotAuthorizedError if @subjects.blank?
 

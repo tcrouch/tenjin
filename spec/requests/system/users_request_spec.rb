@@ -27,6 +27,19 @@ RSpec.describe "System::Users", :default_creates, type: :request do
           .and have_no_css("select[name='user[role]'] option[selected]")
       end
     end
+
+    context "with an author on two subjects" do
+      let(:author) { create(:question_author, subject: quiz_subject) }
+
+      before do
+        author.add_role(:question_author, create(:subject))
+        get manage_roles_system_users_path
+      end
+
+      it "lists the author once" do
+        expect(Capybara.string(response.body)).to have_css("#question_author-table tbody tr", count: 1)
+      end
+    end
   end
 
   describe "PATCH /system/users/:id/set_role" do

@@ -151,6 +151,17 @@ RSpec.describe User do
     end
   end
 
+  describe ".holding_role" do
+    let!(:author) { create(:question_author, subject: create(:subject)) }
+    let!(:bystander) { create(:user, role: "employee") }
+
+    before { author.add_role(:question_author, create(:subject)) }
+
+    it "lists a user once however many subjects they hold the role on" do
+      expect(described_class.holding_role(:question_author)).to contain_exactly(author)
+    end
+  end
+
   describe "#active_for_authentication?" do
     let(:user) { build_stubbed(:student, school: school, disabled: disabled) }
     let(:school) { build_stubbed(:school, sync_status: :successful) }

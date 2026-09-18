@@ -2,7 +2,9 @@
 
 # Adds or removes a role on a user, optionally scoped to a subject.
 class User::ChangeUserRole < ApplicationCommand
-  # A new role here also needs a decision in School::SYNC_EXEMPT_ROLES
+  # A new role here also needs a decision in School::SYNC_EXEMPT_ROLES. A name belongs to
+  # exactly one of these sets, since User.holding_role matches by name alone; a subject role
+  # is granted on a subject, never the Subject class, which Subject.authored_by ignores.
   SUBJECT_SCOPED_ROLES = %w[lesson_author question_author].freeze
   GLOBAL_ROLES = %w[school_admin].freeze
   ROLES = (GLOBAL_ROLES + SUBJECT_SCOPED_ROLES).freeze
