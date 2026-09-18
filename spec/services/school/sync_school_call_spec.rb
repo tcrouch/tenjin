@@ -233,12 +233,7 @@ RSpec.describe School::SyncSchool do
       stub_request(:get, "https://api.wonde.com/v1.0/schools/NOSUBJ")
         .to_return(body: {"data" => {"id" => "NOSUBJ"}}.to_json)
       stub_request(:get, "https://api.wonde.com/v1.0/schools/NOSUBJ/classes?cursor=true&include=students,employees&per_page=50")
-        .to_return(body: {
-          "data" => [{"id" => "REG", "name" => "Registration", "code" => nil, "description" => nil,
-                      "subject" => nil, "employees" => {"data" => []},
-                      "students" => {"data" => [{"id" => "p1", "upi" => "upi-reg", "forename" => "Pat", "surname" => "Pupil"}]}}],
-          "meta" => {"pagination" => {"next" => nil, "more" => false}}
-        }.to_json)
+        .to_return(body: wonde_page([wonde_class("REG", subject: nil, students: [wonde_person(upi: "upi-reg")])]))
       described_class.call(school)
     end
 
@@ -290,27 +285,13 @@ RSpec.describe School::SyncSchool do
     let!(:second_page_classroom) { create(:classroom, school: school, client_id: "C2", subject: quiz_subject) }
     let!(:second_page_pupil) { create(:student, school: school, upi: "upi-page-2") }
 
-    def pupil(upi)
-      {"id" => "id-#{upi}", "upi" => upi, "forename" => "Pat", "surname" => "Pupil"}
-    end
-
-    def wonde_class(client_id, pupils)
-      {"id" => client_id, "name" => "Class #{client_id}", "code" => nil, "description" => nil,
-       "subject" => "S1", "students" => {"data" => pupils}, "employees" => {"data" => []}}
-    end
-
-    def page(classes, next_url)
-      {"data" => classes,
-       "meta" => {"pagination" => {"next" => next_url, "more" => !next_url.nil?}}}.to_json
-    end
-
     before do
       stub_request(:get, "https://api.wonde.com/v1.0/schools/PAGED")
         .to_return(body: {"data" => {"id" => "PAGED"}}.to_json)
       stub_request(:get, first_page_url)
-        .to_return(body: page([wonde_class("C1", [pupil("upi-page-1")])], second_page_url))
+        .to_return(body: wonde_page([wonde_class("C1", students: [wonde_person(upi: "upi-page-1")])], second_page_url))
       stub_request(:get, second_page_url)
-        .to_return(body: page([wonde_class("C2", [pupil("upi-page-2")])], nil))
+        .to_return(body: wonde_page([wonde_class("C2", students: [wonde_person(upi: "upi-page-2")])]))
       described_class.call(school)
     end
 

@@ -13,11 +13,6 @@ RSpec.describe Wonderment::Client do
     "https://api.wonde.com/v1.0/schools/S1/classes?cursor=eyJtaXNfY2xhc3Nlcy5pZCI6MX0&include=students%2Cemployees&per_page=50"
   end
 
-  def page(records, next_url)
-    {"data" => records,
-     "meta" => {"pagination" => {"next" => next_url, "more" => !next_url.nil?}}}.to_json
-  end
-
   describe "#get" do
     before { stub_request(:get, resource_url).to_return(body: {"data" => {"id" => "S1"}}.to_json) }
 
@@ -44,8 +39,8 @@ RSpec.describe Wonderment::Client do
 
   describe "#each_page" do
     before do
-      stub_request(:get, first_page_url).to_return(body: page([{"id" => "A"}, {"id" => "B"}], second_page_url))
-      stub_request(:get, second_page_url).to_return(body: page([{"id" => "C"}], nil))
+      stub_request(:get, first_page_url).to_return(body: wonde_page([{"id" => "A"}, {"id" => "B"}], second_page_url))
+      stub_request(:get, second_page_url).to_return(body: wonde_page([{"id" => "C"}]))
     end
 
     it "yields every record across every page" do
@@ -78,7 +73,7 @@ RSpec.describe Wonderment::Client do
       stub_request(:get, second_page_url).to_return do
         2.times { GC.start(full_mark: true, immediate_sweep: true) }
         first_page_retained = probe.size.positive?
-        {body: page([{"id" => "C"}], nil)}
+        {body: wonde_page([{"id" => "C"}])}
       end
 
       client.each_page("schools/S1/classes", include: %w[students employees]) do |record|

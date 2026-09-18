@@ -41,14 +41,8 @@ RSpec.describe Enrollment do
     let!(:pupil) { create(:student, school: classroom.school, upi: "upi-pupil") }
     let!(:teacher) { create(:teacher, school: classroom.school, upi: "upi-teacher") }
 
-    def wonde_class(students: [], employees: [])
-      {"id" => classroom.client_id,
-       "students" => {"data" => students.map { |upi| {"upi" => upi} }},
-       "employees" => {"data" => employees.map { |upi| {"upi" => upi} }}}
-    end
-
     context "with a pupil and a teacher listed" do
-      before { described_class.from_wonde(wonde_class(students: ["upi-pupil"], employees: ["upi-teacher"]), classroom) }
+      before { described_class.from_wonde(wonde_class("C1", students: [wonde_person(upi: "upi-pupil")], employees: [wonde_person(upi: "upi-teacher")]), classroom) }
 
       it "enrolls both" do
         expect(classroom.reload.users).to contain_exactly(pupil, teacher)
@@ -65,7 +59,7 @@ RSpec.describe Enrollment do
     end
 
     context "with someone listed who has no account" do
-      before { described_class.from_wonde(wonde_class(students: %w[upi-pupil upi-unknown]), classroom) }
+      before { described_class.from_wonde(wonde_class("C1", students: [wonde_person(upi: "upi-pupil"), wonde_person(upi: "upi-unknown")]), classroom) }
 
       it "enrolls only those with accounts" do
         expect(classroom.reload.users).to contain_exactly(pupil)
@@ -73,7 +67,7 @@ RSpec.describe Enrollment do
     end
 
     context "with nobody listed" do
-      before { described_class.from_wonde(wonde_class, classroom) }
+      before { described_class.from_wonde(wonde_class("C1"), classroom) }
 
       it "creates no enrollments" do
         expect(classroom.reload.enrollments).to be_empty
@@ -90,7 +84,7 @@ RSpec.describe Enrollment do
       inserts = 0
       counter = ->(_name, _start, _finish, _id, payload) { inserts += 1 if payload[:sql].start_with?("INSERT") }
       ActiveSupport::Notifications.subscribed(counter, "sql.active_record") do
-        described_class.from_wonde(wonde_class(students: ["upi-pupil"], employees: ["upi-teacher"]), classroom)
+        described_class.from_wonde(wonde_class("C1", students: [wonde_person(upi: "upi-pupil")], employees: [wonde_person(upi: "upi-teacher")]), classroom)
       end
 
       expect(inserts).to eq(1)

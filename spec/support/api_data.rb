@@ -6,11 +6,6 @@ RSpec.shared_context "with api_data", shared_context: :metadata do
   end
 
   # Class payloads reach the models as parsed JSON, so the fixtures are plain hashes
-  def wonde_person
-    {"id" => SecureRandom.hex, "upi" => SecureRandom.hex,
-     "forename" => FFaker::Name.first_name, "surname" => FFaker::Name.last_name}
-  end
-
   let(:user_api_data) do
     {"data" => [wonde_person]}
   end

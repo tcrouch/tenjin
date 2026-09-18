@@ -185,7 +185,7 @@ RSpec.describe School do
   end
 
   describe "#from_wonde" do
-    let(:school) { described_class.from_wonde(OpenStruct.new(id: "1234", name: "test"), "token") }
+    let(:school) { described_class.from_wonde({"id" => "1234", "name" => "test"}, "token") }
 
     it "persists the school" do
       expect(school).to be_persisted

@@ -11,10 +11,7 @@ RSpec.describe School::WondeClasses do
   end
 
   before do
-    stub_request(:get, classes_url).to_return(
-      body: {"data" => [{"id" => "C1"}, {"id" => "C2"}],
-             "meta" => {"pagination" => {"next" => nil, "more" => false}}}.to_json
-    )
+    stub_request(:get, classes_url).to_return(body: wonde_page([{"id" => "C1"}, {"id" => "C2"}]))
   end
 
   it "yields the classes listed for the school" do
