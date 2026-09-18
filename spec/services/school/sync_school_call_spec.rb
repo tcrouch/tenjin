@@ -244,6 +244,32 @@ RSpec.describe School::SyncSchool do
     end
   end
 
+  # Teachers need accounts whatever an admin has mapped; pupils only have a use for one where a
+  # subject class exists for them to be placed in
+  context "when a class is not mapped to a subject" do
+    let(:school) { create(:school, client_id: "UNMAPPED", token: "a-token", sync_status: :successful) }
+    let!(:classroom) { create(:classroom, school: school, client_id: "C1", subject: nil) }
+
+    before do
+      stub_request(:get, "https://api.wonde.com/v1.0/schools/UNMAPPED/classes?cursor=true&include=students,employees&per_page=50")
+        .to_return(body: wonde_page([wonde_class("C1", students: [wonde_person(upi: "upi-pupil")],
+          employees: [wonde_person(upi: "upi-teacher")])]))
+      described_class.call(school)
+    end
+
+    it "creates an account for the teacher" do
+      expect(User.where(school: school, role: "employee").pluck(:upi)).to contain_exactly("upi-teacher")
+    end
+
+    it "creates no account for the pupil" do
+      expect(User.where(school: school, role: "student")).to be_empty
+    end
+
+    it "enrolls nobody" do
+      expect(classroom.reload.enrollments).to be_empty
+    end
+  end
+
   context "when a pupil is listed without a upi" do
     let(:school) { create(:school, client_id: "NOUPI", token: "a-token", sync_status: :successful) }
     let!(:classroom) { create(:classroom, school: school, client_id: "C1", subject: create(:subject)) }

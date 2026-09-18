@@ -15,10 +15,8 @@ RSpec.describe User do
     it { is_expected.to validate_presence_of :role }
   end
 
-  describe "#from_wonde" do
+  describe "accounts from Wonde" do
     include_context "with api_data"
-
-    let(:classroom) { create(:classroom) }
 
     before do
       school_api_data
@@ -29,16 +27,16 @@ RSpec.describe User do
         expect { create(:student, upi: "") }.to raise_error(ActiveRecord::RecordInvalid)
       end
 
-      context "when students are assigned to a mapped subject" do
+      context "with students listed" do
         before { classroom_api_data["students"] = user_api_data }
 
-        it "creates students for a mapped subject" do
-          described_class.from_wonde(school_api_data, classroom_api_data, classroom)
+        it "creates the students" do
+          described_class.students_from_wonde(school_api_data, classroom_api_data)
           expect(described_class.find_by!(role: "student").forename).to eq(user_api_data["data"][0]["forename"])
         end
 
         it "returns the ids of the users it saves" do
-          expect(described_class.from_wonde(school_api_data, classroom_api_data, classroom))
+          expect(described_class.students_from_wonde(school_api_data, classroom_api_data))
             .to contain_exactly(described_class.find_by!(role: "student").id)
         end
       end
@@ -59,7 +57,7 @@ RSpec.describe User do
           let(:students) { wonde_students(%w[Leo Ward]) }
 
           it "joins the initial, surname and four digits" do
-            described_class.from_wonde(school_api_data, classroom_api_data, classroom)
+            described_class.students_from_wonde(school_api_data, classroom_api_data)
             expect(usernames).to contain_exactly(match(/\Alward\d{4}\z/))
           end
         end
@@ -68,7 +66,7 @@ RSpec.describe User do
           let(:students) { wonde_students(["Jan", "Van Der Berg"]) }
 
           it "drops the spaces" do
-            described_class.from_wonde(school_api_data, classroom_api_data, classroom)
+            described_class.students_from_wonde(school_api_data, classroom_api_data)
             expect(usernames).to contain_exactly(match(/\Ajvanderberg\d{4}\z/))
           end
         end
@@ -77,7 +75,7 @@ RSpec.describe User do
           let(:students) { wonde_students(["Émile", "O'Brien-Núñez"]) }
 
           it "keeps only plain letters" do
-            described_class.from_wonde(school_api_data, classroom_api_data, classroom)
+            described_class.students_from_wonde(school_api_data, classroom_api_data)
             expect(usernames).to contain_exactly(match(/\Aeobriennunez\d{4}\z/))
           end
         end
@@ -86,7 +84,7 @@ RSpec.describe User do
           let(:students) { wonde_students(%w[Дмитрий Иванов]) }
 
           it "falls back to a fixed stem" do
-            described_class.from_wonde(school_api_data, classroom_api_data, classroom)
+            described_class.students_from_wonde(school_api_data, classroom_api_data)
             expect(usernames).to contain_exactly(match(/\Auser\d{4}\z/))
           end
         end
@@ -100,7 +98,7 @@ RSpec.describe User do
           end
 
           it "draws again" do
-            described_class.from_wonde(school_api_data, classroom_api_data, classroom)
+            described_class.students_from_wonde(school_api_data, classroom_api_data)
             expect(usernames).to contain_exactly("lward0042", "lward0007")
           end
         end
@@ -114,29 +112,20 @@ RSpec.describe User do
           end
 
           it "raises rather than drawing forever" do
-            expect { described_class.from_wonde(school_api_data, classroom_api_data, classroom) }
+            expect { described_class.students_from_wonde(school_api_data, classroom_api_data) }
               .to raise_error(RuntimeError, /No free username/)
           end
         end
       end
 
-      context "when employees are assigned to a mapped subject" do
+      context "with employees listed" do
         before do
           classroom_api_data["employees"] = user_api_data
         end
 
-        it "creates employees for a mapped subject" do
-          described_class.from_wonde(school_api_data, classroom_api_data, classroom)
+        it "creates the employees" do
+          described_class.employees_from_wonde(school_api_data, classroom_api_data)
           expect(described_class.find_by!(role: "employee").forename).to eq(user_api_data["data"][0]["forename"])
-        end
-      end
-
-      context "when the classroom subject is unmapped" do
-        before { classroom_api_data["subject"]["data"]["name"] = "Not a subject" }
-
-        it "creates no accounts" do
-          described_class.from_wonde(school_api_data, classroom_api_data, classroom)
-          expect(described_class.count).to be_zero
         end
       end
 
@@ -147,7 +136,8 @@ RSpec.describe User do
         end
 
         it "creates accounts for both employees and students" do
-          described_class.from_wonde(school_api_data, classroom_api_data, classroom)
+          described_class.students_from_wonde(school_api_data, classroom_api_data)
+          described_class.employees_from_wonde(school_api_data, classroom_api_data)
           expect(described_class.count).to eq(2)
         end
       end
@@ -167,7 +157,7 @@ RSpec.describe User do
         end
 
         it "preserves the existing username" do
-          described_class.from_wonde(school_api_data, classroom_api_data, classroom)
+          described_class.employees_from_wonde(school_api_data, classroom_api_data)
           expect(described_class.find_by!(upi: existing_upi).username).to eq("test")
         end
       end

@@ -88,12 +88,14 @@ class User < ApplicationRecord
     save
   end
 
-  # Returns the ids of every user the class lists, so the sync can tell who has left
-  def self.from_wonde(school, wonde_class, classroom)
-    ids = create_users(wonde_class, "employees", :employee, school)
-    return ids if classroom.subject.blank?
+  # Saves the employees a Wonde class lists; returns their ids so the sync can tell who has left
+  def self.employees_from_wonde(school, wonde_class)
+    create_users(wonde_class, "employees", :employee, school)
+  end
 
-    ids + create_users(wonde_class, "students", :student, school)
+  # Saves the students a Wonde class lists; returns their ids so the sync can tell who has left
+  def self.students_from_wonde(school, wonde_class)
+    create_users(wonde_class, "students", :student, school)
   end
 
   def seconds_left_on_cooldown

@@ -42,11 +42,13 @@ class School::SyncSchool < ApplicationService
     # so nobody is enrolled in it either, or finish_sync would lock out those it just placed
     return if wonde_class["subject"].blank?
 
-    user_ids = User.from_wonde(@school, wonde_class, classroom)
+    # Teachers get accounts from every class; pupils get accounts and places only from a class an
+    # admin has mapped to a subject
+    user_ids = User.employees_from_wonde(@school, wonde_class)
+    if classroom.subject_id.present?
+      user_ids += User.students_from_wonde(@school, wonde_class)
+      Enrollment.enroll(classroom, user_ids)
+    end
     @roster_user_ids.concat(user_ids)
-
-    return if classroom.subject.blank?
-
-    Enrollment.enroll(classroom, user_ids)
   end
 end
