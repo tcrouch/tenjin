@@ -49,11 +49,44 @@ RSpec.describe Quiz::CheckAnswer, :default_creates do
       create(:asked_question, quiz: quiz, question: short_answer_question)
     end
 
+    it "increments streak on a match ignoring case" do
+      answer = short_answer_question.answers.find_by!(correct: true)
+      expect {
+        described_class.call(quiz: quiz, question: short_answer_question, answer_given: {short_answer: answer.text.upcase})
+      }.to change { quiz.reload.streak }.by(1)
+    end
+
+    it "resets streak on a miss" do
+      quiz.update(streak: 3)
+      described_class.call(quiz: quiz, question: short_answer_question, answer_given: {short_answer: "not it"})
+      expect(quiz.reload.streak).to eq 0
+    end
+
     it "treats a blank submission as a wrong answer (success result, streak reset to 0)" do
       quiz.update(streak: 3)
       result = described_class.call(quiz: quiz, question: short_answer_question, answer_given: {short_answer: ""})
       expect(result).to be_success
       expect(quiz.reload.streak).to eq 0
+    end
+
+    context "with an answer flagged incorrect" do
+      let!(:rejected_answer) { create(:answer, question: short_answer_question, correct: false, text: "Ode to Autumn") }
+
+      it "does not accept it" do
+        quiz.update(streak: 3)
+        described_class.call(quiz: quiz, question: short_answer_question, answer_given: {short_answer: rejected_answer.text})
+        expect(quiz.reload.streak).to eq 0
+      end
+    end
+
+    context "with several accepted answers" do
+      let!(:other_answer) { create(:answer, question: short_answer_question, correct: true, text: "The Autumn") }
+
+      it "marks a submission matching any of them correct" do
+        expect {
+          described_class.call(quiz: quiz, question: short_answer_question, answer_given: {short_answer: other_answer.text})
+        }.to change { quiz.reload.streak }.by(1)
+      end
     end
   end
 end

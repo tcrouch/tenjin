@@ -39,10 +39,10 @@ class Quiz::CheckAnswer < ApplicationCommand
   end
 
   def check_short_answer
-    answer_text = Answer.where(question_id: @question).pick(:text)
-    return if answer_text.blank?
+    accepted = Answer.where(question_id: @question, correct: true).pluck(:text)
+    return if accepted.empty?
 
-    if @answer_given[:short_answer].casecmp(answer_text)&.zero?
+    if accepted.any? { |text| @answer_given[:short_answer].casecmp?(text) }
       process_correct_answer
     else
       process_incorrect_answer
