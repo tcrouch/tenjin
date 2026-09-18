@@ -119,6 +119,16 @@ RSpec.describe Wonderment::Client do
       end
     end
 
+    # The bearer token goes with every request, so a next URL is followed only within the API
+    it "refuses a next URL that leads off the API" do
+      stub_request(:get, first_page_url)
+        .to_return(body: wonde_page([{"id" => "A"}], "https://elsewhere.example/v1.0/schools/S1/classes?cursor=x"))
+
+      expect { client.each_page("schools", "S1", "classes", include: %w[students employees]) { nil } }
+        .to raise_error(Wonderment::Error, /outside/)
+      expect(a_request(:get, /elsewhere/)).not_to have_been_made
+    end
+
     it "raises when a page carries no pagination" do
       stub_request(:get, first_page_url).to_return(body: {"data" => []}.to_json)
 

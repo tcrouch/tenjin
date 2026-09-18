@@ -105,6 +105,8 @@ module Wonderment
 
       next_url = pagination["next"]
       raise Error.new("Wonde page promises more without a next URL", body: body) if next_url.to_s.empty?
+      # The bearer token goes with every request, so a URL leading off the API is never followed
+      raise Error.new("Wonde page names a next URL outside its API", body: body) unless next_url.start_with?(@base_url)
 
       next_url
     end
