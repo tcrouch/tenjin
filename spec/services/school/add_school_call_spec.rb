@@ -31,3 +31,20 @@ RSpec.describe School::AddSchool, :vcr do
     end
   end
 end
+
+RSpec.describe School::AddSchool do
+  # The id is typed by an admin, so whatever it holds must travel as one path segment
+  context "when the id carries a character with meaning in a URL" do
+    let(:school_params) { ActionController::Parameters.new(token: "a-token", client_id: "A852030759#x") }
+
+    before do
+      stub_request(:get, "https://api.wonde.com/v1.0/schools/A852030759%23x")
+        .to_return(body: {"data" => {"id" => "A852030759#x", "name" => "Mistyped School"}}.to_json)
+      described_class.call(school_params)
+    end
+
+    it "requests the school by the id as typed" do
+      expect(a_request(:get, "https://api.wonde.com/v1.0/schools/A852030759%23x")).to have_been_made
+    end
+  end
+end
