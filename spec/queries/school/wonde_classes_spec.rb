@@ -7,7 +7,7 @@ require "rails_helper"
 RSpec.describe School::WondeClasses do
   let(:school) { create(:school, client_id: "A852030759", token: "a-token") }
   let(:classes_url) do
-    "https://api.wonde.com/v1.0/schools/A852030759/classes?include=students,employees&per_page=50"
+    "https://api.wonde.com/v1.0/schools/A852030759/classes?cursor=true&include=students,employees&per_page=50"
   end
 
   before do

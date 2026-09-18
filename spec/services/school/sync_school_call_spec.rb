@@ -201,7 +201,7 @@ RSpec.describe School::SyncSchool do
     let(:school) { create(:school, client_id: "PAGED", token: "a-token", sync_status: :successful) }
     let(:quiz_subject) { create(:subject) }
     let(:first_page_url) do
-      "https://api.wonde.com/v1.0/schools/PAGED/classes?include=students,employees&per_page=50"
+      "https://api.wonde.com/v1.0/schools/PAGED/classes?cursor=true&include=students,employees&per_page=50"
     end
     # Wonde hands back an absolute next URL that repeats the original include and per_page
     let(:second_page_url) do

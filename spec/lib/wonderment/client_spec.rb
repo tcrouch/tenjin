@@ -6,8 +6,12 @@ RSpec.describe Wonderment::Client do
   subject(:client) { described_class.new("a-token") }
 
   let(:resource_url) { "https://api.wonde.com/v1.0/schools/S1" }
-  let(:first_page_url) { "https://api.wonde.com/v1.0/schools/S1/classes?include=students,employees&per_page=50" }
-  let(:second_page_url) { "https://api.wonde.com/v1.0/schools/S1/classes?include=students%2Cemployees&page=2&per_page=50" }
+  let(:first_page_url) do
+    "https://api.wonde.com/v1.0/schools/S1/classes?cursor=true&include=students,employees&per_page=50"
+  end
+  let(:second_page_url) do
+    "https://api.wonde.com/v1.0/schools/S1/classes?cursor=eyJtaXNfY2xhc3Nlcy5pZCI6MX0&include=students%2Cemployees&per_page=50"
+  end
 
   def page(records, next_url)
     {"data" => records,
@@ -49,6 +53,15 @@ RSpec.describe Wonderment::Client do
       client.each_page("schools/S1/classes", include: %w[students employees]) { |r| records << r }
 
       expect(records).to contain_exactly({"id" => "A"}, {"id" => "B"}, {"id" => "C"})
+    end
+
+    # Offset paging shifts when the MIS gains a class mid-sync, so a later page can skip
+    # pupils; they then miss the roster and finish_sync disables them. A cursor holds its
+    # place in a stable key order instead.
+    it "asks for cursor paging" do
+      client.each_page("schools/S1/classes", include: %w[students employees]) { nil }
+
+      expect(a_request(:get, first_page_url)).to have_been_made
     end
 
     it "stops once a page reports no more" do

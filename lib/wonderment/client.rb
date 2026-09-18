@@ -22,8 +22,11 @@ module Wonderment
     end
 
     # Yields every record of a listing, fetching pages as it goes and keeping none.
+    #
+    # Paging is by cursor: offset paging renumbers its pages when the MIS gains or loses a
+    # record mid-walk, and a listing that skips one loses the people on it.
     def each_page(path, **params)
-      url = url_for(path, params.merge(per_page: PAGE_SIZE))
+      url = url_for(path, params.merge(per_page: PAGE_SIZE, cursor: true))
 
       while url
         body = request(url)
