@@ -8,8 +8,8 @@ class CustomisationsController < ApplicationController
     @subjects = current_user.subjects
     @dashboard_style = find_dashboard_style
     @bought_customisations = CustomisationUnlock.where(user: current_user).pluck(:customisation_id)
-    @purchased_styles = Customisation.with_attached_image.where(id: @bought_customisations)
-    @available_styles = Customisation.with_attached_image.where(purchasable: true)
+    @purchased_styles = Customisation.with_image.where(id: @bought_customisations)
+    @available_styles = Customisation.with_image.where(purchasable: true)
       .where.not(id: @bought_customisations)
       .order(Arel.sql("RANDOM()"))
   end
