@@ -21,18 +21,16 @@ export default class extends Controller {
     }
     const payload = await response.json();
 
-    this._mark(payload.answer, guess);
+    this._mark(payload);
     if (this.hasQuizStatsOutlet) this.quizStatsOutlet.update(payload);
 
     this.nextButtonTarget.classList.remove("invisible");
     this.nextButtonTarget.focus();
   }
 
-  _mark(results, guess) {
+  // The server decides correctness; the answers are only for the reveal
+  _mark({ correct, answer }) {
     const button = this.submitButtonTarget;
-    const correct = results.some(
-      (r) => r.text.toUpperCase() === guess.toUpperCase(),
-    );
 
     if (correct) {
       button.classList.add("correct-answer");
@@ -43,18 +41,15 @@ export default class extends Controller {
       );
       return;
     }
-    if (results[0]) {
-      button.classList.add("incorrect-answer");
-      button.textContent = "Incorrect";
-      button.insertAdjacentHTML(
-        "beforeend",
-        '<i class="fas fa-times fa-lg float-right my-1 ms-2"></i>',
-      );
+    button.classList.add("incorrect-answer");
+    button.textContent = "Incorrect";
+    button.insertAdjacentHTML(
+      "beforeend",
+      '<i class="fas fa-times fa-lg float-right my-1 ms-2"></i>',
+    );
+    if (answer.length) {
       this.inputTarget.classList.add("correct-answer");
-      this.inputTarget.value =
-        results.length === 1
-          ? results[0].text
-          : results.map((r) => r.text).join(" or ");
+      this.inputTarget.value = answer.map((r) => r.text).join(" or ");
     }
   }
 }

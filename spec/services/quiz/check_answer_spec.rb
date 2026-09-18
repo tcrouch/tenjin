@@ -34,6 +34,16 @@ RSpec.describe Quiz::CheckAnswer, :default_creates do
     expect(quiz.reload.streak).to eq 0
   end
 
+  it "reports a correct verdict in the payload" do
+    result = described_class.call(quiz: quiz, question: question, answer_given: {id: correct_answer.id})
+    expect(result.payload.correct).to be true
+  end
+
+  it "reports an incorrect verdict in the payload" do
+    result = described_class.call(quiz: quiz, question: question, answer_given: {id: wrong_answer.id})
+    expect(result.payload.correct).to be false
+  end
+
   it "returns a failure when no answer id is provided for multiple choice" do
     result = described_class.call(quiz: quiz, question: question, answer_given: {id: nil})
     expect(result).to be_failure
@@ -53,6 +63,14 @@ RSpec.describe Quiz::CheckAnswer, :default_creates do
       answer = short_answer_question.answers.find_by!(correct: true)
       expect {
         described_class.call(quiz: quiz, question: short_answer_question, answer_given: {short_answer: answer.text.upcase})
+      }.to change { quiz.reload.streak }.by(1)
+    end
+
+    it "ignores surrounding and repeated whitespace" do
+      answer = short_answer_question.answers.find_by!(correct: true)
+      padded = "  #{answer.text.gsub(" ", "   ")}\t"
+      expect {
+        described_class.call(quiz: quiz, question: short_answer_question, answer_given: {short_answer: padded})
       }.to change { quiz.reload.streak }.by(1)
     end
 

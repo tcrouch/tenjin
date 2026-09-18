@@ -18,6 +18,7 @@ class Quiz::CheckAnswer < ApplicationCommand
 
     success(Quiz::CheckAnswerOutcome.new(
       question: @question,
+      correct: @asked_question.correct,
       streak: @quiz.streak,
       answered_correct: @quiz.answered_correct,
       multiplier: Multiplier.for_streak(@quiz.streak)
@@ -42,11 +43,17 @@ class Quiz::CheckAnswer < ApplicationCommand
     accepted = Answer.where(question_id: @question, correct: true).pluck(:text)
     return if accepted.empty?
 
-    if accepted.any? { |text| @answer_given[:short_answer].casecmp?(text) }
+    guess = normalise(@answer_given[:short_answer])
+    if accepted.any? { |text| guess.casecmp?(normalise(text)) }
       process_correct_answer
     else
       process_incorrect_answer
     end
+  end
+
+  # Stray spacing is never what separates a right answer from a wrong one
+  def normalise(text)
+    text.to_s.strip.gsub(/\s+/, " ")
   end
 
   def check_multiple_choice
