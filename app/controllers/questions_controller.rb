@@ -7,8 +7,11 @@ class QuestionsController < ApplicationController
 
   def index
     @subjects = policy_scope(Subject.with_role(:question_author, current_user).where(active: true))
-      .includes(topics: :questions)
+      .includes(:topics)
     raise Pundit::NotAuthorizedError if @subjects.blank?
+
+    @question_counts = Question.where(topic: Topic.where(subject_id: @subjects.map(&:id), active: true))
+      .group(:topic_id).count
   end
 
   def topic

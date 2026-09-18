@@ -22,6 +22,34 @@ RSpec.describe "questions controller", :default_creates do
         get questions_path
         expect(response).to have_http_status(:success)
       end
+
+      context "with a topic of three questions and an empty topic" do
+        let!(:questions) { create_list(:question, 3, topic: topic) }
+        let!(:empty_topic) { create(:topic, subject: quiz_subject) }
+
+        def topic_row(topic)
+          Capybara.string(response.body)
+            .find_link(href: topic_questions_path(topic_id: topic.id))
+            .ancestor("tr")
+        end
+
+        it "shows each topic's question count" do
+          get questions_path
+          expect(topic_row(topic)).to have_css("td:last-child", exact_text: "3")
+          expect(topic_row(empty_topic)).to have_css("td:last-child", exact_text: "0")
+        end
+
+        # Loading every question row to count them scales with the question bank, not the page
+        it "counts the questions in one query without loading them" do
+          question_queries = []
+          recorder = ->(*, payload) { question_queries << payload[:sql] if payload[:sql].include?('FROM "questions"') }
+          ActiveSupport::Notifications.subscribed(recorder, "sql.active_record") do
+            get questions_path
+          end
+
+          expect(question_queries).to contain_exactly(a_string_starting_with("SELECT COUNT"))
+        end
+      end
     end
   end
 
