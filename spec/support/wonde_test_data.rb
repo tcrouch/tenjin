@@ -3,12 +3,7 @@
 RSpec.shared_context "with wonde_test_data", shared_context: :metadata do
   let(:school_token) { "faketoken0000000000000000000000000000000" }
   let(:school_id) { "A852030759" }
-  let(:school_name) { "Outwood Grange Academy 1532082212" }
   let(:school_params) { ActionController::Parameters.new(token: school_token, client_id: school_id) }
-  let(:school) do
-    create(:school, client_id: school_id, name: school_name,
-      token: school_token, sync_status: "successful", permitted: true)
-  end
 
   let(:classroom_client_id) { "A1906124304" }
   let(:classroom_name) { "SOC 2" }

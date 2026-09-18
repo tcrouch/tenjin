@@ -118,7 +118,7 @@ RSpec.describe School::SyncSchool, :vcr do
     end
 
     it "links each student to the correct school" do
-      expect(User.find_by!(upi: student_upi).school.name).to eq(school_name)
+      expect(User.find_by!(upi: student_upi).school).to have_attributes(client_id: school_id)
     end
 
     it "leaves listed students enabled" do
