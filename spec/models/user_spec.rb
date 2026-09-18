@@ -123,7 +123,6 @@ RSpec.describe User do
       context "when employees are assigned to a mapped subject" do
         before do
           classroom_api_data["employees"] = user_api_data
-          allow(school_api).to receive(:get).and_return(contact_details_api_data)
         end
 
         it "creates employees for a mapped subject" do
@@ -145,7 +144,6 @@ RSpec.describe User do
         before do
           classroom_api_data["students"] = user_api_data
           classroom_api_data["employees"] = alt_user_api_data
-          allow(school_api).to receive(:get).and_return(contact_details_api_data)
         end
 
         it "creates accounts for both employees and students" do
@@ -166,7 +164,6 @@ RSpec.describe User do
             school: school_api_data
           )
           classroom_api_data["employees"] = user_api_data
-          allow(school_api).to receive(:get).and_return(contact_details_api_data)
         end
 
         it "preserves the existing username" do

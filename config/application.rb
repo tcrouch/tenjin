@@ -16,7 +16,7 @@ module Csquiz
     config.active_storage.variant_processor = :mini_magick
     config.yjit = false
 
-    config.autoload_lib(ignore: %w[assets tasks gem_ext])
+    config.autoload_lib(ignore: %w[assets tasks])
 
     config.action_mailer.delivery_method = :ses
     config.action_mailer.asset_host = ENV["ASSET_HOST"]

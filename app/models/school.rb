@@ -19,8 +19,8 @@ class School < ApplicationRecord
   SYNC_EXEMPT_ROLES = %w[school_admin question_author lesson_author].freeze
 
   def self.from_wonde(client_school, token)
-    school = where(client_id: client_school.id).first_or_initialize
-    school.name = client_school.name
+    school = where(client_id: client_school["id"]).first_or_initialize
+    school.name = client_school["name"]
     school.token = token
     school.sync_status = :never
     school.save!

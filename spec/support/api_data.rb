@@ -2,7 +2,7 @@
 
 RSpec.shared_context "with api_data", shared_context: :metadata do
   let(:school_api_data) do
-    School.from_wonde(OpenStruct.new(id: SecureRandom.hex, name: FFaker::Education.school), SecureRandom.hex)
+    School.from_wonde({"id" => SecureRandom.hex, "name" => FFaker::Education.school}, SecureRandom.hex)
   end
 
   # Class payloads reach the models as parsed JSON, so the fixtures are plain hashes
@@ -23,15 +23,6 @@ RSpec.shared_context "with api_data", shared_context: :metadata do
   end
   let(:classroom_api_data) do
     {"id" => SecureRandom.hex, "subject" => subject_api_data, "code" => FFaker::Lorem.word}
-  end
-
-  let(:school_api) { instance_double(Wonde::Employees) }
-  let(:employee_email) { FFaker::Internet.email }
-  let(:contact_details_api_data) do
-    OpenStruct.new(contact_details: OpenStruct.new(data: OpenStruct.new(emails: OpenStruct.new(email: employee_email))))
-  end
-  let(:contact_details_no_email_api_data) do
-    OpenStruct.new(contact_details: OpenStruct.new(data: OpenStruct.new(emails: OpenStruct.new)))
   end
 end
 
