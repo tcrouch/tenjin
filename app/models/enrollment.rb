@@ -9,12 +9,13 @@ class Enrollment < ApplicationRecord
 
   validates :user, uniqueness: {scope: :classroom_id}
 
-  # Enrolls everyone the Wonde class lists who has an account. A sync calls this once per class
-  # after start_sync has emptied the school's enrollments, so the rows go in with one insert.
-  def self.from_wonde(wonde_class, classroom)
-    upis = %w[students employees].flat_map { |people| wonde_class.dig(people, "data").to_a.pluck("upi") }
-    rows = User.where(upi: upis).pluck(:id).map { |user_id| {classroom_id: classroom.id, user_id: user_id} }
-    enrolled = rows.empty? ? 0 : insert_all(rows, unique_by: %i[classroom_id user_id]).length
-    classroom.update_columns(enrollments_count: enrolled, disabled: enrolled.zero?)
+  # Enrolls the users the sync has just saved from one class. start_sync has emptied the school's
+  # enrollments, so the rows go in with one insert; the count is then read back rather than taken
+  # from the insert, which reports nothing for a row already present.
+  def self.enroll(classroom, user_ids)
+    rows = user_ids.uniq.map { |user_id| {classroom_id: classroom.id, user_id: user_id} }
+    insert_all(rows, unique_by: %i[classroom_id user_id]) if rows.any?
+    count = where(classroom: classroom).count
+    classroom.update_columns(enrollments_count: count, disabled: count.zero?)
   end
 end

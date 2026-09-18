@@ -36,13 +36,13 @@ RSpec.describe Enrollment do
     end
   end
 
-  describe ".from_wonde" do
+  describe ".enroll" do
     let(:classroom) { create(:classroom) }
-    let!(:pupil) { create(:student, school: classroom.school, upi: "upi-pupil") }
-    let!(:teacher) { create(:teacher, school: classroom.school, upi: "upi-teacher") }
+    let(:pupil) { create(:student, school: classroom.school) }
+    let(:teacher) { create(:teacher, school: classroom.school) }
 
-    context "with a pupil and a teacher listed" do
-      before { described_class.from_wonde(wonde_class("C1", students: [wonde_person(upi: "upi-pupil")], employees: [wonde_person(upi: "upi-teacher")]), classroom) }
+    context "with a pupil and a teacher" do
+      before { described_class.enroll(classroom, [pupil.id, teacher.id]) }
 
       it "enrolls both" do
         expect(classroom.reload.users).to contain_exactly(pupil, teacher)
@@ -58,16 +58,26 @@ RSpec.describe Enrollment do
       end
     end
 
-    context "with someone listed who has no account" do
-      before { described_class.from_wonde(wonde_class("C1", students: [wonde_person(upi: "upi-pupil"), wonde_person(upi: "upi-unknown")]), classroom) }
+    context "with the same user given twice" do
+      before { described_class.enroll(classroom, [pupil.id, pupil.id]) }
 
-      it "enrolls only those with accounts" do
+      it "enrolls them once" do
         expect(classroom.reload.users).to contain_exactly(pupil)
       end
     end
 
-    context "with nobody listed" do
-      before { described_class.from_wonde(wonde_class("C1"), classroom) }
+    context "with an enrollment already in place" do
+      let!(:existing_enrollment) { create(:enrollment, classroom: classroom, user: teacher) }
+
+      before { described_class.enroll(classroom, [pupil.id]) }
+
+      it "counts it alongside the new one" do
+        expect(classroom.reload.enrollments_count).to eq(2)
+      end
+    end
+
+    context "with nobody" do
+      before { described_class.enroll(classroom, []) }
 
       it "creates no enrollments" do
         expect(classroom.reload.enrollments).to be_empty
@@ -79,12 +89,13 @@ RSpec.describe Enrollment do
     end
 
     # A sync runs this once per class over a roster start_sync has just emptied, so a class
-    # costs one statement however many people it lists
+    # costs one insert however many people it lists
     it "enrolls the whole class in one insert" do
+      user_ids = [pupil.id, teacher.id]
       inserts = 0
       counter = ->(_name, _start, _finish, _id, payload) { inserts += 1 if payload[:sql].start_with?("INSERT") }
       ActiveSupport::Notifications.subscribed(counter, "sql.active_record") do
-        described_class.from_wonde(wonde_class("C1", students: [wonde_person(upi: "upi-pupil")], employees: [wonde_person(upi: "upi-teacher")]), classroom)
+        described_class.enroll(classroom, user_ids)
       end
 
       expect(inserts).to eq(1)

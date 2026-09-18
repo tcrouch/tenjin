@@ -36,10 +36,11 @@ class School::SyncSchool < ApplicationService
     # so nobody is enrolled in it either, or finish_sync would lock out those it just placed
     return if wonde_class["subject"].blank?
 
-    @roster_user_ids.concat(User.from_wonde(@school, wonde_class, classroom))
+    user_ids = User.from_wonde(@school, wonde_class, classroom)
+    @roster_user_ids.concat(user_ids)
 
     return if classroom.subject.blank?
 
-    Enrollment.from_wonde(wonde_class, classroom)
+    Enrollment.enroll(classroom, user_ids)
   end
 end

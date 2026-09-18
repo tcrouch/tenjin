@@ -246,6 +246,24 @@ RSpec.describe School::SyncSchool do
     end
   end
 
+  context "when a pupil is listed without a upi" do
+    let(:school) { create(:school, client_id: "NOUPI", token: "a-token", sync_status: :successful) }
+    let!(:classroom) { create(:classroom, school: school, client_id: "C1", subject: create(:subject)) }
+    let!(:stray_user) { create(:student, :without_upi) }
+
+    before do
+      stub_request(:get, "https://api.wonde.com/v1.0/schools/NOUPI")
+        .to_return(body: {"data" => {"id" => "NOUPI"}}.to_json)
+      stub_request(:get, "https://api.wonde.com/v1.0/schools/NOUPI/classes?cursor=true&include=students,employees&per_page=50")
+        .to_return(body: wonde_page([wonde_class("C1", students: [wonde_person(upi: nil), wonde_person(upi: "upi-ok")])]))
+      described_class.call(school)
+    end
+
+    it "enrolls only the pupils with a upi" do
+      expect(classroom.reload.users.pluck(:upi)).to contain_exactly("upi-ok")
+    end
+  end
+
   context "when the school record no longer passes validation" do
     let(:school) { create(:school, sync_status: :successful) }
 
