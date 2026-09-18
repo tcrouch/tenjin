@@ -194,6 +194,55 @@ RSpec.describe School::SyncSchool do
       expect(school.reload).to be_failed
     end
   end
+
+  # Delayed Job retries the raise, so a roster wiped before the first request would be wiped again
+  # on every attempt
+  context "when Wonde refuses the school's token" do
+    let(:school) { create(:school, sync_status: :successful) }
+    let(:classroom) { create(:classroom, school: school, subject: create(:subject)) }
+    let!(:enrollment) { create(:enrollment, classroom: classroom, user: create(:student, school: school)) }
+
+    before do
+      stub_request(:get, /wonde/).to_return(status: 401)
+      described_class.call(school)
+    rescue Wonderment::Error
+      nil
+    end
+
+    it "leaves the enrollments in place" do
+      expect(Enrollment.exists?(enrollment.id)).to be true
+    end
+
+    it "leaves the classrooms enabled" do
+      expect(classroom.reload).not_to be_disabled
+    end
+
+    it "marks the school failed" do
+      expect(school.reload).to be_failed
+    end
+  end
+
+  context "when the school record no longer passes validation" do
+    let(:school) { create(:school, sync_status: :successful) }
+
+    before do
+      school.update_column(:name, "")
+      stub_request(:get, /wonde/).to_return(status: 503)
+    end
+
+    it "lets the Wonde error through rather than the validation one" do
+      expect { described_class.call(school) }.to raise_error(Wonderment::Error)
+    end
+
+    it "still marks the school failed" do
+      begin
+        described_class.call(school)
+      rescue Wonderment::Error
+        nil
+      end
+      expect(school.reload).to be_failed
+    end
+  end
 end
 
 RSpec.describe School::SyncSchool do
@@ -227,6 +276,8 @@ RSpec.describe School::SyncSchool do
     end
 
     before do
+      stub_request(:get, "https://api.wonde.com/v1.0/schools/PAGED")
+        .to_return(body: {"data" => {"id" => "PAGED"}}.to_json)
       stub_request(:get, first_page_url)
         .to_return(body: page([wonde_class("C1", [pupil("upi-page-1")])], second_page_url))
       stub_request(:get, second_page_url)

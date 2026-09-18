@@ -9,17 +9,25 @@ class School::SyncSchool < ApplicationService
     # A second job queued behind a running sync must not start over it
     return if @school.syncing? && !@school.sync_stalled?
 
+    confirm_access
     @roster_user_ids = []
     @school.start_sync
     School::WondeClasses.new(@school).each { |wonde_class| sync_class(wonde_class) }
     @school.finish_sync(@roster_user_ids)
   rescue
-    # Left as syncing, the guard above would turn Delayed Job's retries of the raise into no-ops
-    @school.update!(sync_status: :failed)
+    # Left as syncing, the guard above would turn Delayed Job's retries of the raise into no-ops;
+    # the columns are written directly so a validation failure cannot displace the error raised
+    @school.update_columns(sync_status: :failed)
     raise
   end
 
   protected
+
+  # A token or school id Wonde refuses must fail here, before start_sync empties the roster,
+  # or every retry of the job would empty it again
+  def confirm_access
+    Wonderment::Client.new(@school.token).get("schools/#{@school.client_id}")
+  end
 
   def sync_class(wonde_class)
     classroom = Classroom.from_wonde(@school, wonde_class)
