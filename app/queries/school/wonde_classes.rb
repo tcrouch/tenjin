@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
-# The classes Wonde lists for a school, each with the people enrolled in it.
+# The classes Wonde lists for a school, each with the people enrolled in it. Nothing is
+# memoized: holding a roster in the worker is what this query exists to avoid.
 class School::WondeClasses
   include Enumerable
 
