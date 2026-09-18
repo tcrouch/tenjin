@@ -230,8 +230,6 @@ RSpec.describe School::SyncSchool do
     let!(:pupil) { create(:student, school: school, upi: "upi-reg") }
 
     before do
-      stub_request(:get, "https://api.wonde.com/v1.0/schools/NOSUBJ")
-        .to_return(body: {"data" => {"id" => "NOSUBJ"}}.to_json)
       stub_request(:get, "https://api.wonde.com/v1.0/schools/NOSUBJ/classes?cursor=true&include=students,employees&per_page=50")
         .to_return(body: wonde_page([wonde_class("REG", subject: nil, students: [wonde_person(upi: "upi-reg")])]))
       described_class.call(school)
@@ -252,8 +250,6 @@ RSpec.describe School::SyncSchool do
     let!(:stray_user) { create(:student, :without_upi) }
 
     before do
-      stub_request(:get, "https://api.wonde.com/v1.0/schools/NOUPI")
-        .to_return(body: {"data" => {"id" => "NOUPI"}}.to_json)
       stub_request(:get, "https://api.wonde.com/v1.0/schools/NOUPI/classes?cursor=true&include=students,employees&per_page=50")
         .to_return(body: wonde_page([wonde_class("C1", students: [wonde_person(upi: nil), wonde_person(upi: "upi-ok")])]))
       described_class.call(school)
@@ -261,6 +257,47 @@ RSpec.describe School::SyncSchool do
 
     it "enrolls only the pupils with a upi" do
       expect(classroom.reload.users.pluck(:upi)).to contain_exactly("upi-ok")
+    end
+  end
+
+  context "when Wonde refuses the classes listing but not the school" do
+    let(:school) { create(:school, client_id: "SCOPED", token: "a-token", sync_status: :successful) }
+    let(:classroom) { create(:classroom, school: school, subject: create(:subject)) }
+    let!(:enrollment) { create(:enrollment, classroom: classroom, user: create(:student, school: school)) }
+
+    before do
+      stub_request(:get, "https://api.wonde.com/v1.0/schools/SCOPED/classes?cursor=true&include=students,employees&per_page=50")
+        .to_return(status: 403)
+      described_class.call(school)
+    rescue Wonderment::Error
+      nil
+    end
+
+    it "leaves the enrollments in place" do
+      expect(Enrollment.exists?(enrollment.id)).to be true
+    end
+
+    it "leaves the classrooms enabled" do
+      expect(classroom.reload).not_to be_disabled
+    end
+  end
+
+  context "when Wonde lists no classes" do
+    let(:school) { create(:school, client_id: "EMPTY", token: "a-token", sync_status: :successful) }
+    let!(:classroom) { create(:classroom, school: school, subject: create(:subject)) }
+
+    before do
+      stub_request(:get, "https://api.wonde.com/v1.0/schools/EMPTY/classes?cursor=true&include=students,employees&per_page=50")
+        .to_return(body: wonde_page([]))
+      described_class.call(school)
+    end
+
+    it "disables every classroom" do
+      expect(classroom.reload).to be_disabled
+    end
+
+    it "records the sync as successful" do
+      expect(school.reload).to be_successful
     end
   end
 
@@ -304,8 +341,6 @@ RSpec.describe School::SyncSchool do
     let!(:second_page_pupil) { create(:student, school: school, upi: "upi-page-2") }
 
     before do
-      stub_request(:get, "https://api.wonde.com/v1.0/schools/PAGED")
-        .to_return(body: {"data" => {"id" => "PAGED"}}.to_json)
       stub_request(:get, first_page_url)
         .to_return(body: wonde_page([wonde_class("C1", students: [wonde_person(upi: "upi-page-1")])], second_page_url))
       stub_request(:get, second_page_url)

@@ -9,10 +9,13 @@ class School::SyncSchool < ApplicationService
     # A second job queued behind a running sync must not start over it
     return if @school.syncing? && !@school.sync_stalled?
 
-    confirm_access
     @roster_user_ids = []
-    @school.start_sync
-    School::WondeClasses.new(@school).each { |wonde_class| sync_class(wonde_class) }
+    @started = false
+    School::WondeClasses.new(@school).each do |wonde_class|
+      start_sync_once
+      sync_class(wonde_class)
+    end
+    start_sync_once
     @school.finish_sync(@roster_user_ids)
   rescue
     # Left as syncing, the guard above would turn Delayed Job's retries of the raise into no-ops;
@@ -23,10 +26,13 @@ class School::SyncSchool < ApplicationService
 
   protected
 
-  # A token or school id Wonde refuses must fail here, before start_sync empties the roster,
-  # or every retry of the job would empty it again
-  def confirm_access
-    Wonderment::Client.new(@school.token).get("schools/#{@school.client_id}")
+  # The first class arrives only once Wonde has answered the first page, so a listing it refuses
+  # fails before start_sync empties the roster, and every retry of the job leaves it alone too
+  def start_sync_once
+    return if @started
+
+    @school.start_sync
+    @started = true
   end
 
   def sync_class(wonde_class)
