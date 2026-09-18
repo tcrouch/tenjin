@@ -13,6 +13,6 @@ class School::WondeClasses
   end
 
   def each(&block)
-    @client.each_page("schools/#{@school.client_id}/classes", include: INCLUDES, &block)
+    @client.each_page("schools", @school.client_id, "classes", include: INCLUDES, &block)
   end
 end

@@ -7,8 +7,7 @@ class School::AddSchool < ApplicationService
   end
 
   def call
-    # The id is typed by an admin, so it is escaped to stay one path segment whatever it holds
-    school_from_client = Wonderment::Client.new(@client_token).get("schools/#{ERB::Util.url_encode(@school_id)}")
+    school_from_client = Wonderment::Client.new(@client_token).get("schools", @school_id)
     school = School.from_wonde(school_from_client, @client_token)
     school.permitted = true
     school.save!

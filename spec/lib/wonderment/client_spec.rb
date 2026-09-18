@@ -17,20 +17,35 @@ RSpec.describe Wonderment::Client do
     before { stub_request(:get, resource_url).to_return(body: {"data" => {"id" => "S1"}}.to_json) }
 
     it "returns the data payload" do
-      expect(client.get("schools/S1")).to eq({"id" => "S1"})
+      expect(client.get("schools", "S1")).to eq({"id" => "S1"})
     end
 
     it "authenticates as the bearer of the token" do
-      client.get("schools/S1")
+      client.get("schools", "S1")
 
       expect(a_request(:get, resource_url)
         .with(headers: {"Authorization" => "Bearer a-token"})).to have_been_made
     end
 
+    # Ids are typed by admins and stored from Wonde's replies, so each travels as one segment
+    it "escapes each path segment" do
+      stub_request(:get, "https://api.wonde.com/v1.0/schools/A%2F1").to_return(body: {"data" => {}}.to_json)
+
+      client.get("schools", "A/1")
+
+      expect(a_request(:get, "https://api.wonde.com/v1.0/schools/A%2F1")).to have_been_made
+    end
+
+    # An empty id would address the listing above it, a different resource altogether
+    it "refuses a blank segment" do
+      expect { client.get("schools", "") }.to raise_error(ArgumentError, /blank/)
+      expect(a_request(:get, /wonde/)).not_to have_been_made
+    end
+
     # Net::HTTP negotiates its own Accept-Encoding and decompresses the reply. Setting the
     # header to a bare "gzip", as Wonde's curl example does, leaves the body compressed.
     it "leaves Accept-Encoding to the adapter" do
-      client.get("schools/S1")
+      client.get("schools", "S1")
 
       expect(a_request(:get, resource_url)
         .with { |req| req.headers["Accept-Encoding"] != "gzip" }).to have_been_made
@@ -45,7 +60,7 @@ RSpec.describe Wonderment::Client do
 
     it "yields every record across every page" do
       records = []
-      client.each_page("schools/S1/classes", include: %w[students employees]) { |r| records << r }
+      client.each_page("schools", "S1", "classes", include: %w[students employees]) { |r| records << r }
 
       expect(records).to contain_exactly({"id" => "A"}, {"id" => "B"}, {"id" => "C"})
     end
@@ -54,13 +69,13 @@ RSpec.describe Wonderment::Client do
     # pupils; they then miss the roster and finish_sync disables them. A cursor holds its
     # place in a stable key order instead.
     it "asks for cursor paging" do
-      client.each_page("schools/S1/classes", include: %w[students employees]) { nil }
+      client.each_page("schools", "S1", "classes", include: %w[students employees]) { nil }
 
       expect(a_request(:get, first_page_url)).to have_been_made
     end
 
     it "stops once a page reports no more" do
-      client.each_page("schools/S1/classes", include: %w[students employees]) { nil }
+      client.each_page("schools", "S1", "classes", include: %w[students employees]) { nil }
 
       expect(a_request(:get, second_page_url)).to have_been_made.once
     end
@@ -76,7 +91,7 @@ RSpec.describe Wonderment::Client do
         {body: wonde_page([{"id" => "C"}])}
       end
 
-      client.each_page("schools/S1/classes", include: %w[students employees]) do |record|
+      client.each_page("schools", "S1", "classes", include: %w[students employees]) do |record|
         probe[record] = true if probe.size.zero?
       end
 
@@ -84,7 +99,7 @@ RSpec.describe Wonderment::Client do
     end
 
     it "fetches no page beyond what an enumerator consumes" do
-      records = client.each_page("schools/S1/classes", include: %w[students employees]).first(2)
+      records = client.each_page("schools", "S1", "classes", include: %w[students employees]).first(2)
 
       expect(records).to eq([{"id" => "A"}, {"id" => "B"}])
       expect(a_request(:get, second_page_url)).not_to have_been_made
@@ -99,7 +114,7 @@ RSpec.describe Wonderment::Client do
         stub_request(:get, first_page_url)
           .to_return(body: {"data" => [], "meta" => {"pagination" => pagination}}.to_json)
 
-        expect { client.each_page("schools/S1/classes", include: %w[students employees]) { nil } }
+        expect { client.each_page("schools", "S1", "classes", include: %w[students employees]) { nil } }
           .to raise_error(Wonderment::Error, /promises more/)
       end
     end
@@ -107,7 +122,7 @@ RSpec.describe Wonderment::Client do
     it "raises when a page carries no pagination" do
       stub_request(:get, first_page_url).to_return(body: {"data" => []}.to_json)
 
-      expect { client.each_page("schools/S1/classes", include: %w[students employees]) { nil } }
+      expect { client.each_page("schools", "S1", "classes", include: %w[students employees]) { nil } }
         .to raise_error(Wonderment::Error, /no pagination/)
     end
   end
@@ -116,13 +131,13 @@ RSpec.describe Wonderment::Client do
     it "raises on an error status" do
       stub_request(:get, resource_url).to_return(status: 503)
 
-      expect { client.get("schools/S1") }.to raise_error(Wonderment::Error, "Wonde responded 503")
+      expect { client.get("schools", "S1") }.to raise_error(Wonderment::Error, "Wonde responded 503")
     end
 
     it "carries the status and body for a rescuer to inspect" do
       stub_request(:get, resource_url).to_return(status: 422, body: "invalid include")
 
-      expect { client.get("schools/S1") }
+      expect { client.get("schools", "S1") }
         .to raise_error(an_object_having_attributes(status: 422, body: "invalid include"))
     end
 
@@ -130,26 +145,26 @@ RSpec.describe Wonderment::Client do
     it "raises when Wonde does not answer in time" do
       stub_request(:get, resource_url).to_timeout
 
-      expect { client.get("schools/S1") }.to raise_error(Wonderment::Error, /did not answer/)
+      expect { client.get("schools", "S1") }.to raise_error(Wonderment::Error, /did not answer/)
     end
 
     it "raises when Wonde cannot be reached" do
       stub_request(:get, resource_url).to_raise(Errno::ECONNREFUSED)
 
-      expect { client.get("schools/S1") }.to raise_error(Wonderment::Error, /did not answer/)
+      expect { client.get("schools", "S1") }.to raise_error(Wonderment::Error, /did not answer/)
     end
 
     # A proxy's maintenance page comes back 200 and as HTML
     it "raises when the reply is not JSON" do
       stub_request(:get, resource_url).to_return(body: "<html>Down for maintenance</html>")
 
-      expect { client.get("schools/S1") }.to raise_error(Wonderment::Error, /not JSON/)
+      expect { client.get("schools", "S1") }.to raise_error(Wonderment::Error, /not JSON/)
     end
 
     it "raises when the reply carries no data payload" do
       stub_request(:get, resource_url).to_return(body: {"error" => "nothing here"}.to_json)
 
-      expect { client.get("schools/S1") }.to raise_error(Wonderment::Error, /data payload/)
+      expect { client.get("schools", "S1") }.to raise_error(Wonderment::Error, /data payload/)
     end
   end
 end

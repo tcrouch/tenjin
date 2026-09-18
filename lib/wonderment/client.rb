@@ -18,19 +18,19 @@ module Wonderment
       @base_url = base_url
     end
 
-    # The `data` payload of a single resource.
-    def get(path, **params)
-      request(url_for(path, params)).fetch("data")
+    # The `data` payload of a single resource, addressed by path segments: get("schools", id)
+    def get(*segments, **params)
+      request(url_for(segments, params)).fetch("data")
     end
 
     # Yields every record of a listing, fetching pages as it goes and keeping none.
     #
     # Paging is by cursor: offset paging renumbers its pages when the MIS gains or loses a
     # record mid-walk, and a listing that skips one loses the people on it.
-    def each_page(path, **params)
-      return enum_for(__method__, path, **params) unless block_given?
+    def each_page(*segments, **params)
+      return enum_for(__method__, *segments, **params) unless block_given?
 
-      url = url_for(path, params.merge(per_page: PAGE_SIZE, cursor: true))
+      url = url_for(segments, params.merge(per_page: PAGE_SIZE, cursor: true))
       while url
         url = yield_page(url) { |record| yield record }
       end
@@ -80,11 +80,19 @@ module Wonderment
       raise Error.new("Wonde answered with something not JSON", status: response.status, body: response.body)
     end
 
-    def url_for(path, params)
+    def url_for(segments, params)
+      path = segments.map { |segment| path_segment(segment) }.join("/")
       query = params.compact.transform_values { |value| Array(value).join(",") }
       return "#{@base_url}#{path}" if query.empty?
 
       "#{@base_url}#{path}?#{URI.encode_www_form(query)}"
+    end
+
+    # A blank segment would address the listing above it, a different resource altogether
+    def path_segment(segment)
+      raise ArgumentError, "blank path segment" if segment.to_s.strip.empty?
+
+      URI.encode_uri_component(segment.to_s)
     end
 
     # Wonde's next URL repeats the original include and per_page, so it is followed as given.
