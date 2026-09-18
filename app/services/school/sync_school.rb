@@ -32,6 +32,10 @@ class School::SyncSchool < ApplicationService
   def sync_class(wonde_class)
     classroom = Classroom.from_wonde(@school, wonde_class)
 
+    # A class Wonde gives no subject is a registration group: nobody on it joins the roster,
+    # so nobody is enrolled in it either, or finish_sync would lock out those it just placed
+    return if wonde_class["subject"].blank?
+
     @roster_user_ids.concat(User.from_wonde(@school, wonde_class, classroom))
 
     return if classroom.subject.blank?

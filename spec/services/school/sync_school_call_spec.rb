@@ -222,6 +222,35 @@ RSpec.describe School::SyncSchool do
     end
   end
 
+  # Wonde's classes include registration groups with no subject; nobody on one is put on the
+  # roster, so enrolling them would hand out places the same sync then locks
+  context "when an admin has mapped a class that Wonde gives no subject" do
+    let(:school) { create(:school, client_id: "NOSUBJ", token: "a-token", sync_status: :successful) }
+    let!(:classroom) { create(:classroom, school: school, client_id: "REG", subject: create(:subject)) }
+    let!(:pupil) { create(:student, school: school, upi: "upi-reg") }
+
+    before do
+      stub_request(:get, "https://api.wonde.com/v1.0/schools/NOSUBJ")
+        .to_return(body: {"data" => {"id" => "NOSUBJ"}}.to_json)
+      stub_request(:get, "https://api.wonde.com/v1.0/schools/NOSUBJ/classes?cursor=true&include=students,employees&per_page=50")
+        .to_return(body: {
+          "data" => [{"id" => "REG", "name" => "Registration", "code" => nil, "description" => nil,
+                      "subject" => nil, "employees" => {"data" => []},
+                      "students" => {"data" => [{"id" => "p1", "upi" => "upi-reg", "forename" => "Pat", "surname" => "Pupil"}]}}],
+          "meta" => {"pagination" => {"next" => nil, "more" => false}}
+        }.to_json)
+      described_class.call(school)
+    end
+
+    it "enrolls nobody in it" do
+      expect(classroom.reload.enrollments).to be_empty
+    end
+
+    it "keeps the pupil off the roster" do
+      expect(pupil.reload).to be_disabled
+    end
+  end
+
   context "when the school record no longer passes validation" do
     let(:school) { create(:school, sync_status: :successful) }
 

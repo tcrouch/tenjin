@@ -90,10 +90,10 @@ class User < ApplicationRecord
 
   # Returns the ids of every user the class lists, so the sync can tell who has left
   def self.from_wonde(school, wonde_class, classroom)
-    ids = create_employee_users(wonde_class, school)
+    ids = create_users(wonde_class, "employees", :employee, school)
     return ids if classroom.subject.blank?
 
-    ids + create_student_users(wonde_class, school)
+    ids + create_users(wonde_class, "students", :student, school)
   end
 
   def seconds_left_on_cooldown
@@ -105,18 +105,7 @@ class User < ApplicationRecord
   class << self
     private
 
-    def create_student_users(wonde_class, school)
-      create_users(wonde_class, "students", :student, school)
-    end
-
-    def create_employee_users(wonde_class, school)
-      create_users(wonde_class, "employees", :employee, school)
-    end
-
     def create_users(wonde_class, collection, role, school)
-      # A class Wonde maps to no subject carries nobody this app has a use for
-      return [] if wonde_class["subject"].blank?
-
       people = wonde_class.dig(collection, "data")
       return [] if people.blank?
 
