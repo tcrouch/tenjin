@@ -33,8 +33,8 @@ gem "delayed_job_active_record"
 gem "aws-sdk-s3", "~> 1"
 gem "aws-sdk-rails", "~> 3"
 
-# Wonde API client
-gem "wondeclient", "~> 0.1.3"
+# HTTP for lib/wonderment, this app's Wonde API client
+gem "faraday", "~> 2.14"
 
 # Templates
 gem "slim"

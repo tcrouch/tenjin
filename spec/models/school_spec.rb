@@ -77,6 +77,26 @@ RSpec.describe School do
       it "destroys all enrollments" do
         expect(Enrollment.where(classroom: classroom)).to be_empty
       end
+
+      it "resets the classroom enrollment count" do
+        expect(classroom.reload.enrollments_count).to be_zero
+      end
+    end
+
+    context "with another school also holding enrollments" do
+      let(:other_school) { create(:school) }
+      let!(:other_classroom) { create(:classroom, school: other_school) }
+      let!(:other_enrollment) { create(:enrollment, classroom: other_classroom) }
+
+      before { school.start_sync }
+
+      it "leaves the other school enrolled" do
+        expect(Enrollment.where(classroom: other_classroom)).to contain_exactly(other_enrollment)
+      end
+
+      it "leaves the other school enrollment count intact" do
+        expect(other_classroom.reload.enrollments_count).to eq(1)
+      end
     end
   end
 
@@ -165,7 +185,7 @@ RSpec.describe School do
   end
 
   describe "#from_wonde" do
-    let(:school) { described_class.from_wonde(OpenStruct.new(id: "1234", name: "test"), "token") }
+    let(:school) { described_class.from_wonde({"id" => "1234", "name" => "test"}, "token") }
 
     it "persists the school" do
       expect(school).to be_persisted

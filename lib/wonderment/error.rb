@@ -1,0 +1,15 @@
+# frozen_string_literal: true
+
+# This app's client for the Wonde MIS API
+module Wonderment
+  # Raised when Wonde answers with an error status or does not answer at all.
+  class Error < StandardError
+    attr_reader :status, :body
+
+    def initialize(message, status: nil, body: nil)
+      @status = status
+      @body = body
+      super(message)
+    end
+  end
+end

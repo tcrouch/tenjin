@@ -1,12 +1,8 @@
 # frozen_string_literal: true
 
-require "wondeclient"
-
 class School::SyncSchool < ApplicationService
   def initialize(school)
     @school = school
-    @client = Wonde::Client.new(school.token)
-    @school_api = @client.school(school.client_id)
   end
 
   def call
@@ -14,31 +10,45 @@ class School::SyncSchool < ApplicationService
     return if @school.syncing? && !@school.sync_stalled?
 
     @roster_user_ids = []
-    @school.start_sync
-    fetch_class_data
+    @started = false
+    School::WondeClasses.new(@school).each do |wonde_class|
+      start_sync_once
+      sync_class(wonde_class)
+    end
+    start_sync_once
     @school.finish_sync(@roster_user_ids)
   rescue
-    # Left as syncing, the guard above would turn Delayed Job's retries of the raise into no-ops
-    @school.update!(sync_status: :failed)
+    # Left as syncing, the guard above would turn Delayed Job's retries of the raise into no-ops;
+    # the columns are written directly so a validation failure cannot displace the error raised
+    @school.update_columns(sync_status: :failed)
     raise
   end
 
   protected
 
-  def fetch_class_data
-    @school_api.classes.all(%w[students employees]).each do |data|
-      @sync_data = data
-      sync_all_data
-    end
+  # The first class arrives only once Wonde has answered the first page, so a listing it refuses
+  # fails before start_sync empties the roster, and every retry of the job leaves it alone too
+  def start_sync_once
+    return if @started
+
+    @school.start_sync
+    @started = true
   end
 
-  def sync_all_data
-    classroom = Classroom.from_wonde(@school, @sync_data)
+  def sync_class(wonde_class)
+    classroom = Classroom.from_wonde(@school, wonde_class)
 
-    @roster_user_ids.concat(User.from_wonde(@school, @sync_data, classroom))
+    # A class Wonde gives no subject is a registration group: nobody on it joins the roster,
+    # so nobody is enrolled in it either, or finish_sync would lock out those it just placed
+    return if wonde_class["subject"].blank?
 
-    return if classroom.subject.blank?
-
-    Enrollment.from_wonde(@sync_data)
+    # Teachers get accounts from every class; pupils get accounts and places only from a class an
+    # admin has mapped to a subject
+    user_ids = User.employees_from_wonde(@school, wonde_class)
+    if classroom.subject_id.present?
+      user_ids += User.students_from_wonde(@school, wonde_class)
+      Enrollment.enroll(classroom, user_ids)
+    end
+    @roster_user_ids.concat(user_ids)
   end
 end

@@ -19,6 +19,13 @@ FactoryBot.define do
     oauth_provider { "google_oauth2" }
     oauth_uid { rand(0..100_000_000_000) }
 
+    # Predates the upi validation, so it is saved without one
+    trait :without_upi do
+      upi { nil }
+      username { "#{forename.downcase}#{surname.downcase}" }
+      to_create { |user| user.save!(validate: false) }
+    end
+
     trait :no_oauth do
       oauth_email { "" }
       oauth_provider { "" }

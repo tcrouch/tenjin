@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require "rails_helper"
-require "support/api_data"
 
 RSpec.describe Enrollment do
   it { is_expected.to belong_to(:user) }
@@ -36,62 +35,69 @@ RSpec.describe Enrollment do
     end
   end
 
-  describe "#from_wonde" do
-    include_context "with api_data"
+  describe ".enroll" do
+    let(:classroom) { create(:classroom) }
+    let(:pupil) { create(:student, school: classroom.school) }
+    let(:teacher) { create(:teacher, school: classroom.school) }
 
-    before do
-      school_api_data
-      create(:classroom, client_id: "classroom_id", school: School.first)
-      create(:student, upi: user_api_data.data[0].upi, school: School.first)
-      classroom_api_data.id = "classroom_id"
+    context "with a pupil and a teacher" do
+      before { described_class.enroll(classroom, [pupil.id, teacher.id]) }
+
+      it "enrolls both" do
+        expect(classroom.reload.users).to contain_exactly(pupil, teacher)
+      end
+
+      # The rows go in without the counter_cache callback, so the count is written by hand
+      it "counts the enrollments on the classroom" do
+        expect(classroom.reload.enrollments_count).to eq(2)
+      end
+
+      it "enables the classroom" do
+        expect(classroom.reload).not_to be_disabled
+      end
     end
 
-    it "creates student enrollments" do
-      classroom_api_data.students = user_api_data
-      described_class.from_wonde(classroom_api_data)
-      expect(described_class.count).to eq(1)
+    context "with the same user given twice" do
+      before { described_class.enroll(classroom, [pupil.id, pupil.id]) }
+
+      it "enrolls them once" do
+        expect(classroom.reload.users).to contain_exactly(pupil)
+      end
     end
 
-    it "creates employee enrollments" do
-      classroom_api_data.employees = user_api_data
-      described_class.from_wonde(classroom_api_data)
-      expect(described_class.count).to eq(1)
+    context "with an enrollment already in place" do
+      let!(:existing_enrollment) { create(:enrollment, classroom: classroom, user: teacher) }
+
+      before { described_class.enroll(classroom, [pupil.id]) }
+
+      it "counts it alongside the new one" do
+        expect(classroom.reload.enrollments_count).to eq(2)
+      end
     end
 
-    it "enables the classroom" do
-      classroom_api_data.employees = user_api_data
-      described_class.from_wonde(classroom_api_data)
-      expect(Classroom.first).not_to be_disabled
-    end
+    context "with nobody" do
+      before { described_class.enroll(classroom, []) }
 
-    context "when no students or employees are present" do
       it "creates no enrollments" do
-        described_class.from_wonde(classroom_api_data)
-        expect(described_class.count).to eq(0)
+        expect(classroom.reload.enrollments).to be_empty
+      end
+
+      it "disables the classroom" do
+        expect(classroom.reload).to be_disabled
       end
     end
 
-    context "when a prior sync has already run" do
-      before do
-        classroom_api_data.students = user_api_data
-        School.from_wonde(school_api_data, classroom_api_data)
-        described_class.from_wonde(classroom_api_data)
+    # A sync runs this once per class over a roster start_sync has just emptied, so a class
+    # costs one insert however many people it lists
+    it "enrolls the whole class in one insert" do
+      user_ids = [pupil.id, teacher.id]
+      inserts = 0
+      counter = ->(_name, _start, _finish, _id, payload) { inserts += 1 if payload[:sql].start_with?("INSERT") }
+      ActiveSupport::Notifications.subscribed(counter, "sql.active_record") do
+        described_class.enroll(classroom, user_ids)
       end
 
-      context "when a different student is synced" do
-        before do
-          classroom_api_data.students = alt_user_api_data
-          described_class.from_wonde(classroom_api_data)
-        end
-
-        it "removes old enrollments" do
-          expect(described_class.count).to eq(0)
-        end
-
-        it "disables classrooms with no enrollments" do
-          expect(Classroom.first).to be_disabled
-        end
-      end
+      expect(inserts).to eq(1)
     end
   end
 end

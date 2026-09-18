@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require "wondeclient"
-
 class School::AddSchool < ApplicationService
   def initialize(school_params)
     @school_id = school_params[:client_id]
@@ -9,8 +7,7 @@ class School::AddSchool < ApplicationService
   end
 
   def call
-    client = Wonde::Client.new(@client_token)
-    school_from_client = client.schools.get(@school_id)
+    school_from_client = Wonderment::Client.new(@client_token).get("schools", @school_id)
     school = School.from_wonde(school_from_client, @client_token)
     school.permitted = true
     school.save!

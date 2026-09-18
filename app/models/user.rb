@@ -88,12 +88,14 @@ class User < ApplicationRecord
     save
   end
 
-  # Returns the ids of every user the class lists, so the sync can tell who has left
-  def self.from_wonde(school, classroom, classroom_db)
-    ids = create_employee_users(classroom, school)
-    return ids if classroom_db.subject.blank?
+  # Saves the employees a Wonde class lists; returns their ids so the sync can tell who has left
+  def self.employees_from_wonde(school, wonde_class)
+    create_users(wonde_class, "employees", :employee, school)
+  end
 
-    ids + create_student_users(classroom, school)
+  # Saves the students a Wonde class lists; returns their ids so the sync can tell who has left
+  def self.students_from_wonde(school, wonde_class)
+    create_users(wonde_class, "students", :student, school)
   end
 
   def seconds_left_on_cooldown
@@ -105,24 +107,12 @@ class User < ApplicationRecord
   class << self
     private
 
-    def create_student_users(classroom, school)
-      return [] if classroom.subject.blank?
-      return [] if classroom.students.blank?
-      return [] if classroom.students.data.blank?
+    def create_users(wonde_class, collection, role, school)
+      people = wonde_class.dig(collection, "data")
+      return [] if people.blank?
 
-      classroom.students.data.filter_map do |student|
-        u = initialize_user(student, :student, school)
-        u.id if u.save # invalid records are silently skipped
-      end
-    end
-
-    def create_employee_users(classroom, school)
-      return [] if classroom.subject.blank?
-      return [] if classroom.employees.blank?
-      return [] if classroom.employees.data.blank?
-
-      classroom.employees.data.filter_map do |employee|
-        u = initialize_user(employee, :employee, school)
+      people.filter_map do |person|
+        u = initialize_user(person, role, school)
         u.id if u.save # invalid records are silently skipped
       end
     end
@@ -142,9 +132,9 @@ class User < ApplicationRecord
     end
 
     def initialize_user(user, role, school)
-      u = User.where(provider: "Wonde", upi: user.upi).first_or_initialize
+      u = User.where(provider: "Wonde", upi: user["upi"]).first_or_initialize
       u.attributes = {school_id: school.id, role: role, provider: "Wonde",
-                       upi: user.upi, forename: user.forename, surname: user.surname, disabled: false}
+                       upi: user["upi"], forename: user["forename"], surname: user["surname"], disabled: false}
       u.challenge_points = 0 if u.challenge_points.blank?
       u.username = generate_username(u) if u.new_record? || u.username.blank?
       u
