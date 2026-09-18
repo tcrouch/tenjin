@@ -9,7 +9,8 @@ module Wonderment
     # round trips at a proportional cost in peak memory.
     PAGE_SIZE = 50
 
-    TIMEOUT = 30
+    # Net::HTTP's own default for each of open, read and write
+    TIMEOUT = 60
 
     def initialize(token, base_url: BASE_URL)
       @token = token
@@ -52,9 +53,13 @@ module Wonderment
         # itself and decompresses the reply; naming the header here, as Wonde's
         # curl example does, switches that off and hands back compressed bytes.
       end
-      raise Error.for(response.status, response.body) unless response.success?
+      unless response.success?
+        raise Error.new("Wonde responded #{response.status}", status: response.status, body: response.body)
+      end
 
       JSON.parse(response.body)
+    rescue Faraday::Error => e
+      raise Error, "Wonde did not answer: #{e.message}"
     end
 
     def url_for(path, params)

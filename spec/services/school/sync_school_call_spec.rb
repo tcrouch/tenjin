@@ -190,7 +190,7 @@ RSpec.describe School::SyncSchool do
     before { stub_request(:get, /wonde/).to_return(status: 503) }
 
     it "marks the school failed and lets the error through to the job" do
-      expect { described_class.call(school) }.to raise_error(Wonderment::Error::ServiceUnavailable)
+      expect { described_class.call(school) }.to raise_error(Wonderment::Error, "Wonde responded 503")
       expect(school.reload).to be_failed
     end
   end

@@ -89,21 +89,11 @@ RSpec.describe Wonderment::Client do
     end
   end
 
-  describe "error responses" do
-    {400 => Wonderment::Error::BadRequest,
-     401 => Wonderment::Error::Unauthorized,
-     403 => Wonderment::Error::Forbidden,
-     404 => Wonderment::Error::NotFound,
-     422 => Wonderment::Error::UnprocessableEntity,
-     423 => Wonderment::Error::SchoolInactive,
-     429 => Wonderment::Error::TooManyRequests,
-     500 => Wonderment::Error::ServerError,
-     503 => Wonderment::Error::ServiceUnavailable}.each do |status, error_class|
-      it "raises #{error_class.name.split("::").last} on #{status}" do
-        stub_request(:get, resource_url).to_return(status: status)
+  describe "failed requests" do
+    it "raises on an error status" do
+      stub_request(:get, resource_url).to_return(status: 503)
 
-        expect { client.get("schools/S1") }.to raise_error(error_class)
-      end
+      expect { client.get("schools/S1") }.to raise_error(Wonderment::Error, "Wonde responded 503")
     end
 
     it "carries the status and body for a rescuer to inspect" do
@@ -113,10 +103,17 @@ RSpec.describe Wonderment::Client do
         .to raise_error(an_object_having_attributes(status: 422, body: "invalid include"))
     end
 
-    it "raises the base error on a status it does not map" do
-      stub_request(:get, resource_url).to_return(status: 418)
+    # Transport failures surface as the same error, so nothing outside lib needs to know Faraday
+    it "raises when Wonde does not answer in time" do
+      stub_request(:get, resource_url).to_timeout
 
-      expect { client.get("schools/S1") }.to raise_error(Wonderment::Error)
+      expect { client.get("schools/S1") }.to raise_error(Wonderment::Error, /did not answer/)
+    end
+
+    it "raises when Wonde cannot be reached" do
+      stub_request(:get, resource_url).to_raise(Errno::ECONNREFUSED)
+
+      expect { client.get("schools/S1") }.to raise_error(Wonderment::Error, /did not answer/)
     end
   end
 end
