@@ -70,22 +70,50 @@ RSpec.describe Wonderment::Client do
       expect(a_request(:get, second_page_url)).to have_been_made.once
     end
 
-    # The whole reason this client exists: a roster must not accumulate in the worker
-    it "releases each page before reaching the next" do
+    # The whole reason this client exists: a roster must not accumulate in the worker,
+    # and the next page's download is the moment the previous one must already be gone
+    it "releases a page before fetching the next" do
       probe = ObjectSpace::WeakMap.new
-      seen = 0
       first_page_retained = nil
-
-      client.each_page("schools/S1/classes", include: %w[students employees]) do |record|
-        seen += 1
-        probe[record] = true if seen == 1
-        next unless seen == 3
-
+      stub_request(:get, second_page_url).to_return do
         2.times { GC.start(full_mark: true, immediate_sweep: true) }
         first_page_retained = probe.size.positive?
+        {body: page([{"id" => "C"}], nil)}
+      end
+
+      client.each_page("schools/S1/classes", include: %w[students employees]) do |record|
+        probe[record] = true if probe.size.zero?
       end
 
       expect(first_page_retained).to be false
+    end
+
+    it "fetches no page beyond what an enumerator consumes" do
+      records = client.each_page("schools/S1/classes", include: %w[students employees]).first(2)
+
+      expect(records).to eq([{"id" => "A"}, {"id" => "B"}])
+      expect(a_request(:get, second_page_url)).not_to have_been_made
+    end
+
+    # A walk that ends early leaves everyone on the unread pages off the roster, and the
+    # sync then disables them, so a page that cannot be followed must fail loudly
+    {"a nil next URL" => {"more" => true, "next" => nil},
+     "an empty next URL" => {"more" => true, "next" => ""},
+     "no next URL" => {"more" => true}}.each do |description, pagination|
+      it "raises when a page promises more with #{description}" do
+        stub_request(:get, first_page_url)
+          .to_return(body: {"data" => [], "meta" => {"pagination" => pagination}}.to_json)
+
+        expect { client.each_page("schools/S1/classes", include: %w[students employees]) { nil } }
+          .to raise_error(Wonderment::Error, /promises more/)
+      end
+    end
+
+    it "raises when a page carries no pagination" do
+      stub_request(:get, first_page_url).to_return(body: {"data" => []}.to_json)
+
+      expect { client.each_page("schools/S1/classes", include: %w[students employees]) { nil } }
+        .to raise_error(Wonderment::Error, /no pagination/)
     end
   end
 

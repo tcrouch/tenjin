@@ -27,16 +27,23 @@ module Wonderment
     # Paging is by cursor: offset paging renumbers its pages when the MIS gains or loses a
     # record mid-walk, and a listing that skips one loses the people on it.
     def each_page(path, **params)
-      url = url_for(path, params.merge(per_page: PAGE_SIZE, cursor: true))
+      return enum_for(__method__, path, **params) unless block_given?
 
+      url = url_for(path, params.merge(per_page: PAGE_SIZE, cursor: true))
       while url
-        body = request(url)
-        body.fetch("data").each { |record| yield record }
-        url = next_page_url(body)
+        url = yield_page(url) { |record| yield record }
       end
     end
 
     private
+
+    # Holds the page only for the length of this call, so nothing of it survives into the next fetch
+    def yield_page(url)
+      body = request(url)
+      next_url = next_page_url(body)
+      body.fetch("data").each { |record| yield record }
+      next_url
+    end
 
     def connection
       @connection ||= Faraday.new do |faraday|
@@ -69,12 +76,18 @@ module Wonderment
       "#{@base_url}#{path}?#{URI.encode_www_form(query)}"
     end
 
-    # Wonde's next URL repeats the original include and per_page, so it is followed as given
+    # Wonde's next URL repeats the original include and per_page, so it is followed as given.
+    # A page that cannot be followed raises: ending the walk early would leave everyone on the
+    # unread pages off the roster, and a sync then disables them.
     def next_page_url(body)
       pagination = body.dig("meta", "pagination")
-      return unless pagination && pagination["more"]
+      raise Error.new("Wonde page carries no pagination", body: body) if pagination.nil?
+      return unless pagination["more"]
 
-      pagination["next"]
+      next_url = pagination["next"]
+      raise Error.new("Wonde page promises more without a next URL", body: body) if next_url.to_s.empty?
+
+      next_url
     end
   end
 end
