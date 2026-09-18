@@ -8,6 +8,7 @@ class Quiz::AnswerOutcomeSerializer
   def as_json(*)
     {
       answer: Answer.where(question: @outcome.question, correct: true),
+      correct: @outcome.correct,
       streak: @outcome.streak,
       answeredCorrect: @outcome.answered_correct,
       multiplier: @outcome.multiplier
