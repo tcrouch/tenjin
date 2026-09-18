@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require "rails_helper"
-require "support/api_data"
 
 RSpec.describe User do
   it "has a valid factory" do
@@ -16,11 +15,8 @@ RSpec.describe User do
   end
 
   describe "accounts from Wonde" do
-    include_context "with api_data"
-
-    before do
-      school_api_data
-    end
+    let(:school) { create(:school) }
+    let(:person) { wonde_person }
 
     context "with student API data" do
       it "does not allow students missing a upi" do
@@ -28,15 +24,15 @@ RSpec.describe User do
       end
 
       context "with students listed" do
-        before { classroom_api_data["students"] = user_api_data }
+        let(:listing) { wonde_class("C1", students: [person]) }
 
         it "creates the students" do
-          described_class.students_from_wonde(school_api_data, classroom_api_data)
-          expect(described_class.find_by!(role: "student").forename).to eq(user_api_data["data"][0]["forename"])
+          described_class.students_from_wonde(school, listing)
+          expect(described_class.find_by!(role: "student").forename).to eq(person["forename"])
         end
 
         it "returns the ids of the users it saves" do
-          expect(described_class.students_from_wonde(school_api_data, classroom_api_data))
+          expect(described_class.students_from_wonde(school, listing))
             .to contain_exactly(described_class.find_by!(role: "student").id)
         end
       end
@@ -44,20 +40,17 @@ RSpec.describe User do
       describe "generated usernames" do
         let(:usernames) { described_class.where(role: "student").pluck(:username) }
 
-        def wonde_students(*names)
-          data = names.map do |forename, surname|
-            {"id" => SecureRandom.hex, "upi" => SecureRandom.hex, "forename" => forename, "surname" => surname}
-          end
-          {"data" => data}
-        end
+        let(:listing) { wonde_class("C1", students: students) }
 
-        before { classroom_api_data["students"] = students }
+        def wonde_students(*names)
+          names.map { |forename, surname| wonde_person(forename: forename, surname: surname) }
+        end
 
         context "with a single-word name" do
           let(:students) { wonde_students(%w[Leo Ward]) }
 
           it "joins the initial, surname and four digits" do
-            described_class.students_from_wonde(school_api_data, classroom_api_data)
+            described_class.students_from_wonde(school, listing)
             expect(usernames).to contain_exactly(match(/\Alward\d{4}\z/))
           end
         end
@@ -66,7 +59,7 @@ RSpec.describe User do
           let(:students) { wonde_students(["Jan", "Van Der Berg"]) }
 
           it "drops the spaces" do
-            described_class.students_from_wonde(school_api_data, classroom_api_data)
+            described_class.students_from_wonde(school, listing)
             expect(usernames).to contain_exactly(match(/\Ajvanderberg\d{4}\z/))
           end
         end
@@ -75,7 +68,7 @@ RSpec.describe User do
           let(:students) { wonde_students(["Émile", "O'Brien-Núñez"]) }
 
           it "keeps only plain letters" do
-            described_class.students_from_wonde(school_api_data, classroom_api_data)
+            described_class.students_from_wonde(school, listing)
             expect(usernames).to contain_exactly(match(/\Aeobriennunez\d{4}\z/))
           end
         end
@@ -84,7 +77,7 @@ RSpec.describe User do
           let(:students) { wonde_students(%w[Дмитрий Иванов]) }
 
           it "falls back to a fixed stem" do
-            described_class.students_from_wonde(school_api_data, classroom_api_data)
+            described_class.students_from_wonde(school, listing)
             expect(usernames).to contain_exactly(match(/\Auser\d{4}\z/))
           end
         end
@@ -98,7 +91,7 @@ RSpec.describe User do
           end
 
           it "draws again" do
-            described_class.students_from_wonde(school_api_data, classroom_api_data)
+            described_class.students_from_wonde(school, listing)
             expect(usernames).to contain_exactly("lward0042", "lward0007")
           end
         end
@@ -112,53 +105,47 @@ RSpec.describe User do
           end
 
           it "raises rather than drawing forever" do
-            expect { described_class.students_from_wonde(school_api_data, classroom_api_data) }
+            expect { described_class.students_from_wonde(school, listing) }
               .to raise_error(RuntimeError, /No free username/)
           end
         end
       end
 
       context "with employees listed" do
-        before do
-          classroom_api_data["employees"] = user_api_data
-        end
+        let(:listing) { wonde_class("C1", employees: [person]) }
 
         it "creates the employees" do
-          described_class.employees_from_wonde(school_api_data, classroom_api_data)
-          expect(described_class.find_by!(role: "employee").forename).to eq(user_api_data["data"][0]["forename"])
+          described_class.employees_from_wonde(school, listing)
+          expect(described_class.find_by!(role: "employee").forename).to eq(person["forename"])
         end
       end
 
       context "when both employees and students are present" do
-        before do
-          classroom_api_data["students"] = user_api_data
-          classroom_api_data["employees"] = alt_user_api_data
-        end
+        let(:listing) { wonde_class("C1", students: [wonde_person], employees: [wonde_person]) }
 
         it "creates accounts for both employees and students" do
-          described_class.students_from_wonde(school_api_data, classroom_api_data)
-          described_class.employees_from_wonde(school_api_data, classroom_api_data)
+          described_class.students_from_wonde(school, listing)
+          described_class.employees_from_wonde(school, listing)
           expect(described_class.count).to eq(2)
         end
       end
 
       context "when a user record already exists" do
-        let(:existing_upi) { user_api_data["data"].first["upi"] }
+        let(:listing) { wonde_class("C1", employees: [person]) }
 
         before do
           described_class.create!(
-            upi: existing_upi,
+            upi: person["upi"],
             username: "test",
             provider: "Wonde",
             role: "employee",
-            school: school_api_data
+            school: school
           )
-          classroom_api_data["employees"] = user_api_data
         end
 
         it "preserves the existing username" do
-          described_class.employees_from_wonde(school_api_data, classroom_api_data)
-          expect(described_class.find_by!(upi: existing_upi).username).to eq("test")
+          described_class.employees_from_wonde(school, listing)
+          expect(described_class.find_by!(upi: person["upi"]).username).to eq("test")
         end
       end
     end

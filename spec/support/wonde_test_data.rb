@@ -1,26 +1,5 @@
 # frozen_string_literal: true
 
-RSpec.shared_context "with api_data", shared_context: :metadata do
-  let(:school_api_data) do
-    School.from_wonde({"id" => SecureRandom.hex, "name" => FFaker::Education.school}, SecureRandom.hex)
-  end
-
-  # Class payloads reach the models as parsed JSON, so the fixtures are plain hashes
-  let(:user_api_data) do
-    {"data" => [wonde_person]}
-  end
-
-  let(:alt_user_api_data) do
-    {"data" => [wonde_person]}
-  end
-  let(:subject_api_data) do
-    {"data" => {"id" => SecureRandom.hex, "name" => FFaker::Lorem.word}}
-  end
-  let(:classroom_api_data) do
-    {"id" => SecureRandom.hex, "subject" => subject_api_data, "code" => FFaker::Lorem.word}
-  end
-end
-
 RSpec.shared_context "with wonde_test_data", shared_context: :metadata do
   let(:school_token) { "2a550dc912f6a63488af42352b79c5961e87daf9" }
   let(:school_id) { "A852030759" }

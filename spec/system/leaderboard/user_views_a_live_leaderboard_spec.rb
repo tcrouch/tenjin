@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require "rails_helper"
-require "support/api_data"
 
 RSpec.describe "User views a live leaderboard", :default_creates, :js do
   before { setup_subject_database }

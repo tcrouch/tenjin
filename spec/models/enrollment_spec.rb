@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require "rails_helper"
-require "support/api_data"
 
 RSpec.describe Enrollment do
   it { is_expected.to belong_to(:user) }
