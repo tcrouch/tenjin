@@ -8,11 +8,12 @@ section.available-customisations aria-labelledby='available-heading'
       p.text-body-secondary No customisations yet.
   = render partial: "customisations/customisations",
     locals: { customisations: @customisations,
-      bought_customisations: [], manage: true }
+      bought_customisations: [], manage: true, separator_style: nil }
 section.retired-customisations.pb-5 aria-labelledby='retired-heading'
   .container
     h2.admin-section-heading#retired-heading Retired
     - if @retired_customisations.blank?
       p.text-body-secondary No retired customisations.
   = render partial: "customisations/customisations",
-    locals: {customisations: @retired_customisations, bought_customisations: [], manage: true}
+    locals: {customisations: @retired_customisations, bought_customisations: [],
+      manage: true, separator_style: nil}

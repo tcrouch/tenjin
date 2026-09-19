@@ -84,5 +84,27 @@ RSpec.describe "dashboard controller", :default_creates do
         it "does not mark the page for the prompt"
       end
     end
+
+    describe "as a student with an equipped dashboard style" do
+      let!(:active_customisation) do
+        create(:active_customisation, user: student,
+          customisation: create(:dashboard_customisation, value: "orange"))
+      end
+
+      before do
+        sign_in student
+        get dashboard_path
+      end
+
+      it "colours every section separator, leaving none on the red default" do
+        expect(Capybara.string(response.body)).to have_css(".heading-divider[style*='orange']")
+          .and have_no_css(".heading-divider[style*='red']")
+      end
+
+      it "backs the homework section with the style's image" do
+        expect(Capybara.string(response.body))
+          .to have_css("#homework.homework-image[style*='background']")
+      end
+    end
   end
 end

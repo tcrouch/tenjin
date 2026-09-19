@@ -9,6 +9,8 @@ class ApplicationController < ActionController::Base
   after_action :verify_policy_scoped, only: :index
   rescue_from Pundit::NotAuthorizedError, with: :user_not_authorized
 
+  helper_method :dashboard_style
+
   protected
 
   def configure_permitted_parameters
@@ -26,6 +28,14 @@ class ApplicationController < ActionController::Base
   def user_not_authorized
     flash[:alert] = "You are not authorized to perform this action."
     redirect_back fallback_location: root_path
+  end
+
+  # The style the user has equipped, or nil for a signed-out visitor. Views
+  # that want it ask for it, so no action has to remember to set it up.
+  def dashboard_style
+    return @dashboard_style if defined?(@dashboard_style)
+
+    @dashboard_style = current_user && find_dashboard_style
   end
 
   def find_dashboard_style
