@@ -25,8 +25,9 @@ module ApplicationHelper
     link_to label, path, class: [css_class, {active: current}], aria: {current: ("page" if current)}
   end
 
+  # The rule under a section heading; pass dashboard_style to colour it with the user's own
   def render_small_separator(style = nil, margin: "mb-5")
-    color = style&.value || @dashboard_style&.value || "red"
+    color = style&.value || "red"
     content_tag(:div, nil, class: "heading-divider #{margin}", style: "color: #{color}", aria: {hidden: true})
   end
 

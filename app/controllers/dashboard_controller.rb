@@ -8,7 +8,6 @@ class DashboardController < ApplicationController
     @subjects = current_user.subjects.distinct
 
     if current_user.student?
-      @dashboard_style = find_dashboard_style
       @homework_progress = student_homework_progress
       student_challenges
       render "student_dashboard"

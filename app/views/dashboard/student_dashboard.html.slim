@@ -4,7 +4,7 @@ section.page-section.text-center#newQuiz
   .container#startAQuizContainer
     h1.page-section-header.text-uppercase Start a Quiz
     p.lead Select a subject below
-    ==render_small_separator
+    ==render_small_separator(dashboard_style)
     .carousel.slide.col-md-8.col-lg-5.mx-auto#subjectCarousel data-bs-interval="false"
       ol.carousel-indicators
         - @subjects.each_with_index do |s, i|
@@ -26,7 +26,7 @@ section.page-section.text-center#newQuiz
 section#challenges.page-section.text-center
   .container
     h1.page-section-header.text-uppercase Challenges
-    ==render_small_separator
+    ==render_small_separator(dashboard_style)
     .row.justify-content-center
       .col-lg-10.col.mx-auto.table-responsive
         table.table.table-hover#challenge-table

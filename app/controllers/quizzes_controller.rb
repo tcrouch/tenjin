@@ -35,8 +35,6 @@ class QuizzesController < ApplicationController
     @subject = Subject.find_by(name: params[:subject])
     authorize Quiz.new(subject: @subject)
 
-    @dashboard_style = find_dashboard_style
-
     if @subject.blank?
       @subjects = current_user.subjects
       render :new

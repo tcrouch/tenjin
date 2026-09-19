@@ -3,7 +3,7 @@
   section.page-section.text-center.dashboard-styles
     .container
       h3.text-uppercase Dashboard Styles
-      ==render_small_separator
+      ==render_small_separator(separator_style)
       - dashboard_styles.each do |style|
         .card.dashboard-style style=render_dashboard_style(style)
           .card-body
@@ -31,7 +31,7 @@
   section.page-section.text-center.icons
     .container
       h3.text-uppercase Leaderboard Icons
-      ==render_small_separator
+      ==render_small_separator(separator_style)
       .row.row-cols-3.row-cols-md-4.row-cols-lg-6.g-3.justify-content-center
         - leaderboard_icon_styles.each do |icon|
           .col

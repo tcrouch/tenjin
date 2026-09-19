@@ -6,7 +6,6 @@ class CustomisationsController < ApplicationController
   def show_available
     authorize current_user, :show? # make it so that it checks if the school is permitted?
     @subjects = current_user.subjects
-    @dashboard_style = find_dashboard_style
     @bought_customisations = CustomisationUnlock.where(user: current_user).pluck(:customisation_id)
     @purchased_styles = Customisation.preload_image.where(id: @bought_customisations)
     @available_styles = Customisation.preload_image.where(purchasable: true)
