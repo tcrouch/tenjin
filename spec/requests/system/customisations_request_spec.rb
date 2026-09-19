@@ -25,6 +25,33 @@ RSpec.describe "System::Customisations", :default_creates, type: :request do
       it "says there are no retired customisations" do
         expect(Capybara.string(response.body)).to have_css(".retired-customisations", text: "No retired customisations.")
       end
+
+      context "with dashboard styles in every state" do
+        let!(:sticky_style) { create(:dashboard_customisation, name: "Aurora", sticky: true, purchasable: true) }
+        let!(:available_style) { create(:dashboard_customisation, name: "Bramble", purchasable: true) }
+        let!(:unavailable_style) { create(:dashboard_customisation, name: "Cobalt", purchasable: false) }
+        let!(:retired_style) { create(:dashboard_customisation, name: "Dusk", retired: true) }
+
+        before { get system_customisations_path }
+
+        it "orders the cards sticky, then available, then unavailable" do
+          section = Capybara.string(response.body).find("section.available-customisations .dashboard-styles")
+          expect(section).to have_css(".dashboard-style", count: 3).and have_text(/Aurora.*Bramble.*Cobalt/m)
+        end
+
+        it "badges the sticky and unavailable cards" do
+          page = Capybara.string(response.body)
+          expect(page.find(".dashboard-style", text: "Aurora")).to have_text("Stickied")
+          expect(page.find(".dashboard-style", text: "Bramble")).to have_no_text("Stickied").and have_no_text("Unavailable")
+          expect(page.find(".dashboard-style", text: "Cobalt")).to have_text("Unavailable")
+        end
+
+        it "lists retired customisations in their own section" do
+          expect(Capybara.string(response.body))
+            .to have_css("section.retired-customisations .dashboard-style", text: "Dusk")
+            .and have_no_css("section.available-customisations .dashboard-style", text: "Dusk")
+        end
+      end
     end
 
     context "as a school group admin" do
@@ -73,6 +100,18 @@ RSpec.describe "System::Customisations", :default_creates, type: :request do
         .and have_css("form .invalid-feedback", exact_text: "Name can't be blank")
         .and have_text("Name can't be blank", count: 1)
     end
+
+    it "creates a dashboard style with its image" do
+      post system_customisations_path, params: {
+        customisation: {
+          name: "Aurora", value: "blue", customisation_type: "dashboard_style", cost: 200,
+          image: fixture_file_upload("game-pieces.jpg", "image/jpeg")
+        }
+      }
+      expect(response).to redirect_to(system_customisations_path)
+      expect(flash[:notice]).to eq("Created new customisation Aurora")
+      expect(Customisation.find_by!(name: "Aurora").image.filename.to_s).to eq("game-pieces.jpg")
+    end
   end
 
   describe "PATCH /system/customisations/:id" do
@@ -94,6 +133,21 @@ RSpec.describe "System::Customisations", :default_creates, type: :request do
       expect(response).to have_http_status(:unprocessable_content)
       expect(customisation.reload.name).to eq("Original")
       expect(Capybara.string(response.body)).to have_css("h1", exact_text: "Edit Original")
+    end
+
+    context "with a dashboard style" do
+      let(:customisation) { create(:dashboard_customisation, purchasable: true) }
+
+      it "updates the value, image and flags" do
+        patch system_customisation_path(customisation), params: {
+          customisation: {
+            value: "blue", sticky: true, purchasable: false,
+            image: fixture_file_upload("computer-science.jpg", "image/jpeg")
+          }
+        }
+        expect(customisation.reload).to have_attributes(value: "blue", sticky: true, purchasable: false)
+        expect(customisation.image.filename.to_s).to eq("computer-science.jpg")
+      end
     end
   end
 end
