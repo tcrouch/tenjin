@@ -11,11 +11,13 @@ gem "recipient_interceptor"
 gem "csv"
 
 gem "rails", "~> 7.2.0", ">= 7.2.3.1"
-gem "image_processing", "~> 1.2"
+gem "image_processing", "~> 2.1"
 
 # Backend for the :mini_magick variant processor set in application.rb.
 # Active Storage requires it directly and declares no dependency on it.
-gem "mini_magick"
+# The 4.x cap lives here because image_processing 2 made the backend a soft
+# dependency and stopped supplying one; Active Storage 7.2 targets MiniMagick 4.
+gem "mini_magick", "~> 4.12"
 
 # Reduces boot times through caching; required in config/boot.rb
 gem "bootsnap", ">= 1.1.0", require: false
