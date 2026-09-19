@@ -60,6 +60,11 @@ RSpec.describe UserPolicy, :default_creates do
         let(:target) { build_stubbed(:student, school: other_school) }
         it { is_expected.not_to be_show }
       end
+
+      context "viewing an employee in the same school" do
+        let(:target) { build_stubbed(:teacher, school: school) }
+        it { is_expected.to be_show }
+      end
     end
 
     context "as a teacher" do
