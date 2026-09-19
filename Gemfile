@@ -30,7 +30,10 @@ gem "rack-timeout", groups: [:production]
 gem "delayed_job_active_record"
 
 gem "aws-sdk-s3", "~> 1"
-gem "aws-sdk-rails", "~> 3"
+gem "aws-sdk-rails", "~> 5"
+
+# The :ses ActionMailer delivery method, which aws-sdk-rails no longer carries
+gem "aws-actionmailer-ses", "~> 1"
 
 # HTTP for lib/wonderment, this app's Wonde API client
 gem "faraday", "~> 2.14"
