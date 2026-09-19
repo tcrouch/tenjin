@@ -29,7 +29,7 @@ class ResetUserPasswordsJob < ApplicationJob
     User.includes(:classrooms)
       .where(school: @user.school)
       .where(disabled: false)
-      .where.not(id: User.with_role(:school_admin))
+      .where.not(id: User.holding_role(:school_admin))
       .where(sign_in_count: 0)
       .order("classrooms.name")
   end

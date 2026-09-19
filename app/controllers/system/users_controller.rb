@@ -20,9 +20,9 @@ module System
         @school = School.find(manage_roles_params[:school])
         @employees = User.where(school: @school, role: "employee")
       end
-      @school_admins = User.includes(:school).with_role :school_admin
-      @lesson_authors = User.with_role :lesson_author, :any
-      @question_authors = User.with_role :question_author, :any
+      @school_admins = User.includes(:school).holding_role(:school_admin)
+      @lesson_authors = User.holding_role(:lesson_author)
+      @question_authors = User.holding_role(:question_author)
       @all_subjects = Subject.where(active: true)
       render "manage_roles"
     end

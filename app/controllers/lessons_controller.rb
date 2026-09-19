@@ -92,7 +92,7 @@ class LessonsController < ApplicationController
   def set_permitted_lessons_and_subjects
     if @author
       # Loaded so the index can check each subject against it without a query
-      @editable_subjects = Subject.with_role(:lesson_author, current_user).load
+      @editable_subjects = Subject.authored_by(current_user, :lesson_author).load
       @lessons = policy_scope(Lesson)
         .or(Lesson
                   .includes(:topic)
