@@ -26,24 +26,6 @@ module SessionHelpers
       )
   end
 
-  def stub_google_omniauth
-    # first, set OmniAuth to run in test mode
-    OmniAuth.config.test_mode = true
-    # then, provide a set of fake oauth data that
-    # omniauth will use when a user tries to authenticate:
-    OmniAuth.config.mock_auth[:google_oauth2] = OmniAuth::AuthHash.new(
-      "provider" => "google_oauth2",
-      "uid" => "123456123456",
-      "info" =>
-         {"name" => "Test",
-          "email" => "test@test.com",
-          "unverified_email" => "test@test.com",
-          "email_verified" => true,
-          "first_name" => "Test",
-          "last_name" => "Person"}
-    )
-  end
-
   def setup_subject_database
     create(:enrollment, classroom: classroom, user: student)
     create(:multiplier)
@@ -82,21 +64,6 @@ module SessionHelpers
 
   def initialize_name(user)
     "#{user.forename} #{user.surname[0]}"
-  end
-
-  def log_in_through_front_page(username, password)
-    visit(root_path)
-    click_button "Login"
-    fill_in("user_login", with: username)
-    fill_in("user_password", with: password)
-    click_button "loginModal"
-    find(".alert", text: "Signed in successfully")
-  end
-
-  def update_password(new_password)
-    find_by_id("user_password").set(new_password)
-    click_button("Update Password")
-    find(".alert")
   end
 
   def create_file_blob(filename:, content_type:, metadata: nil)

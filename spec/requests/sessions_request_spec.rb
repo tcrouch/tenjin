@@ -39,6 +39,54 @@ RSpec.describe "Sessions", :default_creates do
     end
   end
 
+  describe "Google" do
+    before do
+      OmniAuth.config.test_mode = true
+      OmniAuth.config.mock_auth[:google_oauth2] =
+        OmniAuth::AuthHash.new(provider: "google_oauth2", uid: "123456123456", info: {email: "test@test.com"})
+    end
+
+    describe "signing in" do
+      context "with a linked account" do
+        let!(:google_student) { create(:student, school: school, oauth_uid: "123456123456") }
+
+        it "signs the user in" do
+          get user_google_oauth2_omniauth_callback_path
+          expect(response).to redirect_to(dashboard_path)
+        end
+      end
+
+      context "with no matching account" do
+        it "refuses with an alert" do
+          get user_google_oauth2_omniauth_callback_path
+          expect(response).to redirect_to(root_path)
+          follow_redirect!
+          expect(response.body).to include("Your account has not been found")
+        end
+      end
+    end
+
+    describe "linking an account" do
+      let(:unlinked_student) { create(:student, :no_oauth, school: school) }
+
+      before do
+        sign_in unlinked_student
+        get user_google_oauth2_omniauth_callback_path
+      end
+
+      it "stores the Google identity" do
+        expect(unlinked_student.reload)
+          .to have_attributes(oauth_uid: "123456123456", oauth_email: "test@test.com", oauth_provider: "google_oauth2")
+      end
+
+      it "redirects to the dashboard with a confirmation" do
+        expect(response).to redirect_to(dashboard_path)
+        follow_redirect!
+        expect(response.body).to include("Successfully linked Google account")
+      end
+    end
+  end
+
   describe "an existing session" do
     before do
       sign_in student
