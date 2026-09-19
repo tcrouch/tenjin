@@ -4,7 +4,7 @@
 unless ENV["NO_COVERAGE"]
   require "simplecov"
   SimpleCov.start "rails" do
-    add_filter "vendor"
+    skip "vendor"
   end
 end
 
