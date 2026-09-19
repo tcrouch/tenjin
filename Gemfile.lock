@@ -153,8 +153,10 @@ GEM
       bigdecimal
       rexml
     crass (1.0.7)
-    css_parser (1.22.0)
+    css_parser (3.1.0)
       addressable
+      base64
+      ssrf_filter (~> 1.5)
     csv (3.3.2)
     cuprite (0.18)
       capybara (~> 3.0)
@@ -474,6 +476,7 @@ GEM
     snaky_hash (2.0.5)
       hashie (>= 0.1.0, < 6)
       version_gem (>= 1.1.8, < 3)
+    ssrf_filter (1.6.0)
     standard (1.56.0)
       language_server-protocol (~> 3.17.0.2)
       lint_roller (~> 1.0)
@@ -543,7 +546,7 @@ DEPENDENCIES
   bullet
   bundler-audit
   capybara
-  css_parser (~> 1.22)
+  css_parser (~> 3.1)
   csv
   cuprite
   debug
