@@ -112,7 +112,7 @@ end
 group :test do
   gem "capybara"
   gem "cuprite", require: "capybara/cuprite"
-  gem "shoulda-matchers", "~> 7.0"
+  gem "shoulda-matchers", "~> 8.0"
 
   gem "simplecov", require: false
   gem "rspec_junit_formatter"
