@@ -92,10 +92,29 @@ jobs:
 
     steps:
       - shared_steps
+      # Shakapacker skips the compile when the digest in tmp/shakapacker matches
+      # its watched files, so a cache keyed on those same inputs turns the step
+      # into a no-op. No fallback key: a partial hit still compiles from scratch.
+      - run:
+          name: Checksum webpack inputs
+          command: |
+            mkdir -p tmp
+            find app/javascript config/webpack config/shakapacker.yml package.json pnpm-lock.yaml -type f \
+              | sort | xargs sha256sum | sha256sum > tmp/packs-checksum
+      - restore_cache:
+          name: Restore compiled test packs
+          keys:
+            - tenjin-packs-{{ arch }}-{{ checksum "tmp/packs-checksum" }}
       - run:
           name: precompile assets
           command: |
             bin/rails shakapacker:compile
+      - save_cache:
+          name: Store compiled test packs
+          key: tenjin-packs-{{ arch }}-{{ checksum "tmp/packs-checksum" }}
+          paths:
+            - public/packs-test
+            - tmp/shakapacker
 
       # Wait for DB
       - run: dockerize -wait tcp://localhost:5432 -timeout 1m
