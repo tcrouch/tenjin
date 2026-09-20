@@ -78,7 +78,23 @@ one of these changes, re-point the rule it names.
   (`expect(response.body).to include(...)`) or through Capybara matchers
   on `Capybara.string(response.body)` (`have_css`, `have_link`, ...).
   Relocation targets in **Rule 16** use the Capybara form; the
-  `[system + request]` rules apply to it. → **Rules 10, 13, 16, 21**.
+  `[system + request]` rules apply to it. An action that answers an XHR
+  with JSON (`request.xhr?`, `show.json.erb`) is asserted through
+  `response.parsed_body` after `get path(format: :json), xhr: true`.
+  → **Rules 10, 13, 16, 21**.
+- **JS test runner.** jest, run with `pnpm test:js`; `roots:
+  ["spec/javascript"]`, jsdom environment, `@swc/jest` transform.
+  `spec/javascript/controllers/*.test.js` instantiate a Stimulus
+  controller directly (`new FormController({ scope: { element } })`).
+  An Alpine component registered with `Alpine.data("name", factory)` is
+  reached by `jest.mock("alpinejs")`, importing the module, and taking
+  `factory` from `Alpine.data.mock.calls[0][1]`; mock
+  `channels/consumer` the same way where the component subscribes.
+  → **Rule 16**'s client-side row, **Step 3**.
+- **Cable adapter.** `config/cable.yml` sets `adapter: test` for the
+  test environment; it inherits Async, which posts each delivery to the
+  event loop's thread pool. → **Rule 12**'s negative-after-trigger
+  ordering.
 - **Form param conventions.** Association choices post `*_id` from a
   `select` (`topic_id`, `classroom_id`, `lesson_id`), roles post the
   `role` enum, and question answers post `answers_attributes`; the
@@ -114,6 +130,21 @@ Also read `spec/support/default_creates.rb` when the spec carries the
 `include_context`. Read each one so you understand the records and
 `let`s it already provides; duplicating setup that a shared context
 already supplies is a common smell this refactor removes.
+
+Read the view the spec visits and any JavaScript that fills it, and
+answer one question before Pass 1: **is the markup the spec asserts on
+server-rendered or built client-side?** A container filled by Alpine,
+Stimulus or a `fetch` is empty in `Capybara.string(response.body)`, so
+its server half relocates to a request spec on the JSON endpoint and
+its client half to jest (Rule 16); server-rendered markup relocates to
+`Capybara.string` as the Rule 16 table says. The answer decides every
+relocation target in the file, so settle it first.
+
+List every `exact_text:` in the file whose value is not a quoted
+String, a Regexp or a `.to_s` call. Each one checks nothing (Rule 21)
+and is a candidate for Rule 17's vacuous-original clause. A bare
+number under `text:` does filter, but by substring, so it is a Rule 21
+collision candidate instead.
 
 ---
 
@@ -474,6 +505,37 @@ expect(page).to have_css(".success-banner")
 A bare `find` whose result is discarded is a hand-rolled wait of the
 same shape; delete it and let the next matcher wait.
 
+**When the next step is a server-side push, keep the wait.** If the
+example goes on to broadcast over ActionCable, send a Turbo Stream from
+a job, or otherwise push to a page that must already be subscribed, no
+later matcher can retry a message sent before the subscription existed.
+Assert the observable precondition in the `before` block — the
+connected marker (`have_css("#connected")`) and the row the push will
+change — with a one-line comment naming what it guards.
+
+**A negative assertion straight after an asynchronous trigger checks
+nothing.** `have_no_css` is satisfied the instant it runs, before the
+broadcast, stream or fetch has landed, so "does not update" passes
+whether or not the page would have updated. Send a second trigger on
+the same stream that *should* change the page, wait for its positive,
+then assert the negative. The Redis and PostgreSQL adapters deliver a
+stream's messages in order; the test adapter hands each delivery to a
+thread pool, so there the order holds in practice — the second
+broadcast's own queries give the first a head start of milliseconds —
+not by guarantee.
+
+```ruby
+# Before — passes before the broadcast arrives
+Leaderboard::BroadcastLeaderboardPoint.new(other_topic, other_student).call
+expect(page).to have_no_css("tr#row-#{other_student.id}")
+
+# After — the honoured broadcast proves the ignored one has been delivered
+Leaderboard::BroadcastLeaderboardPoint.new(other_topic, other_student).call
+Leaderboard::BroadcastLeaderboardPoint.new(topic, student).call
+expect(page).to have_css("tr#row-#{student.id}.score-changed")
+  .and have_no_css("tr#row-#{other_student.id}")
+```
+
 A `wait:` argument longer than the default (`have_css(".x", wait: 6)`)
 is the same shape of smell. A Capybara matcher is already in play, but
 the default wait isn't enough — usually because the work the assertion
@@ -594,7 +656,7 @@ System specs that boot a real browser — the `:js`-tagged ones (see
 *Project profile* — system-spec driver) — are the most expensive flavour
 in the suite. Spend them only on coverage that actually requires the
 browser. If an assertion can be made in a request, policy, mailer, job,
-or model spec, move it there. (Non-`:js` system specs run at rack level;
+model or jest spec, move it there. (Non-`:js` system specs run at rack level;
 Rule 16b governs when to relocate those.)
 
 | Assertion | Belongs in |
@@ -606,6 +668,8 @@ Rule 16b governs when to relocate those.)
 | Mailer or job is enqueued by a controller action | `spec/requests/...` with `have_enqueued_mail` / `have_enqueued_job` |
 | Background job behaviour | `spec/jobs/<name>_job_spec.rb` |
 | Model validations, scopes, callbacks | `spec/models/<name>_spec.rb` |
+| Pure client-side logic: sorting, windowing, filtering, formatting, a guard or branch in a Stimulus controller or Alpine component | `spec/javascript/<path>.test.js` (jest; see *Project profile* — JS test runner) |
+| The JSON an XHR-filled page loads: keys, entries, filter options | `spec/requests/...` asserting on `response.parsed_body` |
 | Browser/JS-dependent interaction, or the form-wiring smoke (Rule 16b) | `spec/system/...` (`:js` only when a real browser is needed) |
 
 Note: the table routes by *correctness*, not convenience — each assertion
@@ -620,6 +684,28 @@ spec is Rule 17 — a static, no-signal template isn't worth its own spec.
 What stays in system specs: end-to-end user flows that exercise JS,
 multi-step interactions, and assertions about what the user actually
 sees rendered.
+
+**Client-side logic moves to jest in the same pass, not a later one.**
+When a browser example exercises a branch of a Stimulus controller or
+Alpine component that a jest test can reach with author-written state —
+a sort, a ten-row window, a filter predicate, a star or icon formatter,
+a `received` guard — the jest test is the cheapest correct layer, and it
+is written under the same three steps as any other relocation: write it,
+break the function and watch it fail, then delete the browser example.
+Flagging it for a later pass is not a relocation: the browser example
+either stays at full cost or goes on a promise, and the promise is the
+suite-level hole Rule 16a warns about. The browser keeps one example
+per component proving the wiring the jest test cannot, and it walks
+every wiring path the component has: the load (fetch → JSON → rendered
+rows) and then the push (cable → `received` → DOM) in one example,
+which is how Rule 16a's one smoke per mechanism is met without a
+second boot. Annotate it with the jest file that holds the branches.
+"Mocking `alpinejs` leaves the
+rendered ranks unproven" is not a reason to keep the branches in the
+browser: the wiring smoke proves rendering once; the branches need
+proving per branch, and jest is where that is cheap. If importing the
+module in jest throws — a module-level side effect jsdom cannot host —
+keep the browser example and record the error in its annotation.
 
 When relocating coverage:
 
@@ -664,6 +750,17 @@ proving once — not once per resource.
   faster.
 - Don't delete all of them — request specs don't exercise the confirm
   dialog / remote behaviour, so one smoke test must remain.
+- **Map examples to branches before consolidating.** List the
+  mechanism's branches from its code, then put each existing example
+  against the branch its data actually reaches — not the branch its
+  description names. Examples sharing a branch collapse to one; a branch
+  a description names but no example's data reaches gets one now, in
+  the cheapest layer (jest for client code). Writing that example is
+  relocation, not invention: the description already claimed the branch
+  ("mid-table", "near the bottom"); only the data missed it. "A refactor
+  relocates, it doesn't invent" and "flag, don't add" do not apply to a
+  branch an existing description names. A branch no description names
+  is a gap to flag, not to fill.
 
 Annotate the retained smoke test with a comment pointing to where the
 per-resource coverage now lives, so a later pass doesn't re-evaluate it.
@@ -754,6 +851,30 @@ Delete these. If you cannot articulate a regression the test would
 catch — beyond "the page errors out", which is already covered by every
 other test that visits the page — the test is rot.
 
+**A vacuous original is relocated by its description.** An example that
+cannot fail as written — an `exact_text:` that is not a String (Rule
+21), a value that coincides with the one it is meant to exclude, a
+negative asserted before an asynchronous trigger lands (Rule 12) — has
+never tested anything, so what it *names* is the coverage to relocate.
+Give it data that discriminates, write it in the cheapest correct
+layer, and run it unmarked. If it passes, it is done. If it fails,
+read the message before marking anything: a known-failure marker
+passes on any failure, so a broken mock or selector would hide behind
+it, and a failure anywhere but the description's own assertion is the
+new example's bug to fix first. When that assertion is what fails,
+because the application does not do what the description says, keep
+the example as a known failure — `pending "<what the app does
+instead>, see #N"` at the top of the block in RSpec, `test.failing`
+with the same comment in jest — and report the defect with a drafted
+issue. A known failure still runs its block, so the example fails the
+run the day the fix lands and retires itself; `xit`, `skip` and
+`test.todo` never run and never flip, so they are not substitutes.
+Never rewrite the assertion to match the wrong behaviour. The marker
+cites the issue (Rule 18b), and a comment naming the defect is not a
+ticket: ask for the number at Step 3, or for leave to open the issue.
+If the pass ends without one, delete the example and paste it verbatim
+into the report, so opening the issue and restoring it is one step.
+
 Borderline cases worth keeping: a single assertion-per-role that the
 page renders at all, as a smoke check, when the page is non-trivial
 and not already covered by a request spec. Trivial views don't need
@@ -796,6 +917,12 @@ A pending is acceptable when it has either (a) a clear counterpart in
 the same describe block (Rule 11), or (b) a comment linking to a
 specific ticket with a concrete reason it is deferred. Anything else is
 rot.
+
+A `pending` with a body is a different thing from the bodiless
+placeholder above: RSpec runs the block and fails the run when it
+passes, so it pins a known defect until the fix retires it (Rule 17).
+It needs the ticket of (b), and its reason string names what the
+application does instead.
 
 ### Rule 19: Use `shared_examples` for repetition across describe blocks
 
@@ -967,6 +1094,17 @@ Two fixes:
    expect(page).to have_no_css("##{dom_id(other_topic)}")
    ```
 
+**`exact_text:` filters only when given a String or Regexp.**
+Capybara's `matches_exact_text_filter?` is `case exact_text when String,
+Regexp ... else true end`, so `have_css("td", exact_text: record.score)`
+with an Integer applies no filter and passes for any `td`; the same
+holds for `nil`. Pass `.to_s` (`exact_text: "530"`), and scope the
+selector to the cell (`td#score-#{id}`) so a position column cannot
+satisfy it. Treat every non-String value Step 1 listed as an assertion
+that has never run. `text:` converts its value with `to_s` and matches
+by substring, so `text: 5` is satisfied by "15" or a position cell —
+the collision case below, not a no-op.
+
 When you see a presence/absence assertion on `record.attr`, ask whether
 that value is fully controlled and collision-proof; if not, give the
 record an explicit literal or assert on an id/href the sibling can't
@@ -1007,8 +1145,9 @@ For each file:
    the first browser example of a run is pack compilation on first boot,
    not a spec failure; rerun before acting on it.
 6. When applying Rule 16, also run the new spec you created in the
-   cheapest correct layer. The whole point is that the moved assertion
-   still holds — confirm it does.
+   cheapest correct layer — `pnpm test:js <file>` for a jest file. The
+   whole point is that the moved assertion still holds — confirm it
+   does.
 
 ### Scope
 
@@ -1017,8 +1156,9 @@ In-scope changes:
 - Edits to the spec file under refactor.
 - Adding a trait or nested factory in `spec/factories/` (Rule 5).
 - Adding a **new spec file in another layer** — `spec/policies/`,
-  `spec/requests/`, `spec/mailers/`, `spec/jobs/`, `spec/models/` — to
-  host coverage moved out of a system spec under Rule 16. **When
+  `spec/requests/`, `spec/mailers/`, `spec/jobs/`, `spec/models/`,
+  `spec/javascript/` (jest) — to host coverage moved out of a system spec
+  under Rule 16. **When
   refactoring**, that new file should cover *only* what was moved: a
   refactor relocates coverage, it doesn't invent it. (Writing a brand-new
   spec from scratch is a *different* task — see *Authoring a new spec*
@@ -1027,6 +1167,9 @@ In-scope changes:
   file or in `spec/support/`.
 - Pending examples added under Rule 11 — a description with no body —
   in any file the pass touches. They flag a gap; they invent nothing.
+- A known-failure example under Rule 17 — `pending` or `test.failing`
+  against an issue — in the cheapest correct layer for the behaviour
+  its description names.
 - The invalid-submit example Rule 17 calls for when a `new`/`edit`
   action has none: it is the request-layer home of coverage the system
   spec used to carry, not new coverage.
