@@ -18,6 +18,13 @@ RSpec.describe "the admin navigation", :default_creates, type: :request do
       it "has no link to the removed Statistics page" do
         expect(Capybara.string(response.body)).to have_no_link("Statistics")
       end
+
+      it "gathers configuration under a Settings menu" do
+        expect(Capybara.string(response.body).find("#settings-menu"))
+          .to have_link("Admins", href: system_admins_path)
+          .and have_link("School Groups", href: system_school_groups_path)
+          .and have_link("Maintenance", href: system_maintenance_path)
+      end
     end
 
     context "as a school group admin" do
@@ -34,6 +41,24 @@ RSpec.describe "the admin navigation", :default_creates, type: :request do
           .and have_no_link("School Groups")
           .and have_no_link("Roles")
       end
+
+      it "has no Settings menu" do
+        expect(Capybara.string(response.body)).to have_no_css("#settings-menu")
+      end
+    end
+  end
+
+  # The public layout renders this same navigation for a signed-in admin
+  describe "GET / as a super admin" do
+    before do
+      sign_in super_admin
+      get root_path
+    end
+
+    it "builds the Settings menu outside the admin area" do
+      expect(response).to have_http_status(:ok)
+      expect(Capybara.string(response.body).find("#settings-menu"))
+        .to have_link("Admins", href: system_admins_path)
     end
   end
 end

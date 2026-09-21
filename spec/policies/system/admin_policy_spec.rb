@@ -5,15 +5,27 @@ require "rails_helper"
 RSpec.describe System::AdminPolicy do
   subject(:policy) { described_class.new(admin, admin) }
 
-  describe "#show?" do
+  describe "#index?" do
     context "as a super admin" do
       let(:admin) { build_stubbed(:super_admin) }
-      it { is_expected.to be_show }
+      it { is_expected.to be_index }
     end
 
     context "as a school group admin" do
       let(:admin) { build_stubbed(:school_group_admin) }
-      it { is_expected.not_to be_show }
+      it { is_expected.not_to be_index }
+    end
+  end
+
+  describe "#create?" do
+    context "as a super admin" do
+      let(:admin) { build_stubbed(:super_admin) }
+      it { is_expected.to be_create }
+    end
+
+    context "as a school group admin" do
+      let(:admin) { build_stubbed(:school_group_admin) }
+      it { is_expected.not_to be_create }
     end
   end
 
@@ -41,27 +53,46 @@ RSpec.describe System::AdminPolicy do
     end
   end
 
-  describe "#reset_year?" do
-    context "as a super admin" do
-      let(:admin) { build_stubbed(:super_admin) }
-      it { is_expected.to be_reset_year }
+  describe "#destroy?" do
+    subject(:policy) { described_class.new(admin, record) }
+
+    let(:admin) { build_stubbed(:super_admin) }
+
+    context "against another admin" do
+      let(:record) { build_stubbed(:school_group_admin) }
+
+      it { is_expected.to be_destroy }
+    end
+
+    context "against themselves" do
+      let(:record) { admin }
+
+      it { is_expected.not_to be_destroy }
     end
 
     context "as a school group admin" do
       let(:admin) { build_stubbed(:school_group_admin) }
-      it { is_expected.not_to be_reset_year }
+      let(:record) { build_stubbed(:super_admin) }
+
+      it { is_expected.not_to be_destroy }
     end
   end
 
-  describe "#unbecome?" do
+  describe "Scope" do
+    subject(:resolved) { described_class::Scope.new(admin, Admin).resolve }
+
+    let!(:other_admin) { create(:school_group_admin) }
+
     context "as a super admin" do
-      let(:admin) { build_stubbed(:super_admin) }
-      it { is_expected.to be_unbecome }
+      let(:admin) { create(:super_admin) }
+
+      it { is_expected.to include(other_admin) }
     end
 
     context "as a school group admin" do
-      let(:admin) { build_stubbed(:school_group_admin) }
-      it { is_expected.to be_unbecome }
+      let(:admin) { create(:school_group_admin) }
+
+      it { is_expected.to be_empty }
     end
   end
 end

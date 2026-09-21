@@ -1,7 +1,6 @@
-- confirmation = System::AdminsController::RESET_YEAR_CONFIRMATION
+- confirmation = System::Maintenance::YearResetsController::RESET_YEAR_CONFIRMATION
 .container
-  = admin_page_header 'Settings' do
-    = link_to 'Invite new admin', new_admin_invitation_path, class: 'btn btn-primary'
+  = admin_page_header 'Maintenance'
 
   section.card.border-danger.mb-5 aria-labelledby='reset-year-heading' data-controller='confirm-text'
     .card-body
@@ -22,7 +21,7 @@
         autocomplete='off'
         data-confirm-text-target='input'
         data-action='input->confirm-text#check')
-      = button_to 'Reset Year Data', reset_year_system_admin_path(current_admin),
+      = button_to 'Reset Year Data', system_maintenance_year_reset_path,
         method: :post,
         disabled: true,
         class: 'btn btn-danger',
