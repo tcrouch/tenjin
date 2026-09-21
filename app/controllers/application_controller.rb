@@ -26,6 +26,20 @@ class ApplicationController < ActionController::Base
 
   private
 
+  # Reports a write a record refused to a Turbo-driven page, which keeps the
+  # state it is showing while the reason arrives in the flash container. A
+  # caller that does not ask for a stream is sent back to read the same
+  # reason; it is declared first because a bare */* takes the first format.
+  def refuse(message)
+    respond_to do |format|
+      format.any { redirect_back fallback_location: root_path, alert: message }
+      format.turbo_stream do
+        flash.now[:alert] = message
+        render template: "shared/flash", status: :unprocessable_content
+      end
+    end
+  end
+
   def user_not_authorized
     flash[:alert] = "You are not authorized to perform this action."
     redirect_back fallback_location: root_path

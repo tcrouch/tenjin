@@ -2,7 +2,8 @@
   title Classrooms
 .container
   section.page-section.text-center.pt-2#classrooms(data-controller='sync-notice'
-    data-sync-notice-needed-label-value=t('school.sync_status.needed'))
+    data-sync-notice-needed-label-value=t('school.sync_status.needed')
+    data-action='turbo:submit-end->sync-notice#settle')
     p
       |Current school sync status:
       b.fw-bold#syncStatus data-sync-notice-target='status' = @school.sync_status_label
@@ -25,7 +26,9 @@
                 td = c.name
                 td.d-none.d-lg-table-cell = c.enrollments.size
                 td
-                  = form_with url: classroom_path(c.id), method: :patch, data: { turbo: true, controller: 'auto-submit' } do
+                  = form_with url: classroom_path(c.id),
+                    method: :patch,
+                    data: { turbo: true, controller: 'auto-submit', action: 'turbo:submit-end->auto-submit#settle' } do
                     = select_tag :subject,
                       options_from_collection_for_select(@subjects, :id, :name, c.subject_id),
                       include_blank: '',
