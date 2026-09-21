@@ -8,18 +8,17 @@ Rails.application.routes.draw do
     root to: "overview#show"
 
     resources :school_groups, except: %i[show]
-    resources :subjects, except: %i[show] do
-      member do
-        patch :reactivate
+    resources :subjects, except: %i[show destroy] do
+      scope module: :subjects do
+        resource :activation, only: %i[create destroy]
       end
     end
     resources :customisations, except: %i[show destroy]
+    resource :customisation_statistics, only: [:show], path: "customisations/statistics"
     resources :schools do
       scope module: :schools do
         resources :staff, only: [:index]
-      end
-      member do
-        patch :sync
+        resource :sync, only: [:create]
       end
     end
     resource :maintenance, only: [:show], controller: "maintenance" do
