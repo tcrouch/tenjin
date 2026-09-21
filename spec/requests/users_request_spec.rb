@@ -227,31 +227,76 @@ RSpec.describe "user controller", :default_creates do
   describe "PATCH #update" do
     let(:new_password) { "correct horse battery" }
 
-    before do
-      sign_in teacher
-      patch user_path(student), params: {user: {password: new_password}}
+    before { sign_in teacher }
+
+    context "with a new password" do
+      before { patch user_path(student), params: {user: {password: new_password}} }
+
+      it "changes the password" do
+        expect(student.reload).to be_valid_password(new_password)
+      end
+
+      it "redirects to the record with a confirmation" do
+        expect(response).to redirect_to(user_path(student))
+        follow_redirect!
+        expect(response.body).to include("Password successfully updated")
+      end
     end
 
-    it "changes the password" do
-      expect(student.reload).to be_valid_password(new_password)
+    context "with a blank password" do
+      before { patch user_path(student), params: {user: {password: ""}} }
+
+      it "leaves the password alone" do
+        expect { student.reload }.not_to change(student, :encrypted_password)
+      end
+
+      it "says so rather than reporting a change it did not make" do
+        expect(flash[:alert]).to eq("Password can't be blank")
+        expect(flash[:notice]).to be_nil
+      end
     end
 
-    it "redirects to the record with a confirmation" do
-      expect(response).to redirect_to(user_path(student))
-      follow_redirect!
-      expect(response.body).to include("Password successfully updated")
+    context "when the record refuses the change" do
+      let!(:legacy_student) { create(:student, :without_upi, school: school) }
+
+      before { patch user_path(legacy_student), params: {user: {password: new_password}} }
+
+      it "leaves the password alone" do
+        expect { legacy_student.reload }.not_to change(legacy_student, :encrypted_password)
+      end
+
+      it "reports what the record refused, and that nothing changed" do
+        expect(flash[:alert]).to eq("Password not changed: Upi can't be blank")
+        expect(flash[:notice]).to be_nil
+      end
     end
   end
 
   describe "PATCH #reset_password" do
-    before do
-      sign_in school_admin
-      patch reset_password_user_path(student)
+    before { sign_in school_admin }
+
+    context "with a resettable student" do
+      before { patch reset_password_user_path(student) }
+
+      it "returns a password that now signs the student in" do
+        expect(response.parsed_body).to include("id" => student.id)
+        expect(student.reload).to be_valid_password(response.parsed_body.fetch("password"))
+      end
     end
 
-    it "returns a password that now signs the student in" do
-      expect(response.parsed_body).to include("id" => student.id)
-      expect(student.reload).to be_valid_password(response.parsed_body.fetch("password"))
+    context "when the record refuses the change" do
+      let!(:legacy_student) { create(:student, :without_upi, school: school) }
+
+      before { patch reset_password_user_path(legacy_student) }
+
+      it "hands back no password to read out" do
+        expect(response).to have_http_status(:unprocessable_content)
+        expect(response.parsed_body).not_to have_key("password")
+      end
+
+      it "leaves the password alone" do
+        expect { legacy_student.reload }.not_to change(legacy_student, :encrypted_password)
+      end
     end
   end
 
